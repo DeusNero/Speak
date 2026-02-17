@@ -69,8 +69,8 @@ body{font-family:var(--font-body);background:var(--bg-deep);color:var(--text-pri
     transition:all .4s ease}
 .speak-btn.write-mode .speak-btn-label{font-size:14px}
 .long-press-progress{position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent-warm);pointer-events:none;opacity:0;z-index:3}
-.long-press-progress.active{opacity:1;animation:longPressRing 1s linear forwards}
-@keyframes longPressRing{to{transform:rotate(360deg)}}
+.long-press-progress.active{opacity:1;animation:longPressRing .8s linear forwards}
+@keyframes longPressRing{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 /* ---- TAB BAR (glassmorphism) ---- */
 .tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;justify-content:space-around;align-items:center;padding:8px 16px calc(8px + var(--safe-bottom));background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-top:1px solid var(--glass-border);z-index:100}
 .tab-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 16px;border:none;background:none;color:var(--text-muted);font-family:var(--font-body);font-size:10px;font-weight:500;cursor:pointer;transition:color .25s ease}
@@ -304,7 +304,7 @@ body{font-family:var(--font-body);background:var(--bg-deep);color:var(--text-pri
 
     <!-- SETTINGS -->
     <div id="settings-screen" class="screen"><div class="settings-screen">
-        <div class="settings-title">Settings</div>
+        <button class="detail-back" onclick="showScreen('speak-screen')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>Back</button><div class="settings-title">Settings</div>
         <div class="settings-group"><div class="settings-group-label">Data</div>
             <div class="settings-item"><div class="settings-item-left"><div class="settings-item-label">Export all data</div><div class="settings-item-sublabel" id="last-backup">Never backed up</div></div><div class="settings-item-right"><button class="settings-action-btn" id="export-btn" title="Download backup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button></div></div>
         </div>
@@ -419,7 +419,7 @@ async function refineText(raw,lang){
 function localRefine(t){return cleanupTranscript(t);}
 
 const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
-function showScreen(id){screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='settings-screen')updateSettingsUI();}
+function showScreen(id){screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='settings-screen')updateSettingsUI();}
 tabItems.forEach(tab=>{tab.addEventListener('click',()=>{if(!tab.classList.contains('disabled'))showScreen(tab.dataset.screen);});});
 
 (function(){const h=new Date().getHours(),el=document.getElementById('greeting-text');if(h<6)el.textContent='Late night thoughts?';else if(h<12)el.textContent='Good morning';else if(h<17)el.textContent='Good afternoon';else if(h<21)el.textContent='Good evening';else el.textContent='Time to reflect';})();
@@ -451,7 +451,7 @@ let longPressTimer=null,isLongPress=false,isWriteMode=false;
 const lpRing=document.getElementById('long-press-ring');
 function enterWriteMode(){
     isWriteMode=true;isLongPress=true;
-    if(navigator.vibrate)navigator.vibrate(50);
+    try{if(navigator.vibrate)navigator.vibrate([50]);}catch(e){}
     speakBtn.classList.add('write-mode');
     speakBtn.querySelector('.speak-btn-label').textContent='Write';
     speakBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
@@ -465,7 +465,7 @@ function exitWriteMode(){
 }
 function openWriteModal(){
     document.getElementById('write-textarea').value='';
-    document.getElementById('write-overlay').classList.add('visible');
+    document.getElementById('write-overlay').classList.add('visible');pushNav('write-overlay');
     setTimeout(()=>document.getElementById('write-textarea').focus(),100);
 }
 document.getElementById('write-close-x').addEventListener('click',()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
@@ -475,11 +475,11 @@ document.getElementById('write-save').addEventListener('click',()=>{
     if(t){currentCapture.text=t;currentCapture.inputType='text';document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();showPostRecordFlow();}
 });
 
-speakBtn.addEventListener('touchstart',e=>{if(isRecording)return;isLongPress=false;lpRing.classList.add('active');longPressTimer=setTimeout(()=>{enterWriteMode();},1000);},{passive:true});
-speakBtn.addEventListener('touchend',e=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');if(isLongPress&&isWriteMode){isLongPress=false;openWriteModal();return;}isLongPress=false;},{passive:true});
+speakBtn.addEventListener('touchstart',e=>{if(isRecording)return;isLongPress=false;lpRing.classList.add('active');longPressTimer=setTimeout(()=>{enterWriteMode();},800);},{passive:true});
+speakBtn.addEventListener('touchend',e=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');if(isLongPress&&isWriteMode){isLongPress=false;try{navigator.vibrate([30]);}catch(ex){}openWriteModal();return;}isLongPress=false;},{passive:true});
 speakBtn.addEventListener('touchmove',()=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');isLongPress=false;},{passive:true});
 /* Desktop mouse long-press */
-speakBtn.addEventListener('mousedown',e=>{if(isRecording||e.button!==0)return;isLongPress=false;lpRing.classList.add('active');longPressTimer=setTimeout(()=>{enterWriteMode();},1000);});
+speakBtn.addEventListener('mousedown',e=>{if(isRecording||e.button!==0)return;isLongPress=false;lpRing.classList.add('active');longPressTimer=setTimeout(()=>{enterWriteMode();},800);});
 speakBtn.addEventListener('mouseup',e=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');if(isLongPress&&isWriteMode){isLongPress=false;openWriteModal();return;}isLongPress=false;});
 speakBtn.addEventListener('mouseleave',()=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');isLongPress=false;});
 speakBtn.addEventListener('click',e=>{if(isWriteMode){openWriteModal();exitWriteMode();return;}if(isRecording){isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(e){}}else{startRecording();}});}
@@ -509,7 +509,7 @@ document.getElementById('date-picker-btn').addEventListener('click',()=>{
 const ov=document.getElementById('date-range-overlay');
 document.getElementById('date-range-start').value=dateFilterStart||'';
 document.getElementById('date-range-end').value=dateFilterEnd||'';
-ov.classList.add('visible');});
+ov.classList.add('visible');pushNav('date-range-overlay');});
 document.getElementById('date-range-close-x').addEventListener('click',()=>document.getElementById('date-range-overlay').classList.remove('visible'));
 document.getElementById('date-range-clear').addEventListener('click',()=>{dateFilterStart=null;dateFilterEnd=null;currentDateFilter=null;document.getElementById('date-picker-btn').classList.remove('active');document.getElementById('date-range-overlay').classList.remove('visible');renderCaptures();});
 document.getElementById('date-range-select').addEventListener('click',()=>{
@@ -519,24 +519,24 @@ if(dateFilterStart||dateFilterEnd){document.getElementById('date-picker-btn').cl
 else{document.getElementById('date-picker-btn').classList.remove('active');currentDateFilter=null;}
 document.getElementById('date-range-overlay').classList.remove('visible');renderCaptures();});
 const mfBtn=document.getElementById('mood-filter-btn'),mfOvl=document.getElementById('mood-filter-overlay');
-mfBtn.addEventListener('click',()=>mfOvl.classList.add('visible'));
+mfBtn.addEventListener('click',()=>mfOvl.classList.add('visible');pushNav('mood-filter-overlay'));
 document.getElementById('mood-modal-close').addEventListener('click',()=>mfOvl.classList.remove('visible'));
 document.getElementById('mood-modal-close-x').addEventListener('click',()=>mfOvl.classList.remove('visible'));
 document.querySelectorAll('.mood-filter-opt').forEach(btn=>{btn.addEventListener('click',()=>{currentMoodFilter=parseInt(btn.dataset.mood);if(currentMoodFilter>0){mfBtn.innerHTML=MOODS[currentMoodFilter];mfBtn.classList.add('active');}else{mfBtn.innerHTML=SMILEY_SVG;mfBtn.classList.remove('active');}mfOvl.classList.remove('visible');renderCaptures();});});
 
-function openDetail(id){const c=captures.find(x=>x.id===id);if(!c)return;currentDetailId=id;document.getElementById('detail-date').textContent=formatDate(new Date(c.createdAt));document.getElementById('detail-mood').textContent=c.mood?MOODS[c.mood]:'';document.getElementById('detail-text').textContent=c.text;const tc=document.getElementById('detail-tags');tc.innerHTML=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Feel',poem:'Poetry',task:'Task'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';screens.forEach(s=>s.classList.remove('active'));document.getElementById('detail-screen').classList.add('active');}
+function openDetail(id){const c=captures.find(x=>x.id===id);if(!c)return;currentDetailId=id;document.getElementById('detail-date').textContent=formatDate(new Date(c.createdAt));document.getElementById('detail-mood').textContent=c.mood?MOODS[c.mood]:'';document.getElementById('detail-text').textContent=c.text;const tc=document.getElementById('detail-tags');tc.innerHTML=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Feel',poem:'Poetry',task:'Task'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';screens.forEach(s=>s.classList.remove('active'));document.getElementById('detail-screen').classList.add('active');pushNav('detail-screen');}
 document.getElementById('detail-back').addEventListener('click',()=>showScreen('thoughts-screen'));
-document.getElementById('detail-delete').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.add('visible'));
+document.getElementById('detail-delete').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.add('visible');pushNav('confirm-overlay'));
 document.getElementById('confirm-cancel').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.remove('visible'));
 document.getElementById('confirm-close-x').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.remove('visible'));
 document.getElementById('confirm-action').addEventListener('click',()=>{captures=captures.filter(c=>c.id!==currentDetailId);localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));document.getElementById('confirm-overlay').classList.remove('visible');showScreen('thoughts-screen');});
-document.getElementById('detail-edit').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;document.getElementById('edit-text-input').value=c.text;document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===(c.mood||0)));document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(b=>b.classList.toggle('selected',c.tags&&c.tags.includes(b.dataset.tag)));document.getElementById('edit-modal').classList.add('visible');});
+document.getElementById('detail-edit').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;document.getElementById('edit-text-input').value=c.text;document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===(c.mood||0)));document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(b=>b.classList.toggle('selected',c.tags&&c.tags.includes(b.dataset.tag)));document.getElementById('edit-modal').classList.add('visible');pushNav('edit-modal');});
 document.getElementById('edit-cancel').addEventListener('click',()=>document.getElementById('edit-modal').classList.remove('visible'));
 document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');});});
 document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(btn=>{btn.addEventListener('click',()=>btn.classList.toggle('selected'));});
 document.getElementById('edit-save').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;c.text=document.getElementById('edit-text-input').value;const sm=document.querySelector('#edit-mood-row .edit-mood-btn.selected');c.mood=sm?(parseInt(sm.dataset.mood)||null):null;const st=[];document.querySelectorAll('#edit-tag-row .edit-tag-btn.selected').forEach(b=>st.push(b.dataset.tag));c.tags=st;localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));document.getElementById('edit-modal').classList.remove('visible');openDetail(currentDetailId);});
 
-document.getElementById('detail-refine').addEventListener('click',async()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const ov=document.getElementById('refine-overlay'),bd=document.getElementById('refine-body'),ac=document.getElementById('refine-actions');bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div><div class="refine-loading"><div class="refine-loading-spinner"></div>Refining your text...</div>';ac.style.display='none';ov.classList.add('visible');const result=await refineText(c.text,c.lang||'en-US');let statusHtml='';if(typeof result==='object'){if(result.source==='local'&&result.error){statusHtml='<div style="font-size:12px;color:var(--mood-1);margin-bottom:12px;">Gemini unavailable: '+escapeHtml(result.error)+'. Showing local cleanup.</div>';}else if(result.source==='local'){statusHtml='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">No API key. Showing local cleanup.</div>';}else{statusHtml='<div style="font-size:12px;color:var(--accent-moss);margin-bottom:12px;">Refined with Gemini AI</div>';}}const refinedText=typeof result==='object'?result.text:result;bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text">'+escapeHtml(refinedText)+'</div>';ac.style.display='flex';});
+document.getElementById('detail-refine').addEventListener('click',async()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const ov=document.getElementById('refine-overlay'),bd=document.getElementById('refine-body'),ac=document.getElementById('refine-actions');bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div><div class="refine-loading"><div class="refine-loading-spinner"></div>Refining your text...</div>';ac.style.display='none';ov.classList.add('visible');pushNav('refine-overlay');const result=await refineText(c.text,c.lang||'en-US');let statusHtml='';if(typeof result==='object'){if(result.source==='local'&&result.error){statusHtml='<div style="font-size:12px;color:var(--mood-1);margin-bottom:12px;">Gemini unavailable: '+escapeHtml(result.error)+'. Showing local cleanup.</div>';}else if(result.source==='local'){statusHtml='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">No API key. Showing local cleanup.</div>';}else{statusHtml='<div style="font-size:12px;color:var(--accent-moss);margin-bottom:12px;">Refined with Gemini AI</div>';}}const refinedText=typeof result==='object'?result.text:result;bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text">'+escapeHtml(refinedText)+'</div>';ac.style.display='flex';});
 document.getElementById('refine-dismiss').addEventListener('click',()=>document.getElementById('refine-overlay').classList.remove('visible'));
 document.getElementById('refine-reject').addEventListener('click',()=>document.getElementById('refine-overlay').classList.remove('visible'));
 document.getElementById('refine-accept').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const el=document.getElementById('refined-text');if(el){c.text=el.textContent;localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));}document.getElementById('refine-overlay').classList.remove('visible');openDetail(currentDetailId);});
@@ -554,6 +554,30 @@ console.log('SW registered, scope:',reg.scope);
 }).catch(e=>console.warn('SW registration failed:',e));
 navigator.serviceWorker.addEventListener('controllerchange',()=>{console.log('SW updated, reloading');window.location.reload();});
 }
+
+/* Android back button / browser history navigation */
+let navHistory=[];
+function pushNav(screenId){navHistory.push(screenId);history.pushState({screen:screenId},'');}
+window.addEventListener('popstate',e=>{
+    if(navHistory.length>0){
+        navHistory.pop();
+        /* Determine what to go back to */
+        /* Close any open overlays first */
+        const overlays=['write-overlay','date-range-overlay','confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay'];
+        for(const oid of overlays){const oel=document.getElementById(oid);if(oel&&(oel.classList.contains('visible'))){oel.classList.remove('visible');if(oid==='edit-modal')exitWriteMode&&exitWriteMode();return;}}
+        /* If on detail screen, go back to thoughts */
+        const detailScreen=document.getElementById('detail-screen');
+        if(detailScreen&&detailScreen.classList.contains('active')){showScreen('thoughts-screen');return;}
+        /* If on post-record, go back to speak */
+        const postScreen=document.getElementById('post-record-screen');
+        if(postScreen&&postScreen.classList.contains('active')){showScreen('speak-screen');return;}
+        /* If on any non-speak tab, go to speak */
+        const active=document.querySelector('.screen.active');
+        if(active&&active.id!=='speak-screen'){showScreen('speak-screen');return;}
+        /* If already on speak screen, let the browser handle it (exit app) */
+        history.back();
+    }
+});
 </script>
 </body>
 </html>
