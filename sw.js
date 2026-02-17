@@ -1,8 +1,13 @@
-const CACHE_NAME = 'speak-v1';
+const CACHE_NAME = 'speak-v2'; // <--- BUMPED VERSION (Critical!)
 const ASSETS = [
-    '/',
-    '/index.html',
-    '/manifest.json'
+    './',                 // <--- CHANGED: Added dot
+    './index.html',       // <--- CHANGED: Added dot
+    './manifest.json',    // <--- CHANGED: Added dot
+    // Add these if you have them locally:
+    // './style.css', 
+    // './script.js',
+    // './icon-192.png',
+    // './your-zen-background.jpg' 
 ];
 
 self.addEventListener('install', (e) => {
