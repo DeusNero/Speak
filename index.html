@@ -11,14 +11,143 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
     <style>
-/* --- VARIABLES --- */
-:root{ --bg-deep:#1a1e22; --bg-card:#262c33; --accent-primary:#5b9ec4; --accent-warm:#c4956b; --text-primary:#e8ecf0; --text-secondary:#9aa4b0; --border-subtle:rgba(255,255,255,.06); --glass-bg:rgba(26,30,34,.65); --glass-blur:blur(24px); --radius-md:16px; --radius-full:999px; --font-display:'Spectral',serif; --font-body:'DM Sans',sans-serif; --safe-bottom:env(safe-area-inset-bottom,0px) }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:var(--font-body);background:var(--bg-deep);color:var(--text-primary);min-height:100dvh;overflow-x:hidden}
-.app{display:flex;flex-direction:column;min-height:100dvh;max-width:480px;margin:0 auto;position:relative}
-.screen{display:none;flex:1;flex-direction:column;padding-bottom:80px;animation:fadeIn .3s ease}.screen.active{display:flex}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-@keyframes softAppear{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        :root {
+            --bg-deep: #1a1e22; --bg-card: #262c33; --accent-primary: #5b9ec4;
+            --accent-primary-soft: rgba(91, 158, 196, .15); --text-primary: #e8ecf0;
+            --text-secondary: #9aa4b0; --text-muted: #6b7580; --border-subtle: rgba(255, 255, 255, .06);
+            --radius-md: 16px; --radius-full: 999px; --font-display: 'Spectral', serif;
+            --font-body: 'DM Sans', sans-serif; --safe-bottom: env(safe-area-inset-bottom, 0px)
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent }
+        body { font-family: var(--font-body); background: var(--bg-deep); color: var(--text-primary); min-height: 100dvh; overflow-x: hidden }
+        .app { display: flex; flex-direction: column; min-height: 100dvh; max-width: 480px; margin: 0 auto; position: relative }
+        .screen { display: none; flex: 1; flex-direction: column; padding-bottom: 80px; animation: fadeIn .3s ease }
+        .screen.active { display: flex }
+        
+        /* THE BACKGROUND FIX */
+        .speak-screen {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            flex: 1; padding: 40px 24px 100px; position: relative; overflow: hidden;
+            background: linear-gradient(135deg, #1a1e22 0%, #2a2f35 100%);
+        }
 
-/* --- SPEAK SCREEN --- */
-.speak-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px 24px 100px;position:relative;overflow:hidden;background:url('data:image/jpeg;base64,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
+        /* THE BUTTON FIX: z-index ensures it's clickable */
+        .speak-btn-container { position: relative; z-index: 100; }
+        .speak-btn {
+            width: 140px; height: 140px; border-radius: 50%; border: none; cursor: pointer;
+            background: radial-gradient(circle at 45% 40%, #6dafd0 0%, #5b9ec4 35%, #3d7595 100%);
+            box-shadow: 0 8px 24px rgba(0,0,0,.5); color: #fff;
+        }
+
+        .tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; justify-content: space-around; padding: 8px 16px calc(8px + var(--safe-bottom)); background: rgba(26, 30, 34, .65); backdrop-filter: blur(24px); border-top: 1px solid rgba(255,255,255,.08); z-index: 100 }
+        .tab-item { background: none; border: none; color: var(--text-muted); font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .tab-item.active { color: var(--accent-primary) }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div id="speak-screen" class="screen active">
+            <div class="speak-screen">
+                <h1 style="font-family: var(--font-display); font-style: italic; margin-bottom: 8px;">Take a moment</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 60px;">Speak what's on your mind</p>
+                <div class="speak-btn-container">
+                    <button class="speak-btn" id="speak-btn">
+                        <span class="speak-btn-label">Speak</span>
+                    </button>
+                </div>
+                <div id="speak-timer" style="margin-top: 20px; color: var(--text-muted); opacity: 0;">0:00</div>
+            </div>
+        </div>
+
+        <div id="thoughts-screen" class="screen">
+            <div style="padding: 20px;">
+                <h2 style="font-family: var(--font-display); margin-bottom: 20px;">Thoughts</h2>
+                <div id="capture-list"></div>
+            </div>
+        </div>
+
+        <nav class="tab-bar">
+            <button class="tab-item active" data-screen="speak-screen"><span>Speak</span></button>
+            <button class="tab-item" data-screen="thoughts-screen"><span>Thoughts</span></button>
+        </nav>
+    </div>
+
+    <script>
+        // WAITS FOR HTML TO LOAD
+        document.addEventListener('DOMContentLoaded', () => {
+            alert("SYSTEM CHECK: v4.4 Loaded");
+
+            const STORAGE_KEY = 'speak_captures';
+            let captures = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            let isRecording = false;
+            let recognition = null;
+
+            const speakBtn = document.getElementById('speak-btn');
+            const screens = document.querySelectorAll('.screen');
+            const tabItems = document.querySelectorAll('.tab-item');
+
+            // UI Navigation
+            function showScreen(id) {
+                screens.forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                tabItems.forEach(t => t.classList.toggle('active', t.dataset.screen === id));
+                if (id === 'thoughts-screen') renderCaptures();
+            }
+
+            // Speech Recognition
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            function handleSpeakClick() {
+                if (!SR) {
+                    const t = prompt('Speech API not supported. Type your thought:');
+                    if (t) saveThought(t);
+                    return;
+                }
+
+                if (!recognition) {
+                    recognition = new SR();
+                    recognition.continuous = true;
+                    recognition.onstart = () => { isRecording = true; alert("Mic active!"); };
+                    recognition.onend = () => { isRecording = false; };
+                    recognition.onresult = (e) => {
+                        const t = e.results[e.results.length - 1][0].transcript;
+                        saveThought(t);
+                    };
+                }
+
+                if (isRecording) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            }
+
+            function saveThought(text) {
+                captures.unshift({ text, date: new Date().toISOString() });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(captures));
+                alert("Saved: " + text);
+            }
+
+            function renderCaptures() {
+                const list = document.getElementById('capture-list');
+                list.innerHTML = captures.map(c => `
+                    <div style="background:var(--bg-card); padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border-subtle)">
+                        ${c.text}
+                    </div>
+                `).join('');
+            }
+
+            // Click Listeners
+            speakBtn.addEventListener('click', () => {
+                alert("Button pressed");
+                handleSpeakClick();
+            });
+
+            tabItems.forEach(tab => {
+                tab.addEventListener('click', () => showScreen(tab.dataset.screen));
+            });
+        });
+    </script>
+</body>
+</html>
