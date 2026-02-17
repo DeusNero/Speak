@@ -365,6 +365,9 @@ body{font-family:var(--font-body);background:var(--bg-deep);color:var(--text-pri
     </div></div>
 
 <script>
+
+let navHistory=[];
+function pushNav(screenId){navHistory.push(screenId);history.pushState({screen:screenId},'');}
 const MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
 const STORAGE_KEY='speak_captures',SETTINGS_KEY='speak_settings';
 const SMILEY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>';
@@ -556,25 +559,17 @@ navigator.serviceWorker.addEventListener('controllerchange',()=>{console.log('SW
 }
 
 /* Android back button / browser history navigation */
-let navHistory=[];
-function pushNav(screenId){navHistory.push(screenId);history.pushState({screen:screenId},'');}
 window.addEventListener('popstate',e=>{
     if(navHistory.length>0){
         navHistory.pop();
-        /* Determine what to go back to */
-        /* Close any open overlays first */
         const overlays=['write-overlay','date-range-overlay','confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay'];
-        for(const oid of overlays){const oel=document.getElementById(oid);if(oel&&(oel.classList.contains('visible'))){oel.classList.remove('visible');if(oid==='edit-modal')exitWriteMode&&exitWriteMode();return;}}
-        /* If on detail screen, go back to thoughts */
+        for(const oid of overlays){const oel=document.getElementById(oid);if(oel&&(oel.classList.contains('visible'))){oel.classList.remove('visible');return;}}
         const detailScreen=document.getElementById('detail-screen');
         if(detailScreen&&detailScreen.classList.contains('active')){showScreen('thoughts-screen');return;}
-        /* If on post-record, go back to speak */
         const postScreen=document.getElementById('post-record-screen');
         if(postScreen&&postScreen.classList.contains('active')){showScreen('speak-screen');return;}
-        /* If on any non-speak tab, go to speak */
         const active=document.querySelector('.screen.active');
         if(active&&active.id!=='speak-screen'){showScreen('speak-screen');return;}
-        /* If already on speak screen, let the browser handle it (exit app) */
         history.back();
     }
 });
