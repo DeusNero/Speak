@@ -1,153 +1,162 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#1a1e22">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="./manifest.json">
-    <title>Speak</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-deep: #1a1e22; --bg-card: #262c33; --accent-primary: #5b9ec4;
-            --accent-primary-soft: rgba(91, 158, 196, .15); --text-primary: #e8ecf0;
-            --text-secondary: #9aa4b0; --text-muted: #6b7580; --border-subtle: rgba(255, 255, 255, .06);
-            --radius-md: 16px; --radius-full: 999px; --font-display: 'Spectral', serif;
-            --font-body: 'DM Sans', sans-serif; --safe-bottom: env(safe-area-inset-bottom, 0px)
+<script>
+// --- DEBUG START ---
+alert("SYSTEM CHECK: App Loaded v4.0"); 
+// If you don't see this popup when you refresh, your JS is broken.
+// -------------------
+
+const MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
+const STORAGE_KEY='speak_captures';
+const SETTINGS_KEY='speak_settings';
+const SMILEY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>';
+
+// Initialize Data
+let captures = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+if (!settings.defaultLang) settings.defaultLang = 'en-US'; // Default to English for testing
+let currentCapture = { text: '', mood: null, tags: [] };
+let isRecording = false;
+let recognition = null;
+let recordingTimer = null;
+let recordingSeconds = 0;
+
+// Speech Recognition Setup
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const speakBtn = document.getElementById('speak-btn');
+const timerEl = document.getElementById('speak-timer');
+
+// --- DEBUG: CHECK SUPPORT ---
+if (!SR) {
+    alert("CRITICAL: Speech Recognition NOT supported in this browser.");
+} else {
+    // alert("Speech Recognition IS supported."); // Uncomment if needed
+}
+
+if (!SR) {
+    // Fallback for non-supported browsers
+    speakBtn.addEventListener('click', () => {
+        const t = prompt('Speech recognition not available.\nType your thought:');
+        if (t && t.trim()) {
+            currentCapture.text = t.trim();
+            showPostRecordFlow();
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent }
-        body { font-family: var(--font-body); background: var(--bg-deep); color: var(--text-primary); min-height: 100dvh; overflow-x: hidden }
-        .app { display: flex; flex-direction: column; min-height: 100dvh; max-width: 480px; margin: 0 auto; position: relative }
-        .screen { display: none; flex: 1; flex-direction: column; padding-bottom: 80px; animation: fadeIn .3s ease }
-        .screen.active { display: flex }
+    });
+} else {
+    try {
+        recognition = new SR();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = settings.defaultLang;
+
+        let finalTranscript = '';
         
-        /* THE BACKGROUND FIX */
-        .speak-screen {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            flex: 1; padding: 40px 24px 100px; position: relative; overflow: hidden;
-            background: linear-gradient(135deg, #1a1e22 0%, #2a2f35 100%);
-        }
+        recognition.onstart = () => {
+            alert("Mic Started!"); // DEBUG ALERT
+            isRecording = true;
+            speakBtn.classList.add('recording');
+            speakBtn.querySelector('.speak-btn-label').textContent = 'Stop';
+            timerEl.classList.add('visible');
+            recordingSeconds = 0;
+            updateTimer();
+            recordingTimer = setInterval(() => {
+                recordingSeconds++;
+                updateTimer();
+            }, 1000);
+        };
 
-        /* THE BUTTON FIX: z-index ensures it's clickable */
-        .speak-btn-container { position: relative; z-index: 100; }
-        .speak-btn {
-            width: 140px; height: 140px; border-radius: 50%; border: none; cursor: pointer;
-            background: radial-gradient(circle at 45% 40%, #6dafd0 0%, #5b9ec4 35%, #3d7595 100%);
-            box-shadow: 0 8px 24px rgba(0,0,0,.5); color: #fff;
-        }
-
-        .tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; justify-content: space-around; padding: 8px 16px calc(8px + var(--safe-bottom)); background: rgba(26, 30, 34, .65); backdrop-filter: blur(24px); border-top: 1px solid rgba(255,255,255,.08); z-index: 100 }
-        .tab-item { background: none; border: none; color: var(--text-muted); font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .tab-item.active { color: var(--accent-primary) }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
-    </style>
-</head>
-<body>
-    <div class="app">
-        <div id="speak-screen" class="screen active">
-            <div class="speak-screen">
-                <h1 style="font-family: var(--font-display); font-style: italic; margin-bottom: 8px;">Take a moment</h1>
-                <p style="color: var(--text-secondary); margin-bottom: 60px;">Speak what's on your mind</p>
-                <div class="speak-btn-container">
-                    <button class="speak-btn" id="speak-btn">
-                        <span class="speak-btn-label">Speak</span>
-                    </button>
-                </div>
-                <div id="speak-timer" style="margin-top: 20px; color: var(--text-muted); opacity: 0;">0:00</div>
-            </div>
-        </div>
-
-        <div id="thoughts-screen" class="screen">
-            <div style="padding: 20px;">
-                <h2 style="font-family: var(--font-display); margin-bottom: 20px;">Thoughts</h2>
-                <div id="capture-list"></div>
-            </div>
-        </div>
-
-        <nav class="tab-bar">
-            <button class="tab-item active" data-screen="speak-screen"><span>Speak</span></button>
-            <button class="tab-item" data-screen="thoughts-screen"><span>Thoughts</span></button>
-        </nav>
-    </div>
-
-    <script>
-        // WAITS FOR HTML TO LOAD
-        document.addEventListener('DOMContentLoaded', () => {
-            alert("SYSTEM CHECK: v4.4 Loaded");
-
-            const STORAGE_KEY = 'speak_captures';
-            let captures = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            let isRecording = false;
-            let recognition = null;
-
-            const speakBtn = document.getElementById('speak-btn');
-            const screens = document.querySelectorAll('.screen');
-            const tabItems = document.querySelectorAll('.tab-item');
-
-            // UI Navigation
-            function showScreen(id) {
-                screens.forEach(s => s.classList.remove('active'));
-                document.getElementById(id).classList.add('active');
-                tabItems.forEach(t => t.classList.toggle('active', t.dataset.screen === id));
-                if (id === 'thoughts-screen') renderCaptures();
-            }
-
-            // Speech Recognition
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-            function handleSpeakClick() {
-                if (!SR) {
-                    const t = prompt('Speech API not supported. Type your thought:');
-                    if (t) saveThought(t);
-                    return;
-                }
-
-                if (!recognition) {
-                    recognition = new SR();
-                    recognition.continuous = true;
-                    recognition.onstart = () => { isRecording = true; alert("Mic active!"); };
-                    recognition.onend = () => { isRecording = false; };
-                    recognition.onresult = (e) => {
-                        const t = e.results[e.results.length - 1][0].transcript;
-                        saveThought(t);
-                    };
-                }
-
-                if (isRecording) {
-                    recognition.stop();
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript + ' ';
                 } else {
-                    recognition.start();
+                    interimTranscript += event.results[i][0].transcript;
                 }
             }
+        };
 
-            function saveThought(text) {
-                captures.unshift({ text, date: new Date().toISOString() });
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(captures));
-                alert("Saved: " + text);
+        recognition.onerror = (event) => {
+            alert("SPEECH ERROR: " + event.error); // DEBUG ALERT
+            if (event.error === 'not-allowed') {
+                alert("Please enable microphone permissions in Settings!");
             }
+        };
 
-            function renderCaptures() {
-                const list = document.getElementById('capture-list');
-                list.innerHTML = captures.map(c => `
-                    <div style="background:var(--bg-card); padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border-subtle)">
-                        ${c.text}
-                    </div>
-                `).join('');
+        recognition.onend = () => {
+            if (isRecording) {
+                // If it stopped but we didn't want it to, restart (Android does this sometimes)
+                try { recognition.start(); } catch (e) {}
+                return;
             }
+            clearInterval(recordingTimer);
+            speakBtn.classList.remove('recording');
+            speakBtn.querySelector('.speak-btn-label').textContent = 'Speak';
+            timerEl.classList.remove('visible');
+            
+            const text = finalTranscript.trim();
+            if (text) {
+                alert("Captured: " + text); // DEBUG ALERT
+                currentCapture.text = text;
+                showPostRecordFlow();
+            } else {
+                alert("No speech detected.");
+            }
+            finalTranscript = '';
+        };
 
-            // Click Listeners
-            speakBtn.addEventListener('click', () => {
-                alert("Button pressed");
-                handleSpeakClick();
-            });
-
-            tabItems.forEach(tab => {
-                tab.addEventListener('click', () => showScreen(tab.dataset.screen));
-            });
+        // BUTTON CLICK HANDLER
+        speakBtn.addEventListener('click', () => {
+            alert("Button Clicked!"); // DEBUG ALERT
+            
+            if (isRecording) {
+                isRecording = false;
+                recognition.stop();
+            } else {
+                finalTranscript = '';
+                recognition.lang = settings.defaultLang;
+                try {
+                    recognition.start();
+                } catch (e) {
+                    alert("START ERROR: " + e.message);
+                }
+            }
         });
-    </script>
-</body>
-</html>
+
+    } catch (err) {
+        alert("SETUP ERROR: " + err.message);
+    }
+}
+
+function updateTimer() {
+    const m = Math.floor(recordingSeconds / 60);
+    const s = recordingSeconds % 60;
+    timerEl.textContent = m + ':' + String(s).padStart(2, '0');
+}
+
+// --- REST OF YOUR UI LOGIC (Simplified for brevity, keep your original UI functions below) ---
+// Note: I am not including the UI rendering logic here to save space, 
+// but you MUST keep your existing showScreen, renderCaptures, etc. functions.
+// Just make sure 'showPostRecordFlow' is defined!
+
+function showPostRecordFlow() {
+    // Simple version to prove it works
+    const saved = confirm("Save this thought?\n\n" + currentCapture.text);
+    if (saved) {
+        captures.unshift({
+            id: Date.now().toString(),
+            text: currentCapture.text,
+            createdAt: new Date().toISOString()
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(captures));
+        alert("Saved!");
+    }
+}
+
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(function(registration) {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    }, function(err) {
+        console.log('ServiceWorker registration failed: ', err);
+    });
+}
+</script>
