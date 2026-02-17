@@ -1,162 +1,24 @@
-<script>
-// --- DEBUG START ---
-alert("SYSTEM CHECK: App Loaded v4.0"); 
-// If you don't see this popup when you refresh, your JS is broken.
-// -------------------
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1e22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="./manifest.json">
+    <title>Speak</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+    <style>
+/* --- VARIABLES --- */
+:root{ --bg-deep:#1a1e22; --bg-card:#262c33; --accent-primary:#5b9ec4; --accent-warm:#c4956b; --text-primary:#e8ecf0; --text-secondary:#9aa4b0; --border-subtle:rgba(255,255,255,.06); --glass-bg:rgba(26,30,34,.65); --glass-blur:blur(24px); --radius-md:16px; --radius-full:999px; --font-display:'Spectral',serif; --font-body:'DM Sans',sans-serif; --safe-bottom:env(safe-area-inset-bottom,0px) }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-body);background:var(--bg-deep);color:var(--text-primary);min-height:100dvh;overflow-x:hidden}
+.app{display:flex;flex-direction:column;min-height:100dvh;max-width:480px;margin:0 auto;position:relative}
+.screen{display:none;flex:1;flex-direction:column;padding-bottom:80px;animation:fadeIn .3s ease}.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes softAppear{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-const MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
-const STORAGE_KEY='speak_captures';
-const SETTINGS_KEY='speak_settings';
-const SMILEY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>';
-
-// Initialize Data
-let captures = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-if (!settings.defaultLang) settings.defaultLang = 'en-US'; // Default to English for testing
-let currentCapture = { text: '', mood: null, tags: [] };
-let isRecording = false;
-let recognition = null;
-let recordingTimer = null;
-let recordingSeconds = 0;
-
-// Speech Recognition Setup
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-const speakBtn = document.getElementById('speak-btn');
-const timerEl = document.getElementById('speak-timer');
-
-// --- DEBUG: CHECK SUPPORT ---
-if (!SR) {
-    alert("CRITICAL: Speech Recognition NOT supported in this browser.");
-} else {
-    // alert("Speech Recognition IS supported."); // Uncomment if needed
-}
-
-if (!SR) {
-    // Fallback for non-supported browsers
-    speakBtn.addEventListener('click', () => {
-        const t = prompt('Speech recognition not available.\nType your thought:');
-        if (t && t.trim()) {
-            currentCapture.text = t.trim();
-            showPostRecordFlow();
-        }
-    });
-} else {
-    try {
-        recognition = new SR();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = settings.defaultLang;
-
-        let finalTranscript = '';
-        
-        recognition.onstart = () => {
-            alert("Mic Started!"); // DEBUG ALERT
-            isRecording = true;
-            speakBtn.classList.add('recording');
-            speakBtn.querySelector('.speak-btn-label').textContent = 'Stop';
-            timerEl.classList.add('visible');
-            recordingSeconds = 0;
-            updateTimer();
-            recordingTimer = setInterval(() => {
-                recordingSeconds++;
-                updateTimer();
-            }, 1000);
-        };
-
-        recognition.onresult = (event) => {
-            let interimTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript + ' ';
-                } else {
-                    interimTranscript += event.results[i][0].transcript;
-                }
-            }
-        };
-
-        recognition.onerror = (event) => {
-            alert("SPEECH ERROR: " + event.error); // DEBUG ALERT
-            if (event.error === 'not-allowed') {
-                alert("Please enable microphone permissions in Settings!");
-            }
-        };
-
-        recognition.onend = () => {
-            if (isRecording) {
-                // If it stopped but we didn't want it to, restart (Android does this sometimes)
-                try { recognition.start(); } catch (e) {}
-                return;
-            }
-            clearInterval(recordingTimer);
-            speakBtn.classList.remove('recording');
-            speakBtn.querySelector('.speak-btn-label').textContent = 'Speak';
-            timerEl.classList.remove('visible');
-            
-            const text = finalTranscript.trim();
-            if (text) {
-                alert("Captured: " + text); // DEBUG ALERT
-                currentCapture.text = text;
-                showPostRecordFlow();
-            } else {
-                alert("No speech detected.");
-            }
-            finalTranscript = '';
-        };
-
-        // BUTTON CLICK HANDLER
-        speakBtn.addEventListener('click', () => {
-            alert("Button Clicked!"); // DEBUG ALERT
-            
-            if (isRecording) {
-                isRecording = false;
-                recognition.stop();
-            } else {
-                finalTranscript = '';
-                recognition.lang = settings.defaultLang;
-                try {
-                    recognition.start();
-                } catch (e) {
-                    alert("START ERROR: " + e.message);
-                }
-            }
-        });
-
-    } catch (err) {
-        alert("SETUP ERROR: " + err.message);
-    }
-}
-
-function updateTimer() {
-    const m = Math.floor(recordingSeconds / 60);
-    const s = recordingSeconds % 60;
-    timerEl.textContent = m + ':' + String(s).padStart(2, '0');
-}
-
-// --- REST OF YOUR UI LOGIC (Simplified for brevity, keep your original UI functions below) ---
-// Note: I am not including the UI rendering logic here to save space, 
-// but you MUST keep your existing showScreen, renderCaptures, etc. functions.
-// Just make sure 'showPostRecordFlow' is defined!
-
-function showPostRecordFlow() {
-    // Simple version to prove it works
-    const saved = confirm("Save this thought?\n\n" + currentCapture.text);
-    if (saved) {
-        captures.unshift({
-            id: Date.now().toString(),
-            text: currentCapture.text,
-            createdAt: new Date().toISOString()
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(captures));
-        alert("Saved!");
-    }
-}
-
-// Service Worker Registration
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(function(registration) {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-    }, function(err) {
-        console.log('ServiceWorker registration failed: ', err);
-    });
-}
-</script>
+/* --- SPEAK SCREEN --- */
+.speak-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px 24px 100px;position:relative;overflow:hidden;background:url('data:image/jpeg;base64,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
