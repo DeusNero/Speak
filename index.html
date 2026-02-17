@@ -338,18 +338,47 @@ if(!settings.geminiApiKey)settings.geminiApiKey='';
 let currentCapture={text:'',mood:null,tags:[]},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='feed',searchQuery='';
 let isRecording=false,recognition=null,recordingTimer=null,recordingSeconds=0;
 
-function cleanupTranscript(r){if(!r||!r.trim())return r;let t=r.trim();t=t.charAt(0).toUpperCase()+t.slice(1);if(!/[.!?]$/.test(t))t+='.';t=t.replace(/([.!?])\s+([a-z\u00e4\u00f6\u00fc\u00df])/g,(m,p,c)=>p+' '+c.toUpperCase());t=t.replace(/\bi\b(?=\s|'|$)/g,'I');return t;}
+function cleanupTranscript(r){if(!r||!r.trim())return r;let t=r.trim();
+/* Capitalize first letter */
+t=t.charAt(0).toUpperCase()+t.slice(1);
+/* Fix standalone i */
+t=t.replace(/\bi\b(?=\s|'|$)/g,'I');
+/* Add commas before common conjunctions if missing */
+t=t.replace(/\s+(but|and|so|because|although|however|yet|or)\s+/gi,(m,w)=>{if(m.charAt(0)===',')return m;return', '+w.toLowerCase()+' ';});
+/* Detect question patterns and add question marks */
+t=t.replace(/((?:^|[.!?]\s+)(?:what|who|where|when|why|how|is|are|was|were|do|does|did|can|could|would|should|will|have|has|don't|doesn't|isn't|aren't|won't|wouldn't|couldn't|shouldn't|haven't|hasn't|wer|wie|wo|wann|warum|wieso|weshalb|ist|sind|hat|hatte|kann|kannst|soll|sollte|willst|hast|bist)[^.!?]*)/gi,(m)=>{return m.trimEnd();});
+t=t.replace(/((?:what|who|where|when|why|how|is|are|was|were|do|does|did|can|could|would|should|will|have|has|don't|doesn't|isn't|aren't|won't|wouldn't|wer|wie|wo|wann|warum|wieso|weshalb|ist|sind|hat|kann|soll|willst|hast|bist)[^.!?]{3,}?)(\s+(?:[A-Z])|$)/gi,(m,q,after)=>{if(/[.!?]$/.test(q.trim()))return m;return q.trim()+'?'+after;});
+/* Split long run-on sentences at natural break points */
+t=t.replace(/(.{80,}?)\s+(and|but|so|also|then|because|und|aber|also|dann|weil)\s+/g,(m,before,conj)=>{if(/[.!?,]$/.test(before.trim()))return m;return before.trim()+'. '+conj.charAt(0).toUpperCase()+conj.slice(1)+' ';});
+/* Capitalize after sentence-ending punctuation */
+t=t.replace(/([.!?])\s+([a-z\u00e4\u00f6\u00fc\u00df])/g,(m,p,c)=>p+' '+c.toUpperCase());
+/* Add period at end if missing */
+if(!/[.!?]$/.test(t))t+='.';
+/* Clean up double spaces */
+t=t.replace(/\s{2,}/g,' ');
+/* Clean up double punctuation */
+t=t.replace(/([.!?]){2,}/g,'$1');
+return t;}
 
 async function refineText(raw,lang){
-    if(!settings.geminiApiKey)return localRefine(raw);
+    if(!settings.geminiApiKey){console.warn('No API key');return{text:localRefine(raw),source:'local'};}
     try{
         const ln=lang&&lang.startsWith('de')?'German':'English';
-        const prompt=`You are a text editor. The following is a voice transcription in ${ln}. Fix punctuation, capitalization, sentence structure, and speech recognition errors. Keep the original meaning and personal tone. Respond ONLY with corrected text.\n\nOriginal:\n${raw}`;
-        const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+settings.geminiApiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
-        if(!r.ok)throw new Error('API '+r.status);const d=await r.json();const txt=d.candidates?.[0]?.content?.parts?.[0]?.text;if(txt)return txt.trim();throw new Error('No result');
-    }catch(e){console.warn('Gemini failed:',e);return localRefine(raw);}
+        const prompt='You are a text editor. The following is a raw voice transcription in '+ln+'. Please:\n1. Add proper punctuation (periods, commas, question marks, exclamation marks)\n2. Fix capitalization\n3. Fix obvious speech recognition errors\n4. Improve sentence structure where needed\n5. Keep the original meaning, tone and personal voice\n\nRespond with ONLY the corrected text, nothing else.\n\nOriginal transcript:\n'+raw;
+        const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+settings.geminiApiKey,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3}})
+        });
+        if(!r.ok){const errBody=await r.text();console.error('Gemini API error:',r.status,errBody);return{text:localRefine(raw),source:'local',error:'API error: '+r.status};}
+        const d=await r.json();
+        console.log('Gemini response:',JSON.stringify(d).substring(0,500));
+        const txt=d.candidates?.[0]?.content?.parts?.[0]?.text;
+        if(txt)return{text:txt.trim(),source:'gemini'};
+        return{text:localRefine(raw),source:'local',error:'Empty API response'};
+    }catch(e){console.error('Gemini failed:',e);return{text:localRefine(raw),source:'local',error:e.message};}
 }
-function localRefine(t){let r=t.trim();r=r.charAt(0).toUpperCase()+r.slice(1);if(!/[.!?]$/.test(r))r+='.';r=r.replace(/([.!?])\s+([a-z\u00e4\u00f6\u00fc\u00df])/g,(m,p,c)=>p+' '+c.toUpperCase());r=r.replace(/\bi\b(?=\s|'|$)/g,'I');r=r.replace(/\s{2,}/g,' ');return r;}
+function localRefine(t){return cleanupTranscript(t);}
 
 const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
 function showScreen(id){screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='settings-screen')updateSettingsUI();}
@@ -420,7 +449,7 @@ document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(btn=>{btn.add
 document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(btn=>{btn.addEventListener('click',()=>btn.classList.toggle('selected'));});
 document.getElementById('edit-save').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;c.text=document.getElementById('edit-text-input').value;const sm=document.querySelector('#edit-mood-row .edit-mood-btn.selected');c.mood=sm?(parseInt(sm.dataset.mood)||null):null;const st=[];document.querySelectorAll('#edit-tag-row .edit-tag-btn.selected').forEach(b=>st.push(b.dataset.tag));c.tags=st;localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));document.getElementById('edit-modal').classList.remove('visible');openDetail(currentDetailId);});
 
-document.getElementById('detail-refine').addEventListener('click',async()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const ov=document.getElementById('refine-overlay'),bd=document.getElementById('refine-body'),ac=document.getElementById('refine-actions');bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div><div class="refine-loading"><div class="refine-loading-spinner"></div>Refining your text...</div>';ac.style.display='none';ov.classList.add('visible');const refined=await refineText(c.text,c.lang||'en-US');bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div><div class="refine-refined" id="refined-text">'+escapeHtml(refined)+'</div>';ac.style.display='flex';});
+document.getElementById('detail-refine').addEventListener('click',async()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const ov=document.getElementById('refine-overlay'),bd=document.getElementById('refine-body'),ac=document.getElementById('refine-actions');bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div><div class="refine-loading"><div class="refine-loading-spinner"></div>Refining your text...</div>';ac.style.display='none';ov.classList.add('visible');const result=await refineText(c.text,c.lang||'en-US');let statusHtml='';if(typeof result==='object'){if(result.source==='local'&&result.error){statusHtml='<div style="font-size:12px;color:var(--mood-1);margin-bottom:12px;">Gemini unavailable: '+escapeHtml(result.error)+'. Showing local cleanup.</div>';}else if(result.source==='local'){statusHtml='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">No API key. Showing local cleanup.</div>';}else{statusHtml='<div style="font-size:12px;color:var(--accent-moss);margin-bottom:12px;">Refined with Gemini AI</div>';}}const refinedText=typeof result==='object'?result.text:result;bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text">'+escapeHtml(refinedText)+'</div>';ac.style.display='flex';});
 document.getElementById('refine-dismiss').addEventListener('click',()=>document.getElementById('refine-overlay').classList.remove('visible'));
 document.getElementById('refine-reject').addEventListener('click',()=>document.getElementById('refine-overlay').classList.remove('visible'));
 document.getElementById('refine-accept').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const el=document.getElementById('refined-text');if(el){c.text=el.textContent;localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));}document.getElementById('refine-overlay').classList.remove('visible');openDetail(currentDetailId);});
