@@ -522,14 +522,14 @@ if(dateFilterStart||dateFilterEnd){document.getElementById('date-picker-btn').cl
 else{document.getElementById('date-picker-btn').classList.remove('active');currentDateFilter=null;}
 document.getElementById('date-range-overlay').classList.remove('visible');renderCaptures();});
 const mfBtn=document.getElementById('mood-filter-btn'),mfOvl=document.getElementById('mood-filter-overlay');
-mfBtn.addEventListener('click',()=>mfOvl.classList.add('visible');pushNav('mood-filter-overlay'));
+mfBtn.addEventListener('click',()=>{mfOvl.classList.add('visible');pushNav('mood-filter-overlay');});
 document.getElementById('mood-modal-close').addEventListener('click',()=>mfOvl.classList.remove('visible'));
 document.getElementById('mood-modal-close-x').addEventListener('click',()=>mfOvl.classList.remove('visible'));
 document.querySelectorAll('.mood-filter-opt').forEach(btn=>{btn.addEventListener('click',()=>{currentMoodFilter=parseInt(btn.dataset.mood);if(currentMoodFilter>0){mfBtn.innerHTML=MOODS[currentMoodFilter];mfBtn.classList.add('active');}else{mfBtn.innerHTML=SMILEY_SVG;mfBtn.classList.remove('active');}mfOvl.classList.remove('visible');renderCaptures();});});
 
 function openDetail(id){const c=captures.find(x=>x.id===id);if(!c)return;currentDetailId=id;document.getElementById('detail-date').textContent=formatDate(new Date(c.createdAt));document.getElementById('detail-mood').textContent=c.mood?MOODS[c.mood]:'';document.getElementById('detail-text').textContent=c.text;const tc=document.getElementById('detail-tags');tc.innerHTML=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Feel',poem:'Poetry',task:'Task'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';screens.forEach(s=>s.classList.remove('active'));document.getElementById('detail-screen').classList.add('active');pushNav('detail-screen');}
 document.getElementById('detail-back').addEventListener('click',()=>showScreen('thoughts-screen'));
-document.getElementById('detail-delete').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.add('visible');pushNav('confirm-overlay'));
+document.getElementById('detail-delete').addEventListener('click',()=>{document.getElementById('confirm-overlay').classList.add('visible');pushNav('confirm-overlay');});
 document.getElementById('confirm-cancel').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.remove('visible'));
 document.getElementById('confirm-close-x').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.remove('visible'));
 document.getElementById('confirm-action').addEventListener('click',()=>{captures=captures.filter(c=>c.id!==currentDetailId);localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));document.getElementById('confirm-overlay').classList.remove('visible');showScreen('thoughts-screen');});
