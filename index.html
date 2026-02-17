@@ -62,6 +62,15 @@ body{font-family:var(--font-body);background:var(--bg-deep);color:var(--text-pri
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes particleFly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
 
+
+.speak-btn.write-mode{
+    background:radial-gradient(circle at 45% 40%,#d4c4a0 0%,#c4b48a 35%,#a89870 70%,#8a7d58 100%);
+    box-shadow:0 2px 4px rgba(255,255,255,.1) inset,0 -3px 6px rgba(0,0,0,.2) inset,0 8px 24px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3),0 0 30px rgba(196,180,138,.2);
+    transition:all .4s ease}
+.speak-btn.write-mode .speak-btn-label{font-size:14px}
+.long-press-progress{position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent-warm);pointer-events:none;opacity:0;z-index:3}
+.long-press-progress.active{opacity:1;animation:longPressRing 1s linear forwards}
+@keyframes longPressRing{to{transform:rotate(360deg)}}
 /* ---- TAB BAR (glassmorphism) ---- */
 .tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;justify-content:space-around;align-items:center;padding:8px 16px calc(8px + var(--safe-bottom));background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-top:1px solid var(--glass-border);z-index:100}
 .tab-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 16px;border:none;background:none;color:var(--text-muted);font-family:var(--font-body);font-size:10px;font-weight:500;cursor:pointer;transition:color .25s ease}
@@ -243,7 +252,7 @@ body{font-family:var(--font-body);background:var(--bg-deep);color:var(--text-pri
         <div class="speak-subtitle">Speak what’s on your mind</div>
         <div class="speak-btn-container">
             <div class="sand-ripple"></div><div class="sand-ripple"></div><div class="sand-ripple"></div><div class="sand-ripple"></div>
-            <button class="speak-btn" id="speak-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg><span class="speak-btn-label">Speak</span></button>
+            <div class="long-press-progress" id="long-press-ring"></div><button class="speak-btn" id="speak-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg><span class="speak-btn-label">Speak</span></button>
         </div>
         <div class="speak-timer" id="speak-timer">0:00</div>
     </div></div>
@@ -326,6 +335,16 @@ body{font-family:var(--font-body);background:var(--bg-deep);color:var(--text-pri
     <div class="edit-modal" id="edit-modal"><div class="edit-modal-header"><button class="edit-modal-cancel" id="edit-cancel">Cancel</button><div class="edit-modal-title">Edit</div><button class="edit-modal-save" id="edit-save">Save</button></div><div class="edit-modal-body"><textarea class="edit-textarea" id="edit-text-input"></textarea><div class="edit-section-label">Mood</div><div class="edit-mood-row" id="edit-mood-row"><button class="edit-mood-btn" data-mood="1">😢</button><button class="edit-mood-btn" data-mood="2">😕</button><button class="edit-mood-btn" data-mood="3">😐</button><button class="edit-mood-btn" data-mood="4">🙂</button><button class="edit-mood-btn" data-mood="5">😊</button><button class="edit-mood-btn" data-mood="0" style="font-size:12px;color:var(--text-muted);">None</button></div><div class="edit-section-label">Tags</div><div class="edit-tag-row" id="edit-tag-row"><button class="edit-tag-btn" data-tag="emotion">Feel</button><button class="edit-tag-btn" data-tag="poem">Poetry</button><button class="edit-tag-btn" data-tag="task">Task</button></div></div></div>
     <div class="refine-overlay" id="refine-overlay"><div class="refine-header"><button class="refine-dismiss" id="refine-dismiss">Cancel</button><div class="refine-header-title">Refine</div><div style="width:50px;"></div></div><div class="refine-body" id="refine-body"></div><div class="refine-actions" id="refine-actions" style="display:none;"><button class="action-btn secondary" id="refine-reject">Dismiss</button><button class="action-btn warm" id="refine-accept">Accept</button></div></div>
 </div>
+    <div class="modal-overlay" id="write-overlay"><div class="modal-dialog" style="max-width:380px;padding:20px;text-align:left;">
+        <button class="modal-close-x" id="write-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <div class="modal-title" style="margin-bottom:4px;text-align:center;">Write your thought</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;text-align:center;">Type what’s on your mind</div>
+        <textarea id="write-textarea" style="width:100%;min-height:140px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px;color:var(--text-primary);font-family:var(--font-body);font-size:15px;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;" placeholder="Start writing..."></textarea>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;">
+            <button class="action-btn secondary" id="write-cancel" style="padding:10px 0;width:45%;">Cancel</button>
+            <button class="action-btn primary" id="write-save" style="padding:10px 0;width:45%;background:var(--accent-warm);color:var(--bg-deep);">Save</button>
+        </div>
+    </div></div>
     <div class="modal-overlay" id="date-range-overlay"><div class="modal-dialog" style="max-width:340px;padding:20px;">
         <button class="modal-close-x" id="date-range-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <div class="modal-title" style="margin-bottom:16px;">Filter by date</div>
@@ -354,7 +373,7 @@ let settings=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');
 if(!settings.defaultLang)settings.defaultLang='de-DE';
 if(!settings.lastBackup)settings.lastBackup=null;
 if(!settings.geminiApiKey)settings.geminiApiKey='';
-let currentCapture={text:'',mood:null,tags:[]},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='feed',searchQuery='';
+let currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='feed',searchQuery='';
 let isRecording=false,recognition=null,recordingTimer=null,recordingSeconds=0;
 
 function cleanupTranscript(r){if(!r||!r.trim())return r;let t=r.trim();
@@ -419,14 +438,51 @@ function createRecognition(){
 const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
 r.onstart=()=>{isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');recordingSeconds=0;updateTimer();recordingTimer=setInterval(()=>{recordingSeconds++;updateTimer();},1000);};
 r.onresult=e=>{iT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fT+=e.results[i][0].transcript+' ';else iT+=e.results[i][0].transcript;}};
-r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');};
+r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');};
 r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);showPostRecordFlow();}}},100);return;}clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);showPostRecordFlow();}};
 return r;}
 recognition=createRecognition();
-async function startRecording(){fT='';iT='';if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
+async function startRecording(){fT='';iT='';currentCapture.inputType='voice';if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
 try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop());recognition=createRecognition();recognition.lang=currentLang;recognition.start();}
-catch(e){console.warn('Mic permission error:',e);const t=prompt('Could not access microphone.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());showPostRecordFlow();}}}
-speakBtn.addEventListener('click',()=>{if(isRecording){isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(e){}}else{startRecording();}});}
+catch(e){console.warn('Mic permission error:',e);const t=prompt('Could not access microphone.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';showPostRecordFlow();}}}
+
+/* Long-press to write mode */
+let longPressTimer=null,isLongPress=false,isWriteMode=false;
+const lpRing=document.getElementById('long-press-ring');
+function enterWriteMode(){
+    isWriteMode=true;isLongPress=true;
+    if(navigator.vibrate)navigator.vibrate(50);
+    speakBtn.classList.add('write-mode');
+    speakBtn.querySelector('.speak-btn-label').textContent='Write';
+    speakBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+    lpRing.classList.remove('active');
+}
+function exitWriteMode(){
+    isWriteMode=false;
+    speakBtn.classList.remove('write-mode');
+    speakBtn.querySelector('.speak-btn-label').textContent='Speak';
+    speakBtn.querySelector('svg').innerHTML='<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="19" x2="12" y2="23" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="23" x2="16" y2="23" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+}
+function openWriteModal(){
+    document.getElementById('write-textarea').value='';
+    document.getElementById('write-overlay').classList.add('visible');
+    setTimeout(()=>document.getElementById('write-textarea').focus(),100);
+}
+document.getElementById('write-close-x').addEventListener('click',()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
+document.getElementById('write-cancel').addEventListener('click',()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
+document.getElementById('write-save').addEventListener('click',()=>{
+    const t=document.getElementById('write-textarea').value.trim();
+    if(t){currentCapture.text=t;currentCapture.inputType='text';document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();showPostRecordFlow();}
+});
+
+speakBtn.addEventListener('touchstart',e=>{if(isRecording)return;isLongPress=false;lpRing.classList.add('active');longPressTimer=setTimeout(()=>{enterWriteMode();},1000);},{passive:true});
+speakBtn.addEventListener('touchend',e=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');if(isLongPress&&isWriteMode){isLongPress=false;openWriteModal();return;}isLongPress=false;},{passive:true});
+speakBtn.addEventListener('touchmove',()=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');isLongPress=false;},{passive:true});
+/* Desktop mouse long-press */
+speakBtn.addEventListener('mousedown',e=>{if(isRecording||e.button!==0)return;isLongPress=false;lpRing.classList.add('active');longPressTimer=setTimeout(()=>{enterWriteMode();},1000);});
+speakBtn.addEventListener('mouseup',e=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');if(isLongPress&&isWriteMode){isLongPress=false;openWriteModal();return;}isLongPress=false;});
+speakBtn.addEventListener('mouseleave',()=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');isLongPress=false;});
+speakBtn.addEventListener('click',e=>{if(isWriteMode){openWriteModal();exitWriteMode();return;}if(isRecording){isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(e){}}else{startRecording();}});}
 function updateTimer(){const m=Math.floor(recordingSeconds/60),s=recordingSeconds%60;timerEl.textContent=m+':'+String(s).padStart(2,'0');}
 
 function showPostRecordFlow(){currentCapture.mood=null;currentCapture.tags=[];showScreen('post-record-screen');document.getElementById('mood-step').classList.add('active');document.getElementById('tag-step').classList.remove('active');document.querySelectorAll('#mood-step .mood-btn').forEach(b=>b.classList.remove('selected'));document.querySelectorAll('#tag-step .tag-btn').forEach(b=>b.classList.remove('selected'));}
@@ -437,10 +493,10 @@ document.querySelectorAll('#tag-step .tag-btn').forEach(btn=>{btn.addEventListen
 document.getElementById('tag-save').addEventListener('click',()=>{const tags=[];document.querySelectorAll('#tag-step .tag-btn.selected').forEach(b=>tags.push(b.dataset.tag));currentCapture.tags=tags;saveCapture();});
 document.getElementById('tag-skip').addEventListener('click',()=>{currentCapture.tags=[];saveCapture();});
 
-function saveCapture(){captures.unshift({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:currentCapture.text,mood:currentCapture.mood,tags:currentCapture.tags,lang:currentLang,createdAt:new Date().toISOString()});localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));const o=document.getElementById('success-overlay');o.classList.add('visible');createParticles();setTimeout(()=>{o.classList.remove('visible');showScreen('speak-screen');currentCapture={text:'',mood:null,tags:[]};},1600);}
+function saveCapture(){captures.unshift({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:currentCapture.text,mood:currentCapture.mood,tags:currentCapture.tags,lang:currentLang,inputType:currentCapture.inputType||'voice',createdAt:new Date().toISOString()});localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));const o=document.getElementById('success-overlay');o.classList.add('visible');createParticles();setTimeout(()=>{o.classList.remove('visible');showScreen('speak-screen');currentCapture={text:'',mood:null,tags:[],inputType:'voice'};},1600);}
 function createParticles(){const c=['#5b9ec4','#8ab88a','#b8a9cc','#c4956b','#6aaa8a'];for(let i=0;i<12;i++){const p=document.createElement('div');p.className='particle';p.style.background=c[Math.floor(Math.random()*c.length)];p.style.left='50%';p.style.top='50%';const a=(Math.PI*2*i)/12,d=80+Math.random()*60;p.style.setProperty('--tx',Math.cos(a)*d+'px');p.style.setProperty('--ty',Math.sin(a)*d+'px');p.style.animation='particleFly .8s cubic-bezier(.25,.46,.45,.94) forwards';p.style.animationDelay=Math.random()*.2+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),1200);}}
 
-function renderCaptures(){const list=document.getElementById('capture-list');let f=[...captures];if(currentFilter==='untagged')f=f.filter(c=>!c.tags||c.tags.length===0);else if(currentFilter!=='all')f=f.filter(c=>c.tags&&c.tags.includes(currentFilter));if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);if(currentDateFilter==='range'){f=f.filter(c=>{const d=c.createdAt.split('T')[0];if(dateFilterStart&&d<dateFilterStart)return false;if(dateFilterEnd&&d>dateFilterEnd)return false;return true;});}else if(currentDateFilter)f=f.filter(c=>c.createdAt.startsWith(currentDateFilter));if(searchQuery){const q=searchQuery.toLowerCase();f=f.filter(c=>c.text.toLowerCase().includes(q));}list.className='capture-list'+(currentView==='list'?' list-view':'');if(!f.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u{1f4ad}</div><div class="empty-state-text">'+(captures.length===0?'No thoughts yet.<br>Press Speak to begin.':'No matching thoughts found.')+'</div></div>';return;}let h='',lg='';f.forEach(c=>{const d=new Date(c.createdAt),dg=getDateGroup(d);if(currentView==='list'&&dg!==lg){h+='<div class="date-group-label">'+dg+'</div>';lg=dg;}const me=c.mood?MOODS[c.mood]:'',pv=c.text.substring(0,currentView==='list'?80:150);const tg=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Feel',poem:'Poetry',task:'Task'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';h+='<div class="capture-card" data-id="'+c.id+'"><div class="capture-card-header"><div class="capture-card-date">'+formatDate(d)+'</div><div class="capture-card-mood">'+me+'</div></div><div class="capture-card-text">'+escapeHtml(pv)+(c.text.length>pv.length?'...':'')+'</div><div class="capture-card-tags">'+tg+'</div></div>';});list.innerHTML=h;list.querySelectorAll('.capture-card').forEach(card=>card.addEventListener('click',()=>openDetail(card.dataset.id)));}
+function renderCaptures(){const list=document.getElementById('capture-list');let f=[...captures];if(currentFilter==='untagged')f=f.filter(c=>!c.tags||c.tags.length===0);else if(currentFilter!=='all')f=f.filter(c=>c.tags&&c.tags.includes(currentFilter));if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);if(currentDateFilter==='range'){f=f.filter(c=>{const d=c.createdAt.split('T')[0];if(dateFilterStart&&d<dateFilterStart)return false;if(dateFilterEnd&&d>dateFilterEnd)return false;return true;});}else if(currentDateFilter)f=f.filter(c=>c.createdAt.startsWith(currentDateFilter));if(searchQuery){const q=searchQuery.toLowerCase();f=f.filter(c=>c.text.toLowerCase().includes(q));}list.className='capture-list'+(currentView==='list'?' list-view':'');if(!f.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u{1f4ad}</div><div class="empty-state-text">'+(captures.length===0?'No thoughts yet.<br>Press Speak to begin.':'No matching thoughts found.')+'</div></div>';return;}let h='',lg='';f.forEach(c=>{const d=new Date(c.createdAt),dg=getDateGroup(d);if(currentView==='list'&&dg!==lg){h+='<div class="date-group-label">'+dg+'</div>';lg=dg;}const me=c.mood?MOODS[c.mood]:'',pv=c.text.substring(0,currentView==='list'?80:150);const tg=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Feel',poem:'Poetry',task:'Task'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';h+='<div class="capture-card" data-id="'+c.id+'"><div class="capture-card-header"><div class="capture-card-date">'+formatDate(d)+' '+(c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;opacity:.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;opacity:.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>')+'</div><div class="capture-card-mood">'+me+'</div></div><div class="capture-card-text">'+escapeHtml(pv)+(c.text.length>pv.length?'...':'')+'</div><div class="capture-card-tags">'+tg+'</div></div>';});list.innerHTML=h;list.querySelectorAll('.capture-card').forEach(card=>card.addEventListener('click',()=>openDetail(card.dataset.id)));}
 function getDateGroup(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);if(d.toDateString()===t.toDateString())return'Today';if(d.toDateString()===y.toDateString())return'Yesterday';return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function formatDate(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);let s;if(d.toDateString()===t.toDateString())s='Today';else if(d.toDateString()===y.toDateString())s='Yesterday';else s=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});return s+' \u00b7 '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
