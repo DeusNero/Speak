@@ -281,7 +281,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
         <div class="thoughts-header"><div class="thoughts-title">Thoughts</div>
             <div class="view-toggle"><button class="view-toggle-btn active" data-view="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="6" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/></svg></button><button class="view-toggle-btn" data-view="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg></button></div>
         </div>
-        <div class="search-bar"><svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" class="search-input" id="search-input" placeholder="Search your thoughts..."></div>
+        <div class="search-bar"><svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" class="search-input" id="search-input" autocomplete="off" placeholder="Search your thoughts..."></div>
         <div class="filter-bar">
             <button class="filter-chip active" data-filter="all">All</button><button class="filter-chip" data-filter="emotion">Feel</button><button class="filter-chip" data-filter="poem">Poetry</button><button class="filter-chip" data-filter="habit">Habit</button><button class="filter-chip" data-filter="untagged">⌛</button>
             <button class="filter-icon-btn" id="mood-filter-btn" title="Filter by mood"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
@@ -305,12 +305,11 @@ textarea#write-textarea::-webkit-resizer{display:none}
     </div></div>
 
     <!-- HABITS -->
-    <div id="habits-screen" class="screen"><div class="habits-screen" style="padding:20px 16px 100px;">
-        <div class="thoughts-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-            <div class="thoughts-title" style="margin:0;">Habits</div>
-            <button id="add-habit-btn" style="padding:7px 14px;font-size:12px;font-family:var(--font-body);background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);border:none;border-radius:var(--radius-full);cursor:pointer;font-weight:500;">+ Add habit</button>
+    <div id="habits-screen" class="screen"><div class="thoughts-screen">
+        <div class="thoughts-header"><div class="thoughts-title">Habits</div>
+            <button id="add-habit-btn" style="padding:6px 14px;font-size:12px;font-family:var(--font-body);font-weight:500;background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);border:none;border-radius:var(--radius-full);cursor:pointer;white-space:nowrap;">+ Add habit</button>
         </div>
-        <div class="search-bar" style="margin-bottom:16px;"><input type="text" id="habit-search-input" placeholder="Search habits..." style="width:100%;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:14px;outline:none;box-sizing:border-box;"></div>
+        <div class="search-bar"><svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" class="search-input" id="habit-search-input" placeholder="Search habits..." autocomplete="off"></div>
         <div id="habits-list" class="capture-list"></div>
     </div></div>
 
@@ -339,7 +338,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
     <div class="modal-overlay" id="add-habit-overlay"><div class="modal-dialog" style="max-width:380px;padding:24px;">
         <button class="modal-close-x" id="add-habit-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <div class="modal-title" style="margin-bottom:16px;">New habit</div>
-        <input type="text" id="habit-name-input" placeholder="Habit name (e.g. Breathing, Affection)" style="width:100%;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;outline:none;box-sizing:border-box;margin-bottom:16px;">
+        <input type="text" id="habit-name-input" autocomplete="off" placeholder="Habit name (e.g. Breathing, Affection)" style="width:100%;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;outline:none;box-sizing:border-box;margin-bottom:16px;">
         <div style="display:flex;gap:10px;justify-content:center;">
             <button class="action-btn secondary" id="add-habit-cancel" style="min-width:0;flex:1;background:rgba(196,180,138,.15);border-color:rgba(196,180,138,.25);color:#c4b48a;">Cancel</button>
             <button class="action-btn primary" id="add-habit-save" style="min-width:0;flex:1;background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);border:none;">Create</button>
@@ -411,7 +410,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
         <button class="modal-close-x" id="write-close-x" style="top:12px;right:12px;z-index:5;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <div style="text-align:center;margin-bottom:12px;padding-top:4px;"><div class="lang-toggle" id="write-lang-toggle" style="display:inline-flex;position:static;"><button class="lang-btn write-lang-btn" data-lang="de-DE">DE</button><button class="lang-btn write-lang-btn active" data-lang="en-US">EN</button></div></div>
         <div class="modal-title" style="margin-bottom:16px;text-align:center;">What’s on your mind?</div>
-        <div class="write-textarea-wrap"><textarea id="write-textarea" style="width:100%;min-height:140px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px;color:var(--text-primary);font-family:var(--font-body);font-size:15px;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;" placeholder="Start writing..."></textarea></div>
+        <div class="write-textarea-wrap"><textarea id="write-textarea" autocomplete="off" style="width:100%;min-height:140px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px;color:var(--text-primary);font-family:var(--font-body);font-size:15px;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;" placeholder="Start writing..."></textarea></div>
         <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:16px;padding:0 8px;">
             <button class="action-btn secondary" id="write-cancel" style="padding:10px 0;flex:1;min-width:0;background:rgba(196,180,138,.15);border-color:rgba(196,180,138,.25);color:#c4b48a;">Cancel</button>
             <button id="write-refine-btn" style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(196,180,138,.3);background:rgba(196,180,138,.1);color:#c4b48a;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease;flex-shrink:0;" title="Refine with AI"><svg style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
@@ -496,7 +495,7 @@ async function refineText(raw,lang){
 function localRefine(t){return cleanupTranscript(t);}
 
 const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
-function showScreen(id){screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='settings-screen')updateSettingsUI();}
+function showScreen(id){screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen')renderHabits();if(id==='settings-screen')updateSettingsUI();}
 tabItems.forEach(tab=>{tab.addEventListener('click',()=>{if(!tab.classList.contains('disabled'))showScreen(tab.dataset.screen);});});
 
 (function(){const h=new Date().getHours(),el=document.getElementById('greeting-text');if(h<6)el.textContent='Late night reflection';else if(h<12)el.textContent='Morning reflection';else if(h<17)el.textContent='Afternoon reflection';else if(h<21)el.textContent='Reflect and relax';else el.textContent='Calm reflection';})();
@@ -936,7 +935,9 @@ document.getElementById('habit-search-input').addEventListener('input',e=>{
     const q=e.target.value.toLowerCase();
     document.querySelectorAll('#habits-list .habit-card').forEach(card=>{
         const name=card.querySelector('.capture-card-date').textContent.toLowerCase();
-        card.style.display=name.includes(q)?'':'none';
+        const entries=(habits.find(h=>h.id===card.dataset.habitId)||{}).entries||[];
+        const textMatch=entries.some(en=>en.text.toLowerCase().includes(q));
+        card.style.display=(name.includes(q)||textMatch)?'':'none';
     });
 });
 /* Habit Picker (from Speak screen tag flow) */
