@@ -545,6 +545,7 @@ function exitWriteMode(){
 }
 function openWriteModal(){
     document.getElementById('write-textarea').value='';syncWriteLangToggle();
+    document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     document.getElementById('write-overlay').classList.add('visible');pushNav('write-overlay');
     setTimeout(()=>document.getElementById('write-textarea').focus(),100);
 }
@@ -578,29 +579,41 @@ document.getElementById('write-refine-btn').addEventListener('click',async()=>{
     if(!raw)return;
     const btn=document.getElementById('write-refine-btn');
     const origHtml=btn.innerHTML;
+    const preview=document.getElementById('write-refine-preview');
+    const status=document.getElementById('write-refine-status');
+    const actions=document.getElementById('write-refine-actions');
     btn.innerHTML='<div style="width:16px;height:16px;border:2px solid var(--border-subtle);border-top-color:#c4b48a;border-radius:50%;animation:spin .8s linear infinite;"></div>';
     btn.style.pointerEvents='none';
-    /* Remove old status */
-    const oldStatus=document.getElementById('write-refine-status');
-    if(oldStatus)oldStatus.remove();
+    preview.style.display='none';status.style.display='none';actions.style.display='none';
     const result=await refineText(raw,currentLang);
     const refined=typeof result==='object'?result.text:result;
-    ta.value=refined;
-    btn.innerHTML=origHtml;
-    btn.style.pointerEvents='auto';
+    btn.innerHTML=origHtml;btn.style.pointerEvents='auto';
+    /* Show preview */
+    preview.textContent=refined;preview.style.display='block';
     /* Show status */
-    const statusEl=document.createElement('div');
-    statusEl.id='write-refine-status';
-    statusEl.style.cssText='font-size:11px;text-align:center;margin-top:8px;';
+    status.style.display='block';
     if(typeof result==='object'&&result.source==='gemini'){
-        statusEl.style.color='var(--accent-moss)';statusEl.textContent='Refined with Gemini AI';
+        status.style.color='var(--accent-moss)';status.textContent='Refined with Gemini AI';
     }else if(typeof result==='object'&&result.error){
-        statusEl.style.color='var(--mood-1)';statusEl.textContent='Gemini unavailable: '+result.error;
+        status.style.color='var(--mood-1)';status.textContent='Gemini unavailable: '+result.error;
     }else{
-        statusEl.style.color='var(--text-muted)';statusEl.textContent='Local cleanup applied';
+        status.style.color='var(--text-muted)';status.textContent='Local cleanup applied';
     }
-    btn.parentElement.parentElement.appendChild(statusEl);
-    setTimeout(()=>{if(statusEl.parentElement)statusEl.remove();},4000);
+    /* Show accept/dismiss */
+    actions.style.display='flex';
+    window._writeRefineOriginal=raw;
+    window._writeRefined=refined;
+});
+document.getElementById('write-refine-accept').addEventListener('click',()=>{
+    document.getElementById('write-textarea').value=window._writeRefined||'';
+    document.getElementById('write-refine-preview').style.display='none';
+    document.getElementById('write-refine-status').style.display='none';
+    document.getElementById('write-refine-actions').style.display='none';
+});
+document.getElementById('write-refine-dismiss').addEventListener('click',()=>{
+    document.getElementById('write-refine-preview').style.display='none';
+    document.getElementById('write-refine-status').style.display='none';
+    document.getElementById('write-refine-actions').style.display='none';
 });
 
 
@@ -878,6 +891,7 @@ function habitExitWriteMode(){
 }
 function habitOpenWriteModal(){
     document.getElementById('write-textarea').value='';
+    document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
     document.getElementById('write-overlay').classList.add('visible');
     pushNav('write-overlay');
