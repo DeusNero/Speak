@@ -57,6 +57,10 @@
 body{font-family:var(--font-body);background:var(--bg-deep);color:var(--text-primary);min-height:100dvh;overflow-x:hidden;overflow-y:auto;-webkit-font-smoothing:antialiased}
 .app{display:flex;flex-direction:column;min-height:100dvh;max-width:480px;margin:0 auto;position:relative}
 .screen{display:none;flex:1;flex-direction:column;padding-bottom:80px;animation:fadeIn .3s ease}.screen.active{display:flex}
+
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(20px)}}
+@keyframes toastBar{from{width:100%}to{width:0%}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes softAppear{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -91,6 +95,8 @@ textarea#write-textarea::-webkit-resizer{display:none}
 /* Language toggle (glassmorphism) */
 .lang-toggle{position:absolute;top:20px;right:20px;display:flex;background:var(--glass-bg-light);backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);border-radius:var(--radius-full);padding:3px;border:1px solid var(--glass-border);z-index:10}
 .lang-btn{padding:6px 14px;border:none;background:none;color:var(--text-muted);font-family:var(--font-body);font-size:12px;font-weight:500;cursor:pointer;border-radius:var(--radius-full);transition:all .25s ease}
+
+.speak-btn-container.habit-mode .sand-ripple{border-color:rgba(90,140,85,.3) !important;}
 .mode-toggle-btn{background:none;color:var(--text-muted);}
 .mode-toggle-btn.active{background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);}
 .lang-btn.active{background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep)}
@@ -505,6 +511,19 @@ async function refineText(raw,lang){
 function localRefine(t){return cleanupTranscript(t);}
 
 const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
+
+function showToast(text){
+    const existing=document.querySelector('.toast-msg');if(existing)existing.remove();
+    const toast=document.createElement('div');
+    toast.className='toast-msg';
+    toast.style.cssText='position:fixed;bottom:90px;left:16px;right:16px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px 16px;z-index:200;font-size:13px;color:var(--text-secondary);line-height:1.4;box-shadow:0 4px 16px rgba(0,0,0,.3);overflow:hidden;animation:toastIn .3s ease;';
+    toast.textContent=text;
+    const bar=document.createElement('div');
+    bar.style.cssText='position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#c4b48a,#a89870);width:100%;animation:toastBar 3s linear forwards;border-radius:0 0 var(--radius-md) var(--radius-md);';
+    toast.appendChild(bar);
+    document.body.appendChild(toast);
+    setTimeout(()=>{toast.style.animation='toastOut .3s ease forwards';setTimeout(()=>toast.remove(),300);},3000);
+}
 function showScreen(id){screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen')renderHabits();if(id==='settings-screen')updateSettingsUI();}
 tabItems.forEach(tab=>{tab.addEventListener('click',()=>{if(!tab.classList.contains('disabled'))showScreen(tab.dataset.screen);});});
 
@@ -528,12 +547,10 @@ r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if
 r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
-const msg=document.createElement('div');msg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:20px 28px;text-align:center;z-index:200;font-size:14px;color:var(--text-secondary);max-width:280px;line-height:1.5;box-shadow:0 8px 32px rgba(0,0,0,.4);';
-msg.textContent="Couldn\u2019t hear anything. Please try again or speak a bit louder.";document.body.appendChild(msg);setTimeout(()=>msg.remove(),3000);}}},100);return;}clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
+showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
-const msg=document.createElement('div');msg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:20px 28px;text-align:center;z-index:200;font-size:14px;color:var(--text-secondary);max-width:280px;line-height:1.5;box-shadow:0 8px 32px rgba(0,0,0,.4);';
-msg.textContent="Couldn\u2019t hear anything. Please try again or speak a bit louder.";document.body.appendChild(msg);setTimeout(()=>msg.remove(),3000);}};
+showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
 return r;}
 recognition=createRecognition();
 async function startRecording(){fT='';iT='';currentCapture.inputType='voice';if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
@@ -940,10 +957,10 @@ if(SR){
         r.onresult=e=>{habitIT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)habitFT+=e.results[i][0].transcript+' ';else habitIT+=e.results[i][0].transcript;}};
         r.onerror=e=>{if(e.error==='no-speech'){if(habitIsRecording){setTimeout(()=>{try{habitRecognition.start();}catch(ex){}},100);}return;}
         if(e.error==='not-allowed'||e.error==='service-not-allowed'){habitIsRecording=false;habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Speak';habitOpenWriteModal();return;}};
-        r.onend=()=>{if(habitIsRecording){setTimeout(()=>{try{habitRecognition.start();}catch(ex){habitIsRecording=false;habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Speak';const t=(habitFT+habitIT).trim();habitFT='';habitIT='';if(t){habitSaveVoiceEntry(t);}else{const msg=document.createElement('div');msg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:20px 28px;text-align:center;z-index:200;font-size:14px;color:var(--text-secondary);max-width:280px;line-height:1.5;box-shadow:0 8px 32px rgba(0,0,0,.4);';msg.textContent="Couldn\u2019t hear anything. Please try again or speak a bit louder.";document.body.appendChild(msg);setTimeout(()=>msg.remove(),3000);}}},100);return;}
+        r.onend=()=>{if(habitIsRecording){setTimeout(()=>{try{habitRecognition.start();}catch(ex){habitIsRecording=false;habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Speak';const t=(habitFT+habitIT).trim();habitFT='';habitIT='';if(t){habitSaveVoiceEntry(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
         habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Speak';
         const t=(habitFT+habitIT).trim();habitFT='';habitIT='';
-        if(t){habitSaveVoiceEntry(t);}else{const msg=document.createElement('div');msg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:20px 28px;text-align:center;z-index:200;font-size:14px;color:var(--text-secondary);max-width:280px;line-height:1.5;box-shadow:0 8px 32px rgba(0,0,0,.4);';msg.textContent="Couldn\u2019t hear anything. Please try again or speak a bit louder.";document.body.appendChild(msg);setTimeout(()=>msg.remove(),3000);}};
+        if(t){habitSaveVoiceEntry(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
         return r;
     }
     async function habitStartRecording(){habitFT='';habitIT='';
@@ -1009,7 +1026,9 @@ document.querySelectorAll('.mode-toggle-btn').forEach(btn=>{
 });
 
 function updateSpeakButtonForMode(){
-    const btn=document.querySelector('.speak-btn-container .speak-btn');
+    const container=document.querySelector('.speak-btn-container');
+    container.classList.toggle('habit-mode',currentMode==='habit');
+    const btn=container.querySelector('.speak-btn');
     const label=btn.querySelector('.speak-btn-label');
     if(currentMode==='habit'){
         btn.style.background='radial-gradient(circle at 45% 40%,#7da87a 0%,#5e8a5a 35%,#4a7248 70%,#3a5e38 100%)';
@@ -1023,7 +1042,7 @@ function updateSpeakButtonForMode(){
 }
 
 /* Double-tap to toggle mode */
-let lastTapTime=0;
+let lastTapTime=0,doubleTapCooldown=false;
 const speakBtnMain=document.querySelector('.speak-btn-container .speak-btn');
 speakBtnMain.addEventListener('touchstart',e=>{
     const now=Date.now();
@@ -1035,6 +1054,8 @@ speakBtnMain.addEventListener('touchstart',e=>{
         updateSpeakButtonForMode();
         try{if(navigator.vibrate)navigator.vibrate([30,50,30]);}catch(ex){}
         lastTapTime=0;
+        doubleTapCooldown=true;
+        setTimeout(()=>{doubleTapCooldown=false;},600);
         return;
     }
     lastTapTime=now;
