@@ -672,7 +672,7 @@ speakBtn.addEventListener('touchstart',e=>{
         try{if(navigator.vibrate)navigator.vibrate([30,50,30]);}catch(ex){}
         lastTapTime=0;
         doubleTapCooldown=true;
-        setTimeout(()=>{doubleTapCooldown=false;},600);
+        setTimeout(()=>{doubleTapCooldown=false;},180000);
         return;
     }
     lastTapTime=now;
