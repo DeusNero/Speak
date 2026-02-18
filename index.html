@@ -350,9 +350,9 @@ textarea#write-textarea::-webkit-resizer{display:none}
         <div id="habit-entries-list" class="capture-list"></div>
         <div style="position:fixed;bottom:90px;right:20px;z-index:50;display:flex;align-items:center;justify-content:center;">
             <div class="sand-ripple" style="position:absolute;inset:-10px;border-radius:50%;border:1.5px solid rgba(196,180,138,.25);animation:breatheRing 4s ease-in-out infinite;"></div>
-            <div class="sand-ripple" style="position:absolute;inset:-22px;border-radius:50%;border:1.5px solid rgba(196,180,138,.25);animation:breatheRing 4s ease-in-out infinite .6s;"></div>
-            <div class="sand-ripple" style="position:absolute;inset:-35px;border-radius:50%;border:1.5px solid rgba(196,180,138,.2);animation:breatheRing 4s ease-in-out infinite 1.2s;opacity:.7;"></div>
-            <div class="long-press-progress" id="habit-lp-ring" style="position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent-warm);pointer-events:none;opacity:0;z-index:3;"></div>
+            <div class="sand-ripple" style="position:absolute;inset:-22px;border-radius:50%;border:1.5px solid rgba(90,138,90,.3);animation:breatheRing 4s ease-in-out infinite .6s;"></div>
+            <div class="sand-ripple" style="position:absolute;inset:-35px;border-radius:50%;border:1.5px solid rgba(90,138,90,.2);animation:breatheRing 4s ease-in-out infinite 1.2s;opacity:.7;"></div>
+            <div class="long-press-progress" id="habit-lp-ring" style="position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:#5e8a5a;pointer-events:none;opacity:0;z-index:3;"></div>
             <button class="speak-btn" id="habit-speak-btn" style="width:66px;height:66px;position:relative;z-index:2;box-shadow:0 4px 16px rgba(0,0,0,.4);font-size:11px;">
                 <svg viewBox="0 0 24 24" style="width:26px;height:26px"><path d="M12 21l-1.5-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 5.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.5 11.2L12 21" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="21" stroke="currentColor" stroke-width="1.5"/><path d="M4 9c1.5-.5 3 .5 3.5 1.5s0 2.5-1 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5.5 7c1-.5 2.5 0 3 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 13c-1 .5-1.5 2-.5 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <span class="speak-btn-label" style="font-size:10px;">Speak</span>
@@ -427,7 +427,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
 
     <!-- OVERLAYS -->
     <div class="success-overlay" id="success-overlay"><div class="success-content"><div class="success-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 12 10 16 18 8"/></svg></div><div class="success-text">Saved</div></div></div>
-    <div class="modal-overlay" id="confirm-overlay"><div class="modal-dialog"><button class="modal-close-x" id="confirm-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="modal-title">Delete this thought?</div><div class="modal-text">This action cannot be undone.</div><div class="modal-btns"><button class="action-btn secondary" id="confirm-cancel">Cancel</button><button class="action-btn danger" id="confirm-action">Delete</button></div></div></div>
+    <div class="modal-overlay" id="confirm-overlay"><div class="modal-dialog" style="max-width:320px;padding:24px;"><button class="modal-close-x" id="confirm-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="modal-title">Delete this thought?</div><div class="modal-text">This action cannot be undone.</div><div class="modal-btns" style="display:flex;gap:10px;"><button class="action-btn secondary" id="confirm-cancel" style="min-width:0;flex:1;">Cancel</button><button class="action-btn danger" id="confirm-action" style="min-width:0;flex:1;">Delete</button></div></div></div>
     <div class="modal-overlay" id="mood-filter-overlay"><div class="modal-dialog"><button class="modal-close-x" id="mood-modal-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="modal-title">Filter by mood</div><div style="display:flex;gap:10px;justify-content:center;margin:20px 0 16px;flex-wrap:wrap;"><button class="mood-btn mood-filter-opt" data-mood="0" style="font-size:12px;color:var(--text-muted);width:48px;height:48px;">All</button><button class="mood-btn mood-filter-opt" data-mood="1">😢</button><button class="mood-btn mood-filter-opt" data-mood="2">😕</button><button class="mood-btn mood-filter-opt" data-mood="3">😐</button><button class="mood-btn mood-filter-opt" data-mood="4">🙂</button><button class="mood-btn mood-filter-opt" data-mood="5">😊</button></div><button class="action-btn secondary" id="mood-modal-close" style="width:100%;background:rgba(196,180,138,.15);border-color:rgba(196,180,138,.25);color:#c4b48a;">Close</button></div></div>
     <div class="edit-modal" id="edit-modal"><div class="edit-modal-header"><button class="edit-modal-cancel" id="edit-cancel">Cancel</button><div class="edit-modal-title">Edit</div><button class="edit-modal-save" id="edit-save">Save</button></div><div class="edit-modal-body"><textarea class="edit-textarea" id="edit-text-input"></textarea></div><div class="edit-section-label">Mood</div><div class="edit-mood-row" id="edit-mood-row"><button class="edit-mood-btn" data-mood="1">😢</button><button class="edit-mood-btn" data-mood="2">😕</button><button class="edit-mood-btn" data-mood="3">😐</button><button class="edit-mood-btn" data-mood="4">🙂</button><button class="edit-mood-btn" data-mood="5">😊</button><button class="edit-mood-btn" data-mood="0" style="font-size:12px;color:var(--text-muted);">None</button></div><div class="edit-section-label">Tags</div><div class="edit-tag-row" id="edit-tag-row"><button class="edit-tag-btn" data-tag="emotion">Feel</button><button class="edit-tag-btn" data-tag="poem">Poetry</button><button class="edit-tag-btn" data-tag="habit">Habit</button></div></div></div>
     <div class="refine-overlay" id="refine-overlay"><div class="refine-header"><button class="refine-dismiss" id="refine-dismiss">Cancel</button><div class="refine-header-title">Refine</div><div style="width:50px;"></div></div><div class="refine-body" id="refine-body"></div><div class="refine-actions" id="refine-actions" style="display:none;"><button class="action-btn secondary" id="refine-reject">Dismiss</button><button class="action-btn warm" id="refine-accept">Accept</button></div></div>
@@ -760,7 +760,34 @@ if(currentCapture.habitId){
 }localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));const o=document.getElementById('success-overlay');o.classList.add('visible');createParticles();setTimeout(()=>{o.classList.remove('visible');showScreen('speak-screen');currentCapture={text:'',mood:null,tags:[],inputType:'voice'};},1600);}
 function createParticles(){const c=['#5b9ec4','#8ab88a','#b8a9cc','#c4956b','#6aaa8a'];for(let i=0;i<12;i++){const p=document.createElement('div');p.className='particle';p.style.background=c[Math.floor(Math.random()*c.length)];p.style.left='50%';p.style.top='50%';const a=(Math.PI*2*i)/12,d=80+Math.random()*60;p.style.setProperty('--tx',Math.cos(a)*d+'px');p.style.setProperty('--ty',Math.sin(a)*d+'px');p.style.animation='particleFly .8s cubic-bezier(.25,.46,.45,.94) forwards';p.style.animationDelay=Math.random()*.2+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),1200);}}
 
-function renderCaptures(){const list=document.getElementById('capture-list');let f=[...captures];if(currentFilter==='untagged')f=f.filter(c=>!c.tags||c.tags.length===0);else if(currentFilter!=='all')f=f.filter(c=>c.tags&&c.tags.includes(currentFilter));if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);if(currentDateFilter==='range'){f=f.filter(c=>{const d=c.createdAt.split('T')[0];if(dateFilterStart&&d<dateFilterStart)return false;if(dateFilterEnd&&d>dateFilterEnd)return false;return true;});}else if(currentDateFilter)f=f.filter(c=>c.createdAt.startsWith(currentDateFilter));if(searchQuery){const q=searchQuery.toLowerCase();f=f.filter(c=>c.text.toLowerCase().includes(q));}list.className='capture-list'+(currentView==='list'?' list-view':'');if(!f.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u{1f4ad}</div><div class="empty-state-text">'+(captures.length===0?'No thoughts yet.<br>Press Speak to begin.':'No matching thoughts found.')+'</div></div>';return;}let h='',lg='';f.forEach(c=>{const d=new Date(c.createdAt),dg=getDateGroup(d);if(currentView==='list'&&dg!==lg){h+='<div class="date-group-label">'+dg+'</div>';lg=dg;}const me=c.mood?MOODS[c.mood]:'',pv=c.text.substring(0,currentView==='list'?80:150);const tg=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Feel',poem:'Poetry',habit:'Habit'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';h+='<div class="capture-card" data-id="'+c.id+'"><div class="capture-card-header"><div class="capture-card-date">'+formatDate(d)+' '+(c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>')+'</div><div class="capture-card-mood">'+me+'</div></div><div class="capture-card-text">'+escapeHtml(pv)+(c.text.length>pv.length?'...':'')+'</div><div class="capture-card-tags">'+tg+'</div></div>';});list.innerHTML=h;list.querySelectorAll('.capture-card').forEach(card=>card.addEventListener('click',()=>openDetail(card.dataset.id)));}
+function renderCaptures(){const list=document.getElementById('capture-list');let f=[...captures];if(currentFilter==='untagged')f=f.filter(c=>!c.tags||c.tags.length===0);else if(currentFilter!=='all')f=f.filter(c=>c.tags&&c.tags.includes(currentFilter));if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);const dr=document.getElementById('date-range-start').value;const dre=document.getElementById('date-range-end').value;if(dr){const ds=new Date(dr);ds.setHours(0,0,0,0);f=f.filter(c=>new Date(c.createdAt)>=ds);}if(dre){const de=new Date(dre);de.setHours(23,59,59,999);f=f.filter(c=>new Date(c.createdAt)<=de);}f.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));if(!f.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u2728</div><div class="empty-state-text">No thoughts yet.<br>Tap the circle below to begin.</div></div>';return;}
+let h='';f.forEach(c=>{const d=new Date(c.createdAt);const moods={1:'\ud83d\ude14',2:'\ud83d\ude15',3:'\ud83d\ude10',4:'\ud83d\ude0a',5:'\ud83d\ude04'};const me=c.mood?moods[c.mood]||'':'';const pv=c.text.substring(0,120);let tg='';if(c.tags&&c.tags.length)tg=c.tags.map(t=>'<span class="capture-tag">'+t+'</span>').join('');
+const inputIcon=c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>';
+h+='<div class="capture-card" data-id="'+c.id+'">';
+h+='<div class="capture-card-header"><div class="capture-card-date">'+formatDate(d)+' '+inputIcon+'</div>';
+h+='<div style="display:flex;gap:6px;align-items:center;">';
+h+='<button class="card-edit-btn" data-id="'+c.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Edit"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>';
+h+='<button class="card-delete-btn" data-id="'+c.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Delete"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
+h+='</div></div>';
+h+='<div class="capture-card-text">'+escapeHtml(pv)+(c.text.length>pv.length?'...':'')+'</div>';
+h+='<div class="capture-card-footer" style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">';
+h+='<div class="capture-card-tags">'+tg+'</div>';
+if(me)h+='<div class="capture-card-mood" style="font-size:18px;">'+me+'</div>';
+h+='</div></div>';
+});list.innerHTML=h;
+list.querySelectorAll('.capture-card').forEach(card=>{
+    card.addEventListener('click',e=>{
+        if(e.target.closest('.card-edit-btn')||e.target.closest('.card-delete-btn'))return;
+        openDetail(card.dataset.id);
+    });
+});
+list.querySelectorAll('.card-edit-btn').forEach(btn=>{
+    btn.addEventListener('click',e=>{e.stopPropagation();openEditFromCard(btn.dataset.id);});
+});
+list.querySelectorAll('.card-delete-btn').forEach(btn=>{
+    btn.addEventListener('click',e=>{e.stopPropagation();openDeleteFromCard(btn.dataset.id);});
+});
+}
 function getDateGroup(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);if(d.toDateString()===t.toDateString())return'Today';if(d.toDateString()===y.toDateString())return'Yesterday';return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function formatDate(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);let s;if(d.toDateString()===t.toDateString())s='Today';else if(d.toDateString()===y.toDateString())s='Yesterday';else s=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});return s+' \u00b7 '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
@@ -788,6 +815,19 @@ document.getElementById('mood-modal-close').addEventListener('click',()=>mfOvl.c
 document.getElementById('mood-modal-close-x').addEventListener('click',()=>mfOvl.classList.remove('visible'));
 document.querySelectorAll('.mood-filter-opt').forEach(btn=>{btn.addEventListener('click',()=>{currentMoodFilter=parseInt(btn.dataset.mood);if(currentMoodFilter>0){mfBtn.innerHTML=MOODS[currentMoodFilter];mfBtn.classList.add('active');}else{mfBtn.innerHTML=SMILEY_SVG;mfBtn.classList.remove('active');}mfOvl.classList.remove('visible');renderCaptures();});});
 
+
+function openEditFromCard(id){
+    currentDetailId=id;
+    const c=captures.find(x=>x.id===id);if(!c)return;
+    document.getElementById('edit-text-input').value=c.text;
+    document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>{b.classList.toggle('selected',c.mood&&parseInt(b.dataset.mood)===c.mood);});
+    document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(b=>{b.classList.toggle('selected',c.tags&&c.tags.includes(b.dataset.tag));});
+    document.getElementById('edit-modal').classList.add('visible');pushNav('edit-modal');
+}
+function openDeleteFromCard(id){
+    currentDetailId=id;
+    document.getElementById('confirm-overlay').classList.add('visible');pushNav('confirm-overlay');
+}
 function openDetail(id){const c=captures.find(x=>x.id===id);if(!c)return;currentDetailId=id;document.getElementById('detail-date').innerHTML=formatDate(new Date(c.createdAt))+' '+(c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>');document.getElementById('detail-mood').textContent=c.mood?MOODS[c.mood]:'';document.getElementById('detail-text').textContent=c.text;const tc=document.getElementById('detail-tags');tc.innerHTML=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Feel',poem:'Poetry',habit:'Habit'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';screens.forEach(s=>s.classList.remove('active'));document.getElementById('detail-screen').classList.add('active');pushNav('detail-screen');}
 document.getElementById('detail-back').addEventListener('click',()=>showScreen('thoughts-screen'));
 document.getElementById('detail-delete').addEventListener('click',()=>{document.getElementById('confirm-overlay').classList.add('visible');pushNav('confirm-overlay');});
@@ -878,22 +918,22 @@ function renderHabits(){
         list.innerHTML='<div class="empty-state"><div class="empty-state-icon" style="font-size:40px;"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/><path d="M12 22c-2 0-3-1-3-3"/><path d="M12 22c2 0 3-1 3-3"/></svg></div><div class="empty-state-text">No habits yet.<br>Tap + Add habit to start tracking.</div></div>';
         return;
     }
-    /* Sort: favourites first, then by name */
     const sorted=[...habits].sort((a,b)=>{if(a.favourite&&!b.favourite)return -1;if(!a.favourite&&b.favourite)return 1;return 0;});
     let h='';
     sorted.forEach(hab=>{
         const msgs=getStreakMsg(hab);
         const entryCount=hab.entries?hab.entries.length:0;
         const lastEntry=entryCount>0?formatDate(new Date(hab.entries[hab.entries.length-1].createdAt)):'No entries yet';
-        let statusIcon='';
         const starColor=hab.favourite?'#5e8a5a':'var(--text-muted)';
         const starFill=hab.favourite?'#5e8a5a':'none';
         const starOpacity=hab.favourite?'1':'0.4';
         h+='<div class="capture-card habit-card" data-habit-id="'+hab.id+'">';
-        h+='<div class="capture-card-header"><div class="capture-card-date" style="font-size:15px;font-weight:600;color:var(--text-primary);">'+escapeHtml(hab.name)+statusIcon+'</div>';
+        h+='<div class="capture-card-header"><div class="capture-card-date" style="font-size:15px;font-weight:600;color:var(--text-primary);">'+escapeHtml(hab.name)+'</div>';
         h+='<div style="display:flex;gap:6px;align-items:center;">';
+        h+='<button class="habit-edit-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Edit"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>';
+        h+='<button class="habit-delete-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Delete"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
         h+='<button class="habit-fav-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;cursor:pointer;padding:4px;opacity:'+starOpacity+';" title="Favourite"><svg viewBox="0 0 24 24" width="18" height="18" fill="'+starFill+'" stroke="'+starColor+'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>';
-        h+='<button class="habit-delete-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;" title="Delete habit"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div></div>';
+        h+='</div></div>';
         if(msgs.streak)h+='<div style="font-size:12px;color:var(--accent-moss);margin-top:4px;">'+msgs.streak+'</div>';
         if(msgs.inactivity)h+='<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">'+msgs.inactivity+'</div>';
         h+='<div class="capture-card-text" style="font-size:12px;color:var(--text-muted);margin-top:6px;">'+entryCount+' entries \u00b7 '+lastEntry+'</div>';
@@ -902,8 +942,17 @@ function renderHabits(){
     list.innerHTML=h;
     list.querySelectorAll('.habit-card').forEach(card=>{
         card.addEventListener('click',e=>{
-            if(e.target.closest('.habit-delete-btn')||e.target.closest('.habit-fav-btn'))return;
+            if(e.target.closest('.habit-delete-btn')||e.target.closest('.habit-fav-btn')||e.target.closest('.habit-edit-btn'))return;
             openHabitDetail(card.dataset.habitId);
+        });
+    });
+    list.querySelectorAll('.habit-edit-btn').forEach(btn=>{
+        btn.addEventListener('click',e=>{
+            e.stopPropagation();
+            const hab=habits.find(h=>h.id===btn.dataset.habitId);
+            if(!hab)return;
+            const newName=prompt('Rename habit:',hab.name);
+            if(newName&&newName.trim()){hab.name=newName.trim();saveHabits();renderHabits();}
         });
     });
     list.querySelectorAll('.habit-delete-btn').forEach(btn=>{
@@ -923,6 +972,7 @@ function renderHabits(){
     });
 }
 
+
 function openHabitDetail(id){
     const hab=habits.find(h=>h.id===id);
     if(!hab)return;
@@ -935,23 +985,36 @@ function openHabitDetail(id){
     inEl.style.color=msgs.inactivity.includes('week')?'var(--mood-1)':'var(--mood-2)';
     
     const list=document.getElementById('habit-entries-list');
-    const entries=(hab.entries||[]).slice().reverse();
+    /* Sort: starred first, then newest */
+    const entries=(hab.entries||[]).slice().sort((a,b)=>{
+        if(a.starred&&!b.starred)return -1;if(!a.starred&&b.starred)return 1;
+        return new Date(b.createdAt)-new Date(a.createdAt);
+    });
     if(!entries.length){
         list.innerHTML='<div class="empty-state"><div class="empty-state-text">No entries yet. Use the button below to log.</div></div>';
     }else{
         let h='';
         entries.forEach(e=>{
             const d=new Date(e.createdAt);
-            const inputIcon=e.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>';
+            const inputIcon=e.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#5e8a5a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#5e8a5a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>';
+            const starColor=e.starred?'#5e8a5a':'var(--text-muted)';
+            const starFill=e.starred?'#5e8a5a':'none';
+            const starOpacity=e.starred?'1':'0.4';
             h+='<div class="capture-card habit-entry-card" data-entry-id="'+e.id+'">';
-            h+='<div class="capture-card-header"><div class="capture-card-date">'+formatDate(d)+inputIcon+'</div></div>';
+            h+='<div class="capture-card-header"><div class="capture-card-date">'+formatDate(d)+inputIcon+'</div>';
+            h+='<div style="display:flex;gap:6px;align-items:center;">';
+            h+='<button class="entry-edit-btn" data-entry-id="'+e.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Edit"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>';
+            h+='<button class="entry-delete-btn" data-entry-id="'+e.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Delete"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
+            h+='<button class="entry-star-btn" data-entry-id="'+e.id+'" style="background:none;border:none;cursor:pointer;padding:4px;opacity:'+starOpacity+';" title="Star"><svg viewBox="0 0 24 24" width="18" height="18" fill="'+starFill+'" stroke="'+starColor+'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>';
+            h+='</div></div>';
             h+='<div class="capture-card-text">'+escapeHtml(e.text.substring(0,150))+(e.text.length>150?'...':'')+'</div>';
             h+='</div>';
         });
         list.innerHTML=h;
         list.querySelectorAll('.habit-entry-card').forEach(card=>{
-            card.addEventListener('click',()=>{
-                const entry=entries.find(e=>e.id===card.dataset.entryId);
+            card.addEventListener('click',e=>{
+                if(e.target.closest('.entry-edit-btn')||e.target.closest('.entry-delete-btn')||e.target.closest('.entry-star-btn'))return;
+                const entry=entries.find(x=>x.id===card.dataset.entryId);
                 if(!entry)return;
                 currentHabitEntryId=entry.id;
                 document.getElementById('habit-entry-date').textContent=formatDate(new Date(entry.createdAt));
@@ -960,11 +1023,37 @@ function openHabitDetail(id){
                 pushNav('habit-entry-overlay');
             });
         });
+        list.querySelectorAll('.entry-edit-btn').forEach(btn=>{
+            btn.addEventListener('click',e=>{
+                e.stopPropagation();
+                const entry=(hab.entries||[]).find(x=>x.id===btn.dataset.entryId);
+                if(!entry)return;
+                const newText=prompt('Edit entry:',entry.text);
+                if(newText!==null&&newText.trim()){entry.text=newText.trim();saveHabits();openHabitDetail(id);}
+            });
+        });
+        list.querySelectorAll('.entry-delete-btn').forEach(btn=>{
+            btn.addEventListener('click',e=>{
+                e.stopPropagation();
+                if(confirm('Delete this entry?')){
+                    hab.entries=hab.entries.filter(x=>x.id!==btn.dataset.entryId);
+                    saveHabits();openHabitDetail(id);
+                }
+            });
+        });
+        list.querySelectorAll('.entry-star-btn').forEach(btn=>{
+            btn.addEventListener('click',e=>{
+                e.stopPropagation();
+                const entry=(hab.entries||[]).find(x=>x.id===btn.dataset.entryId);
+                if(entry){entry.starred=!entry.starred;saveHabits();openHabitDetail(id);}
+            });
+        });
     }
     screens.forEach(s=>s.classList.remove('active'));
     document.getElementById('habit-detail-screen').classList.add('active');
     pushNav('habit-detail-screen');
 }
+
 
 /* Add Habit */
 document.getElementById('add-habit-btn').addEventListener('click',()=>{
@@ -1019,8 +1108,8 @@ function habitEnterWriteMode(){
 function habitExitWriteMode(){
     habitIsWriteMode=false;
     habitBtn.classList.remove('write-mode');
-    habitBtn.querySelector('.speak-btn-label').textContent='Speak';
-    habitBtn.querySelector('svg').innerHTML='<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+    habitBtn.querySelector('.speak-btn-label').textContent='Habit';
+    habitBtn.querySelector('svg').innerHTML='<path d="M12 22V12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22c-2 0-3-1-3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 22c2 0 3-1 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
 }
 function habitOpenWriteModal(){
     document.getElementById('write-textarea').value='';
@@ -1052,9 +1141,9 @@ if(SR){
         r.onstart=()=>{habitIsRecording=true;habitBtn.classList.add('recording');habitBtn.querySelector('.speak-btn-label').textContent='Stop';};
         r.onresult=e=>{habitIT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)habitFT+=e.results[i][0].transcript+' ';else habitIT+=e.results[i][0].transcript;}};
         r.onerror=e=>{if(e.error==='no-speech'){if(habitIsRecording){setTimeout(()=>{try{habitRecognition.start();}catch(ex){}},100);}return;}
-        if(e.error==='not-allowed'||e.error==='service-not-allowed'){habitIsRecording=false;habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Speak';habitOpenWriteModal();return;}};
-        r.onend=()=>{if(habitIsRecording){setTimeout(()=>{try{habitRecognition.start();}catch(ex){habitIsRecording=false;habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Speak';const t=(habitFT+habitIT).trim();habitFT='';habitIT='';if(t){habitSaveVoiceEntry(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
-        habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Speak';
+        if(e.error==='not-allowed'||e.error==='service-not-allowed'){habitIsRecording=false;habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Habit';habitOpenWriteModal();return;}};
+        r.onend=()=>{if(habitIsRecording){setTimeout(()=>{try{habitRecognition.start();}catch(ex){habitIsRecording=false;habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Habit';const t=(habitFT+habitIT).trim();habitFT='';habitIT='';if(t){habitSaveVoiceEntry(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
+        habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Habit';
         const t=(habitFT+habitIT).trim();habitFT='';habitIT='';
         if(t){habitSaveVoiceEntry(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
         return r;
@@ -1066,11 +1155,12 @@ if(SR){
 
 /* Long press + tap handlers */
 habitBtn.addEventListener('touchstart',e=>{if(habitIsRecording)return;habitIsLongPress=false;habitLpRing.classList.add('active');habitLongPressTimer=setTimeout(()=>{habitEnterWriteMode();},800);},{passive:true});
-habitBtn.addEventListener('touchend',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;habitOpenWriteModal();habitExitWriteMode();return;}habitIsLongPress=false;},{passive:true});
+habitBtn.addEventListener('touchend',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');window._habitTouchHandled=true;if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;habitOpenWriteModal();habitExitWriteMode();return;}habitIsLongPress=false;if(habitIsWriteMode){habitOpenWriteModal();habitExitWriteMode();return;}if(habitIsRecording){habitIsRecording=false;try{habitRecognition.stop();}catch(ex){}}else if(SR){habitStartRecording();}else{habitOpenWriteModal();}},{passive:true});
 habitBtn.addEventListener('touchmove',()=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');habitIsLongPress=false;},{passive:true});
 habitBtn.addEventListener('mousedown',e=>{if(habitIsRecording||e.button!==0)return;habitIsLongPress=false;habitLpRing.classList.add('active');habitLongPressTimer=setTimeout(()=>{habitEnterWriteMode();},800);});
 habitBtn.addEventListener('mouseup',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;habitOpenWriteModal();habitExitWriteMode();return;}habitIsLongPress=false;});
 habitBtn.addEventListener('click',e=>{
+    if(window._habitTouchHandled){window._habitTouchHandled=false;return;}
     if(habitIsWriteMode){habitOpenWriteModal();habitExitWriteMode();return;}
     if(habitIsRecording){habitIsRecording=false;try{habitRecognition.stop();}catch(ex){}return;}
     if(SR){habitStartRecording();}else{habitOpenWriteModal();}
