@@ -362,7 +362,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
     <div class="modal-overlay" id="add-habit-overlay"><div class="modal-dialog" style="max-width:380px;padding:24px;">
         <button class="modal-close-x" id="add-habit-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <div class="modal-title" style="margin-bottom:16px;">New habit</div>
-        <input type="text" id="habit-name-input" autocomplete="off" placeholder="Habit name (e.g. Breathing, Affection)" style="width:100%;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;outline:none;box-sizing:border-box;margin-bottom:16px;">
+        <input type="text" id="habit-name-input" autocomplete="off" placeholder="Habit (e.g. Breathwork, Stretching)" style="width:100%;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;outline:none;box-sizing:border-box;margin-bottom:16px;">
         <div style="display:flex;gap:10px;justify-content:center;">
             <button class="action-btn secondary" id="add-habit-cancel" style="min-width:0;flex:1;background:rgba(90,140,85,.15);border-color:rgba(90,140,85,.25);color:#7da87a;">Cancel</button>
             <button class="action-btn primary" id="add-habit-save" style="min-width:0;flex:1;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);color:var(--bg-deep);border:none;">Create</button>
@@ -557,11 +557,11 @@ function createRecognition(){
 const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
 r.onstart=()=>{isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');if(!recordingTimer){recordingSeconds=0;updateTimer();recordingTimer=setInterval(()=>{recordingSeconds++;updateTimer();},1000);}};
 r.onresult=e=>{iT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fT+=e.results[i][0].transcript+' ';else iT+=e.results[i][0].transcript;}};
-r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');};
-r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
+r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');};
+r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
-showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
+showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
 showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
@@ -585,10 +585,11 @@ function enterWriteMode(){
 function exitWriteMode(){
     isWriteMode=false;
     speakBtn.classList.remove('write-mode');
-    speakBtn.querySelector('.speak-btn-label').textContent='Speak';
-    speakBtn.querySelector('svg').innerHTML='<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="19" x2="12" y2="23" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="23" x2="16" y2="23" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+    updateSpeakButtonForMode();
 }
 function openWriteModal(){
+    const writeTitle=document.querySelector('#write-overlay .modal-title');
+    if(writeTitle)writeTitle.textContent=(currentMode==='habit'||window._habitDirectSave)?'What did you do today?':'What\u2019s on your mind?';
     document.getElementById('write-textarea').value='';syncWriteLangToggle();
     const wo=document.getElementById('write-overlay');wo.classList.toggle('habit-write-mode',currentMode==='habit');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
@@ -1019,6 +1020,8 @@ function habitExitWriteMode(){
 }
 function habitOpenWriteModal(){
     document.getElementById('write-textarea').value='';
+    const writeTitle=document.querySelector('#write-overlay .modal-title');
+    if(writeTitle)writeTitle.textContent='What did you do today?';
     document.getElementById('write-overlay').classList.add('habit-write-mode');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
@@ -1079,6 +1082,7 @@ document.getElementById('habit-search-input').addEventListener('input',e=>{
         card.style.display=(name.includes(q)||textMatch)?'':'none';
     });
 });
+_bindPickerAddNew();
 /* Habit Picker (from Speak screen tag flow) */
 document.getElementById('habit-picker-close-x').addEventListener('click',()=>{
     document.getElementById('habit-picker-overlay').classList.remove('visible');
@@ -1094,10 +1098,8 @@ function showHabitPicker(){
     const list=document.getElementById('habit-picker-list');
     const empty=document.getElementById('habit-picker-empty');
     if(!habits.length){
-        list.innerHTML='<button id="habit-picker-add-new" style="padding:12px 16px;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);border:none;border-radius:var(--radius-md);color:var(--bg-deep);font-family:var(--font-body);font-size:14px;cursor:pointer;text-align:center;font-weight:500;width:100%;">+ Add new habit</button>';
-        empty.style.display='none';
-        _bindPickerAddNew();
-        return;
+        list.innerHTML='';
+        empty.style.display='block';
     }
     empty.style.display='none';
     /* Sort: favourites first */
@@ -1106,7 +1108,7 @@ function showHabitPicker(){
         const star=h.favourite?'<svg viewBox="0 0 24 24" width="14" height="14" fill="#5e8a5a" stroke="#5e8a5a" stroke-width="2" style="margin-right:8px;flex-shrink:0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>':'';
         return '<button class="habit-picker-item" data-habit-id="'+h.id+'" style="padding:12px 16px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;cursor:pointer;text-align:left;transition:background .15s;display:flex;align-items:center;">'+star+escapeHtml(h.name)+'</button>';
     }).join('');
-    items+='<button id="habit-picker-add-new" style="padding:12px 16px;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);border:none;border-radius:var(--radius-md);color:var(--bg-deep);font-family:var(--font-body);font-size:14px;cursor:pointer;text-align:center;font-weight:500;width:100%;">+ Add new habit</button>';
+    
     list.innerHTML=items;
     list.querySelectorAll('.habit-picker-item').forEach(item=>{
         item.addEventListener('click',()=>{
@@ -1129,10 +1131,744 @@ function showHabitPicker(){
             saveCapture();
         });
     });
-    _bindPickerAddNew();
 }
 function _bindPickerAddNew(){
-    const btn=document.getElementById('habit-picker-add-new');
+    const btn=document.getElementById('habit-picker-add-fixed');
+    if(!btn)return;
+    btn.addEventListener('click',()=>{
+        document.getElementById('habit-picker-overlay').classList.remove('visible');
+        document.getElementById('habit-name-input').value='';
+        document.getElementById('add-habit-overlay').classList.add('visible');
+        pushNav('add-habit-overlay');
+        window._pickerAddHabit=true;
+        setTimeout(()=>document.getElementById('habit-name-input').focus(),100);
+    });
+}
+
+/* Render habits on screen switch */
+const origShowScreen=showScreen;
+
+
+/* Mode toggle: Thought vs Habit */
+let currentMode='thought',lastTapTime=0,doubleTapCooldown=false;
+document.querySelectorAll('.mode-toggle-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+        currentMode=btn.dataset.mode;
+        document.querySelectorAll('.mode-toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===currentMode));
+        updateSpeakButtonForMode();
+    });
+});
+
+function updateSpeakButtonForMode(){
+    const container=document.querySelector('.speak-btn-container');
+    container.classList.toggle('habit-mode',currentMode==='habit');
+    const btn=container.querySelector('.speak-btn');
+    const label=btn.querySelector('.speak-btn-label');
+    if(currentMode==='habit'){
+        btn.style.background='radial-gradient(circle at 45% 40%,#7da87a 0%,#5e8a5a 35%,#4a7248 70%,#3a5e38 100%)';
+        btn.querySelector('svg').innerHTML='<path d="M12 22V12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22c-2 0-3-1-3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 22c2 0 3-1 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+        label.textContent='Habit';
+    }else{
+        btn.style.background='radial-gradient(circle at 45% 40%,#c8b890 0%,#b0a070 35%,#98885a 70%,#847448 100%)';
+        btn.querySelector('svg').innerHTML='<path d="M12 21l-1.5-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 5.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.5 11.2L12 21" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="21" stroke="currentColor" stroke-width="1.5"/><path d="M4 9c1.5-.5 3 .5 3.5 1.5s0 2.5-1 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5.5 7c1-.5 2.5 0 3 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 13c-1 .5-1.5 2-.5 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+        label.textContent='Speak';
+    }
+}
+
+/* Double-tap to toggle mode */
+/* moved to top */
+const speakBtnMain=document.querySelector('.speak-btn-container .speak-btn');
+/* double-tap merged into main touchstart */
+
+/* Android back button / browser history navigation */
+window.addEventListener('popstate',e=>{
+    if(navHistory.length>0){
+        navHistory.pop();
+        const overlays=['write-overlay','date-range-overlay','confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','habit-entry-overlay','delete-habit-overlay'];
+        for(const oid of overlays){const oel=document.getElementById(oid);if(oel&&(oel.classList.contains('visible'))){oel.classList.remove('visible');return;}}
+        const habitDetailScreen=document.getElementById('habit-detail-screen');
+        if(habitDetailScreen&&habitDetailScreen.classList.contains('active')){showScreen('habits-screen');return;}
+        const detailScreen=document.getElementById('detail-screen');
+        if(detailScreen&&detailScreen.classList.contains('active')){showScreen('thoughts-screen');return;}
+        const postScreen=document.getElementById('post-record-screen');
+        if(postScreen&&postScreen.classList.contains('active')){showScreen('speak-screen');return;}
+        const active=document.querySelector('.screen.active');
+        if(active&&active.id!=='speak-screen'){showScreen('speak-screen');return;}
+        history.back();
+    }
+});
+</script>
+</body>
+</html
+<script>
+
+let navHistory=[];
+function pushNav(screenId){navHistory.push(screenId);history.pushState({screen:screenId},'');}
+const MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
+const STORAGE_KEY='speak_captures',SETTINGS_KEY='speak_settings',HABITS_KEY='speak_habits';
+const SMILEY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>';
+let captures=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+let habits=JSON.parse(localStorage.getItem(HABITS_KEY)||'[]');
+let settings=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');
+if(!settings.defaultLang)settings.defaultLang='de-DE';
+if(!settings.lastBackup)settings.lastBackup=null;
+if(!settings.geminiApiKey)settings.geminiApiKey='';
+let currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='feed',searchQuery='';
+let isRecording=false,recognition=null,recordingTimer=null,recordingSeconds=0;
+
+function cleanupTranscript(r){if(!r||!r.trim())return r;let t=r.trim();
+/* Capitalize first letter */
+t=t.charAt(0).toUpperCase()+t.slice(1);
+/* Fix standalone i */
+t=t.replace(/\bi\b(?=\s|'|$)/g,'I');
+/* Add commas before common conjunctions if missing */
+t=t.replace(/\s+(but|and|so|because|although|however|yet|or)\s+/gi,(m,w)=>{if(m.charAt(0)===',')return m;return', '+w.toLowerCase()+' ';});
+/* Detect question patterns and add question marks */
+t=t.replace(/((?:^|[.!?]\s+)(?:what|who|where|when|why|how|is|are|was|were|do|does|did|can|could|would|should|will|have|has|don't|doesn't|isn't|aren't|won't|wouldn't|couldn't|shouldn't|haven't|hasn't|wer|wie|wo|wann|warum|wieso|weshalb|ist|sind|hat|hatte|kann|kannst|soll|sollte|willst|hast|bist)[^.!?]*)/gi,(m)=>{return m.trimEnd();});
+t=t.replace(/((?:what|who|where|when|why|how|is|are|was|were|do|does|did|can|could|would|should|will|have|has|don't|doesn't|isn't|aren't|won't|wouldn't|wer|wie|wo|wann|warum|wieso|weshalb|ist|sind|hat|kann|soll|willst|hast|bist)[^.!?]{3,}?)(\s+(?:[A-Z])|$)/gi,(m,q,after)=>{if(/[.!?]$/.test(q.trim()))return m;return q.trim()+'?'+after;});
+/* Split long run-on sentences at natural break points */
+t=t.replace(/(.{80,}?)\s+(and|but|so|also|then|because|und|aber|also|dann|weil)\s+/g,(m,before,conj)=>{if(/[.!?,]$/.test(before.trim()))return m;return before.trim()+'. '+conj.charAt(0).toUpperCase()+conj.slice(1)+' ';});
+/* Capitalize after sentence-ending punctuation */
+t=t.replace(/([.!?])\s+([a-z\u00e4\u00f6\u00fc\u00df])/g,(m,p,c)=>p+' '+c.toUpperCase());
+/* Add period at end if missing */
+if(!/[.!?]$/.test(t))t+='.';
+/* Clean up double spaces */
+t=t.replace(/\s{2,}/g,' ');
+/* Clean up double punctuation */
+t=t.replace(/([.!?]){2,}/g,'$1');
+return t;}
+
+async function refineText(raw,lang){
+    if(!settings.geminiApiKey){console.warn('No API key');return{text:localRefine(raw),source:'local'};}
+    try{
+        const ln=lang&&lang.startsWith('de')?'German':'English';
+        const prompt='You are a text editor. The following is a raw voice transcription in '+ln+'. Please:\n1. Add proper punctuation (periods, commas, question marks, exclamation marks)\n2. Fix capitalization\n3. Fix obvious speech recognition errors\n4. Improve sentence structure where needed\n5. Keep the original meaning, tone and personal voice\n\nRespond with ONLY the corrected text, nothing else.\n\nOriginal transcript:\n'+raw;
+        const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+settings.geminiApiKey,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3}})
+        });
+        if(!r.ok){const errBody=await r.text();console.error('Gemini API error:',r.status,errBody);return{text:localRefine(raw),source:'local',error:'API error: '+r.status};}
+        const d=await r.json();
+        console.log('Gemini response:',JSON.stringify(d).substring(0,500));
+        const txt=d.candidates?.[0]?.content?.parts?.[0]?.text;
+        if(txt)return{text:txt.trim(),source:'gemini'};
+        return{text:localRefine(raw),source:'local',error:'Empty API response'};
+    }catch(e){console.error('Gemini failed:',e);return{text:localRefine(raw),source:'local',error:e.message};}
+}
+function localRefine(t){return cleanupTranscript(t);}
+
+const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
+
+function showToast(text){
+    const existing=document.querySelector('.toast-msg');if(existing)existing.remove();
+    const toast=document.createElement('div');
+    toast.className='toast-msg';
+    toast.style.cssText='position:fixed;bottom:90px;left:16px;right:16px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px 16px;z-index:200;font-size:13px;color:var(--text-secondary);line-height:1.4;box-shadow:0 4px 16px rgba(0,0,0,.3);overflow:hidden;animation:toastIn .3s ease;';
+    toast.textContent=text;
+    const bar=document.createElement('div');
+    bar.style.cssText='position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#c4b48a,#a89870);width:100%;animation:toastBar 3s linear forwards;border-radius:0 0 var(--radius-md) var(--radius-md);';
+    toast.appendChild(bar);
+    document.body.appendChild(toast);
+    setTimeout(()=>{toast.style.animation='toastOut .3s ease forwards';setTimeout(()=>toast.remove(),300);},3000);
+}
+function showScreen(id){screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen')renderHabits();if(id==='settings-screen')updateSettingsUI();}
+tabItems.forEach(tab=>{tab.addEventListener('click',()=>{if(!tab.classList.contains('disabled'))showScreen(tab.dataset.screen);});});
+
+(function(){const h=new Date().getHours(),el=document.getElementById('greeting-text');if(h<6)el.textContent='Late night reflection';else if(h<12)el.textContent='Morning reflection';else if(h<17)el.textContent='Afternoon reflection';else if(h<21)el.textContent='Reflect and relax';else el.textContent='Calm reflection';})();
+
+const langBtns=document.querySelectorAll('.speak-screen .lang-btn');let currentLang=settings.defaultLang;
+langBtns.forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));
+langBtns.forEach(btn=>{btn.addEventListener('click',()=>{langBtns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentLang=btn.dataset.lang;if(isRecording&&recognition){recognition.lang=currentLang;recognition.stop();setTimeout(()=>recognition.start(),200);}});});
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const speakBtn=document.getElementById('speak-btn'),timerEl=document.getElementById('speak-timer');
+if(!SR){speakBtn.addEventListener('click',()=>{const t=prompt('Speech recognition not available.\nType your thought:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());showPostRecordFlow();}});}
+else{
+const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+let fT='',iT='',restartTimeout=null;
+function createRecognition(){
+const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
+r.onstart=()=>{isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');if(!recordingTimer){recordingSeconds=0;updateTimer();recordingTimer=setInterval(()=>{recordingSeconds++;updateTimer();},1000);}};
+r.onresult=e=>{iT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fT+=e.results[i][0].transcript+' ';else iT+=e.results[i][0].transcript;}};
+r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');};
+r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
+if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
+else{showPostRecordFlow();}}else{
+showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
+if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
+else{showPostRecordFlow();}}else{
+showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
+return r;}
+recognition=createRecognition();
+async function startRecording(){fT='';iT='';currentCapture.inputType='voice';if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
+try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop());recognition=createRecognition();recognition.lang=currentLang;recognition.start();}
+catch(e){console.warn('Mic permission error:',e);const t=prompt('Could not access microphone.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';showPostRecordFlow();}}}
+
+/* Long-press to write mode */
+let longPressTimer=null,isLongPress=false,isWriteMode=false;
+const lpRing=document.getElementById('long-press-ring');
+function enterWriteMode(){
+    isWriteMode=true;isLongPress=true;
+    try{if(navigator.vibrate)navigator.vibrate([50]);}catch(e){}
+    speakBtn.classList.add('write-mode');
+    speakBtn.querySelector('.speak-btn-label').textContent='Write';
+    speakBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+    lpRing.classList.remove('active');
+}
+function exitWriteMode(){
+    isWriteMode=false;
+    speakBtn.classList.remove('write-mode');
+    speakBtn.querySelector('.speak-btn-label').textContent='Speak';
+    speakBtn.querySelector('svg').innerHTML='<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="19" x2="12" y2="23" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="23" x2="16" y2="23" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+}
+function openWriteModal(){
+    const writeTitle=document.querySelector('#write-overlay .modal-title');
+    if(writeTitle)writeTitle.textContent=(currentMode==='habit'||window._habitDirectSave)?'What did you do today?':'What\u2019s on your mind?';
+    document.getElementById('write-textarea').value='';syncWriteLangToggle();
+    const wo=document.getElementById('write-overlay');wo.classList.toggle('habit-write-mode',currentMode==='habit');
+    document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
+    document.getElementById('write-overlay').classList.add('visible');pushNav('write-overlay');
+    setTimeout(()=>document.getElementById('write-textarea').focus(),100);
+}
+
+/* Write modal lang toggle */
+function syncWriteLangToggle(){document.querySelectorAll('.write-lang-btn').forEach(b=>{b.classList.toggle('active',b.dataset.lang===currentLang);});}
+document.querySelectorAll('.write-lang-btn').forEach(btn=>{btn.addEventListener('click',()=>{currentLang=btn.dataset.lang;document.querySelectorAll('.write-lang-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');/* Also sync main lang toggle */document.querySelectorAll('.lang-btn:not(.write-lang-btn)').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));document.querySelectorAll('.settings-lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));localStorage.setItem('speak_lang',currentLang);});});
+document.getElementById('write-close-x').addEventListener('click',()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
+document.getElementById('write-cancel').addEventListener('click',()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
+document.getElementById('write-save').addEventListener('click',()=>{
+    const t=document.getElementById('write-textarea').value.trim();
+    const refined=window._writeRefined;
+const previewVisible=document.getElementById('write-refine-preview').style.display!=='none';
+if(previewVisible&&refined)t=refined;
+/* Clear refine state */
+window._writeRefined=null;window._writeRefineOriginal=null;
+document.getElementById('write-refine-preview').style.display='none';
+document.getElementById('write-refine-status').style.display='none';
+document.getElementById('write-refine-actions').style.display='none';
+if(t){
+if(window._habitDirectSave){
+    window._habitDirectSave=false;
+    const hab=habits.find(h=>h.id===currentHabitId);
+    if(hab){
+        hab.entries.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:t,inputType:'text',lang:currentLang,createdAt:new Date().toISOString()});
+        saveHabits();
+    }
+    document.getElementById('write-overlay').classList.remove('visible');
+    if(typeof exitWriteMode==='function')exitWriteMode();
+    openHabitDetail(currentHabitId);
+}else{
+    currentCapture.text=t;currentCapture.inputType='text';currentCapture.lang=currentLang;
+    document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();
+    if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
+    else{showPostRecordFlow();}
+}}
+});
+document.getElementById('write-refine-btn').addEventListener('click',async()=>{
+    const ta=document.getElementById('write-textarea');
+    const raw=ta.value.trim();
+    if(!raw)return;
+    const btn=document.getElementById('write-refine-btn');
+    const origHtml=btn.innerHTML;
+    const preview=document.getElementById('write-refine-preview');
+    const status=document.getElementById('write-refine-status');
+    const actions=document.getElementById('write-refine-actions');
+    btn.innerHTML='<div style="width:16px;height:16px;border:2px solid var(--border-subtle);border-top-color:#c4b48a;border-radius:50%;animation:spin .8s linear infinite;"></div>';
+    btn.style.pointerEvents='none';
+    preview.style.display='none';status.style.display='none';actions.style.display='none';
+    const result=await refineText(raw,currentLang);
+    const refined=typeof result==='object'?result.text:result;
+    btn.innerHTML=origHtml;btn.style.pointerEvents='auto';
+    /* Show preview */
+    preview.textContent=refined;preview.style.display='block';
+    /* Show status */
+    status.style.display='block';
+    if(typeof result==='object'&&result.source==='gemini'){
+        status.style.color='var(--accent-moss)';status.textContent='Refined with Gemini AI';
+    }else if(typeof result==='object'&&result.error){
+        status.style.color='var(--mood-1)';status.textContent='Gemini unavailable: '+result.error;
+    }else{
+        status.style.color='var(--text-muted)';status.textContent='Local cleanup applied';
+    }
+    /* Show accept/dismiss */
+    actions.style.display='flex';
+    window._writeRefineOriginal=raw;
+    window._writeRefined=refined;
+});
+document.getElementById('write-refine-accept').addEventListener('click',()=>{
+    document.getElementById('write-textarea').value=window._writeRefined||'';
+    document.getElementById('write-refine-preview').style.display='none';
+    document.getElementById('write-refine-status').style.display='none';
+    document.getElementById('write-refine-actions').style.display='none';
+});
+document.getElementById('write-refine-dismiss').addEventListener('click',()=>{
+    document.getElementById('write-refine-preview').style.display='none';
+    document.getElementById('write-refine-status').style.display='none';
+    document.getElementById('write-refine-actions').style.display='none';
+});
+
+
+speakBtn.addEventListener('touchstart',e=>{
+    const now=Date.now();
+    
+    /* Double-tap: if second tap within 300ms */
+    if(now-lastTapTime<300&&now-lastTapTime>50){
+        /* Cancel any pending single-tap action */
+        clearTimeout(window._singleTapTimer);
+        window._singleTapTimer=null;
+        clearTimeout(longPressTimer);
+        currentMode=currentMode==='thought'?'habit':'thought';
+        document.querySelectorAll('.mode-toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===currentMode));
+        updateSpeakButtonForMode();
+        try{if(navigator.vibrate)navigator.vibrate([30,50,30]);}catch(ex){}
+        lastTapTime=0;
+        doubleTapCooldown=true;
+        setTimeout(()=>{doubleTapCooldown=false;},500);
+        return;
+    }
+    lastTapTime=now;
+    /* Long-press detection */
+    if(isRecording)return;
+    isLongPress=false;
+    lpRing.classList.add('active');
+    longPressTimer=setTimeout(()=>{enterWriteMode();},800);
+},{passive:true});
+speakBtn.addEventListener('touchend',e=>{
+    clearTimeout(longPressTimer);lpRing.classList.remove('active');
+    window._touchHandled=true;
+    if(isLongPress&&isWriteMode){isLongPress=false;try{navigator.vibrate([30]);}catch(ex){}openWriteModal();exitWriteMode();return;}
+    isLongPress=false;
+    if(isWriteMode){openWriteModal();exitWriteMode();return;}
+    if(doubleTapCooldown)return;
+    /* Delay action to allow double-tap detection */
+    if(isRecording){
+        /* Stop immediately - no need to wait */
+        isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(ex){}
+    }else{
+        /* Delay start by 300ms to see if double-tap comes */
+        
+        window._singleTapTimer=setTimeout(()=>{
+            window._singleTapTimer=null;
+            if(!doubleTapCooldown&&!isRecording){startRecording();}
+        },300);
+    }
+},{passive:true});
+speakBtn.addEventListener('touchmove',()=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');isLongPress=false;},{passive:true});
+/* Desktop mouse long-press */
+speakBtn.addEventListener('mousedown',e=>{if(isRecording||doubleTapCooldown||e.button!==0)return;isLongPress=false;lpRing.classList.add('active');longPressTimer=setTimeout(()=>{enterWriteMode();},800);});
+speakBtn.addEventListener('mouseup',e=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');if(isLongPress&&isWriteMode){isLongPress=false;openWriteModal();return;}isLongPress=false;});
+speakBtn.addEventListener('mouseleave',()=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');isLongPress=false;});
+speakBtn.addEventListener('click',e=>{
+    if(doubleTapCooldown||window._touchHandled){window._touchHandled=false;return;}
+    if(isWriteMode){openWriteModal();exitWriteMode();return;}
+    if(isRecording){isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(ex){}}
+    else{startRecording();}
+});}
+function updateTimer(){const m=Math.floor(recordingSeconds/60),s=recordingSeconds%60;timerEl.textContent=m+':'+String(s).padStart(2,'0');}
+
+function showPostRecordFlow(){currentCapture.mood=null;currentCapture.tags=[];showScreen('post-record-screen');document.getElementById('mood-step').classList.add('active');document.getElementById('tag-step').classList.remove('active');document.querySelectorAll('#mood-step .mood-btn').forEach(b=>b.classList.remove('selected'));document.querySelectorAll('#tag-step .tag-btn').forEach(b=>b.classList.remove('selected'));}
+document.querySelectorAll('#mood-step .mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#mood-step .mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');currentCapture.mood=parseInt(btn.dataset.mood);});});
+document.getElementById('mood-next').addEventListener('click',()=>{document.getElementById('mood-step').classList.remove('active');document.getElementById('tag-step').classList.add('active');});
+document.getElementById('mood-skip').addEventListener('click',()=>{currentCapture.mood=null;document.getElementById('mood-step').classList.remove('active');document.getElementById('tag-step').classList.add('active');});
+document.querySelectorAll('#tag-step .tag-btn').forEach(btn=>{btn.addEventListener('click',()=>btn.classList.toggle('selected'));});
+document.getElementById('tag-save').addEventListener('click',()=>{const tags=[];document.querySelectorAll('#tag-step .tag-btn.selected').forEach(b=>tags.push(b.dataset.tag));currentCapture.tags=tags;
+if(tags.includes('habit')&&habits.length>0){showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
+else{saveCapture();}});
+document.getElementById('tag-skip').addEventListener('click',()=>{currentCapture.tags=[];saveCapture();});
+
+function saveCapture(){
+const entry={id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:currentCapture.text,mood:currentCapture.mood,tags:currentCapture.tags,lang:currentCapture.lang||currentLang,inputType:currentCapture.inputType||'voice',createdAt:new Date().toISOString()};
+if(currentCapture.habitId){
+    const hab=habits.find(h=>h.id===currentCapture.habitId);
+    if(hab){hab.entries.push(entry);saveHabits();}
+    currentCapture.habitId=null;
+}else if(currentCapture.tags&&currentCapture.tags.includes('habit')){
+    /* Tagged as habit but no specific habit selected yet - save to thoughts for now */
+    captures.unshift(entry);
+}else{
+    captures.unshift(entry);
+}localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));const o=document.getElementById('success-overlay');o.classList.add('visible');createParticles();setTimeout(()=>{o.classList.remove('visible');showScreen('speak-screen');currentCapture={text:'',mood:null,tags:[],inputType:'voice'};},1600);}
+function createParticles(){const c=['#5b9ec4','#8ab88a','#b8a9cc','#c4956b','#6aaa8a'];for(let i=0;i<12;i++){const p=document.createElement('div');p.className='particle';p.style.background=c[Math.floor(Math.random()*c.length)];p.style.left='50%';p.style.top='50%';const a=(Math.PI*2*i)/12,d=80+Math.random()*60;p.style.setProperty('--tx',Math.cos(a)*d+'px');p.style.setProperty('--ty',Math.sin(a)*d+'px');p.style.animation='particleFly .8s cubic-bezier(.25,.46,.45,.94) forwards';p.style.animationDelay=Math.random()*.2+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),1200);}}
+
+function renderCaptures(){const list=document.getElementById('capture-list');let f=[...captures];if(currentFilter==='untagged')f=f.filter(c=>!c.tags||c.tags.length===0);else if(currentFilter!=='all')f=f.filter(c=>c.tags&&c.tags.includes(currentFilter));if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);if(currentDateFilter==='range'){f=f.filter(c=>{const d=c.createdAt.split('T')[0];if(dateFilterStart&&d<dateFilterStart)return false;if(dateFilterEnd&&d>dateFilterEnd)return false;return true;});}else if(currentDateFilter)f=f.filter(c=>c.createdAt.startsWith(currentDateFilter));if(searchQuery){const q=searchQuery.toLowerCase();f=f.filter(c=>c.text.toLowerCase().includes(q));}list.className='capture-list'+(currentView==='list'?' list-view':'');if(!f.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u{1f4ad}</div><div class="empty-state-text">'+(captures.length===0?'No thoughts yet.<br>Press Speak to begin.':'No matching thoughts found.')+'</div></div>';return;}let h='',lg='';f.forEach(c=>{const d=new Date(c.createdAt),dg=getDateGroup(d);if(currentView==='list'&&dg!==lg){h+='<div class="date-group-label">'+dg+'</div>';lg=dg;}const me=c.mood?MOODS[c.mood]:'',pv=c.text.substring(0,currentView==='list'?80:150);const tg=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Feel',poem:'Poetry',habit:'Habit'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';h+='<div class="capture-card" data-id="'+c.id+'"><div class="capture-card-header"><div class="capture-card-date">'+formatDate(d)+' '+(c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>')+'</div><div class="capture-card-mood">'+me+'</div></div><div class="capture-card-text">'+escapeHtml(pv)+(c.text.length>pv.length?'...':'')+'</div><div class="capture-card-tags">'+tg+'</div></div>';});list.innerHTML=h;list.querySelectorAll('.capture-card').forEach(card=>card.addEventListener('click',()=>openDetail(card.dataset.id)));}
+function getDateGroup(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);if(d.toDateString()===t.toDateString())return'Today';if(d.toDateString()===y.toDateString())return'Yesterday';return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function formatDate(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);let s;if(d.toDateString()===t.toDateString())s='Today';else if(d.toDateString()===y.toDateString())s='Yesterday';else s=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});return s+' \u00b7 '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
+function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+document.querySelectorAll('.filter-chip').forEach(chip=>{chip.addEventListener('click',()=>{document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));chip.classList.add('active');currentFilter=chip.dataset.filter;renderCaptures();});});
+document.querySelectorAll('.view-toggle-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.view-toggle-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentView=btn.dataset.view;renderCaptures();});});
+document.getElementById('search-input').addEventListener('input',e=>{searchQuery=e.target.value;renderCaptures();});
+let dateFilterStart=null,dateFilterEnd=null;
+document.getElementById('date-picker-btn').addEventListener('click',()=>{
+const ov=document.getElementById('date-range-overlay');
+document.getElementById('date-range-start').value=dateFilterStart||'';
+document.getElementById('date-range-end').value=dateFilterEnd||'';
+ov.classList.add('visible');pushNav('date-range-overlay');});
+document.getElementById('date-range-close-x').addEventListener('click',()=>document.getElementById('date-range-overlay').classList.remove('visible'));
+document.getElementById('date-range-clear').addEventListener('click',()=>{dateFilterStart=null;dateFilterEnd=null;currentDateFilter=null;document.getElementById('date-picker-btn').classList.remove('active');document.getElementById('date-range-overlay').classList.remove('visible');renderCaptures();});
+document.getElementById('date-range-select').addEventListener('click',()=>{
+dateFilterStart=document.getElementById('date-range-start').value||null;
+dateFilterEnd=document.getElementById('date-range-end').value||null;
+if(dateFilterStart||dateFilterEnd){document.getElementById('date-picker-btn').classList.add('active');currentDateFilter='range';}
+else{document.getElementById('date-picker-btn').classList.remove('active');currentDateFilter=null;}
+document.getElementById('date-range-overlay').classList.remove('visible');renderCaptures();});
+const mfBtn=document.getElementById('mood-filter-btn'),mfOvl=document.getElementById('mood-filter-overlay');
+mfBtn.addEventListener('click',()=>{mfOvl.classList.add('visible');pushNav('mood-filter-overlay');});
+document.getElementById('mood-modal-close').addEventListener('click',()=>mfOvl.classList.remove('visible'));
+document.getElementById('mood-modal-close-x').addEventListener('click',()=>mfOvl.classList.remove('visible'));
+document.querySelectorAll('.mood-filter-opt').forEach(btn=>{btn.addEventListener('click',()=>{currentMoodFilter=parseInt(btn.dataset.mood);if(currentMoodFilter>0){mfBtn.innerHTML=MOODS[currentMoodFilter];mfBtn.classList.add('active');}else{mfBtn.innerHTML=SMILEY_SVG;mfBtn.classList.remove('active');}mfOvl.classList.remove('visible');renderCaptures();});});
+
+function openDetail(id){const c=captures.find(x=>x.id===id);if(!c)return;currentDetailId=id;document.getElementById('detail-date').innerHTML=formatDate(new Date(c.createdAt))+' '+(c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>');document.getElementById('detail-mood').textContent=c.mood?MOODS[c.mood]:'';document.getElementById('detail-text').textContent=c.text;const tc=document.getElementById('detail-tags');tc.innerHTML=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Feel',poem:'Poetry',habit:'Habit'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';screens.forEach(s=>s.classList.remove('active'));document.getElementById('detail-screen').classList.add('active');pushNav('detail-screen');}
+document.getElementById('detail-back').addEventListener('click',()=>showScreen('thoughts-screen'));
+document.getElementById('detail-delete').addEventListener('click',()=>{document.getElementById('confirm-overlay').classList.add('visible');pushNav('confirm-overlay');});
+document.getElementById('confirm-cancel').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.remove('visible'));
+document.getElementById('confirm-close-x').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.remove('visible'));
+document.getElementById('confirm-action').addEventListener('click',()=>{captures=captures.filter(c=>c.id!==currentDetailId);localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));document.getElementById('confirm-overlay').classList.remove('visible');showScreen('thoughts-screen');});
+document.getElementById('detail-edit').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;document.getElementById('edit-text-input').value=c.text;document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===(c.mood||0)));document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(b=>b.classList.toggle('selected',c.tags&&c.tags.includes(b.dataset.tag)));document.getElementById('edit-modal').classList.add('visible');pushNav('edit-modal');});
+document.getElementById('edit-cancel').addEventListener('click',()=>document.getElementById('edit-modal').classList.remove('visible'));
+document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');});});
+document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(btn=>{btn.addEventListener('click',()=>btn.classList.toggle('selected'));});
+document.getElementById('edit-save').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;c.text=document.getElementById('edit-text-input').value;const sm=document.querySelector('#edit-mood-row .edit-mood-btn.selected');c.mood=sm?(parseInt(sm.dataset.mood)||null):null;const st=[];document.querySelectorAll('#edit-tag-row .edit-tag-btn.selected').forEach(b=>st.push(b.dataset.tag));c.tags=st;
+/* If habit tag added, move to habit */
+if(st.includes('habit')&&!(c._wasHabit)){
+    document.getElementById('edit-modal').classList.remove('visible');
+    /* Store the capture to move */
+    window._moveToHabitCapture=c;
+    showHabitPicker();
+    document.getElementById('habit-picker-overlay').classList.add('visible');
+    pushNav('habit-picker-overlay');
+    return;
+}
+localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));document.getElementById('edit-modal').classList.remove('visible');openDetail(currentDetailId);});
+
+document.getElementById('detail-refine').addEventListener('click',async()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const ov=document.getElementById('refine-overlay'),bd=document.getElementById('refine-body'),ac=document.getElementById('refine-actions');bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div><div class="refine-loading"><div class="refine-loading-spinner"></div>Refining your text...</div>';ac.style.display='none';ov.classList.add('visible');pushNav('refine-overlay');const result=await refineText(c.text,c.lang||'en-US');let statusHtml='';if(typeof result==='object'){if(result.source==='local'&&result.error){statusHtml='<div style="font-size:12px;color:var(--mood-1);margin-bottom:12px;">Gemini unavailable: '+escapeHtml(result.error)+'. Showing local cleanup.</div>';}else if(result.source==='local'){statusHtml='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">No API key. Showing local cleanup.</div>';}else{statusHtml='<div style="font-size:12px;color:var(--accent-moss);margin-bottom:12px;">Refined with Gemini AI</div>';}}const refinedText=typeof result==='object'?result.text:result;bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text">'+escapeHtml(refinedText)+'</div>';ac.style.display='flex';});
+document.getElementById('refine-dismiss').addEventListener('click',()=>document.getElementById('refine-overlay').classList.remove('visible'));
+document.getElementById('refine-reject').addEventListener('click',()=>document.getElementById('refine-overlay').classList.remove('visible'));
+document.getElementById('refine-accept').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const el=document.getElementById('refined-text');if(el){c.text=el.textContent;localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));}document.getElementById('refine-overlay').classList.remove('visible');openDetail(currentDetailId);});
+
+function updateSettingsUI(){document.getElementById('total-captures').textContent=captures.length;document.getElementById('last-backup').textContent=settings.lastBackup?'Last: '+new Date(settings.lastBackup).toLocaleDateString():'Never backed up';document.querySelectorAll('#settings-lang-toggle .settings-lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===settings.defaultLang));document.getElementById('api-key-status').textContent=settings.geminiApiKey?'Configured \u2713':'Not configured';}
+document.getElementById('export-btn').addEventListener('click',e=>{e.stopPropagation();const d={exportDate:new Date().toISOString(),version:'1.5.0',captures,habits,settings:{defaultLang:settings.defaultLang,lastBackup:settings.lastBackup}};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='speak-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(u);settings.lastBackup=new Date().toISOString();localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));updateSettingsUI();});
+document.getElementById('api-key-btn').addEventListener('click',e=>{e.stopPropagation();const key=prompt('Enter your Gemini API key from Google AI Studio:\n(Leave empty to clear)',settings.geminiApiKey||'');if(key!==null){settings.geminiApiKey=key.trim();localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));updateSettingsUI();}});
+document.querySelectorAll('#settings-lang-toggle .settings-lang-btn').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();settings.defaultLang=btn.dataset.lang;currentLang=settings.defaultLang;langBtns.forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));updateSettingsUI();});});
+(function(){if(!settings.lastBackup)return;const ds=Math.floor((new Date()-new Date(settings.lastBackup))/864e5);if(ds>=14&&captures.length>0){const tab=document.querySelector('[data-screen="settings-screen"]');if(tab&&!tab.querySelector('.reminder-dot')){const d=document.createElement('span');d.className='reminder-dot';d.style.cssText='width:6px;height:6px;background:var(--accent-warm);border-radius:50%;position:absolute;top:6px;right:12px;';tab.style.position='relative';tab.appendChild(d);}}})();
+updateSettingsUI();
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('./sw.js').then(reg=>{
+reg.update();
+console.log('SW registered, scope:',reg.scope);
+}).catch(e=>console.warn('SW registration failed:',e));
+navigator.serviceWorker.addEventListener('controllerchange',()=>{console.log('SW updated, reloading');window.location.reload();});
+}
+
+
+
+/* ============ HABITS SYSTEM ============ */
+let currentHabitId=null,currentHabitEntryId=null;
+
+function saveHabits(){localStorage.setItem(HABITS_KEY,JSON.stringify(habits));}
+
+function getStreakMsg(habit){
+    if(!habit.entries||habit.entries.length===0)return{streak:'',inactivity:'',daysSince:-1};
+    const now=new Date(),entries=habit.entries.map(e=>new Date(e.createdAt));
+    entries.sort((a,b)=>b-a);
+    const lastEntry=entries[0];
+    const daysSinceLast=Math.floor((now-lastEntry)/(1000*60*60*24));
+    
+    /* Inactivity - gentle, rolling days */
+    let inactivity='';
+    if(daysSinceLast>=2)inactivity='\ud83d\udca4 '+daysSinceLast+' days';
+    
+    /* Streak - rolling 7 day window */
+    let streak='';
+    const sevenDaysAgo=new Date(now.getTime()-7*24*60*60*1000);
+    const recentEntries=entries.filter(e=>e>=sevenDaysAgo).length;
+    
+    /* Check consecutive days */
+    let consecutiveDays=1;
+    const uniqueDays=[...new Set(entries.map(e=>{const d=new Date(e);d.setHours(0,0,0,0);return d.getTime();}))].sort((a,b)=>b-a);
+    for(let i=1;i<uniqueDays.length;i++){
+        const diff=(uniqueDays[i-1]-uniqueDays[i])/(1000*60*60*24);
+        if(diff===1)consecutiveDays++;else break;
+    }
+    
+    if(consecutiveDays>=7)streak='7 days in a row! \ud83d\udd25';
+    else if(consecutiveDays>=5)streak=consecutiveDays+' days in a row \ud83d\udd25';
+    else if(consecutiveDays>=3)streak=consecutiveDays+' days in a row — keep going!';
+    else if(recentEntries>=5)streak=recentEntries+' times in the last 7 days \ud83d\udd25';
+    else if(recentEntries>=3)streak='Active '+recentEntries+' times past week';
+    else if(daysSinceLast===0)streak='Logged today \u2713';
+    else if(daysSinceLast===1)streak='Logged yesterday';
+    
+    return{streak,inactivity,daysSince:daysSinceLast};
+}
+
+function renderHabits(){
+    const list=document.getElementById('habits-list');
+    if(!habits.length){
+        list.innerHTML='<div class="empty-state"><div class="empty-state-icon" style="font-size:40px;"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/><path d="M12 22c-2 0-3-1-3-3"/><path d="M12 22c2 0 3-1 3-3"/></svg></div><div class="empty-state-text">No habits yet.<br>Tap + Add habit to start tracking.</div></div>';
+        return;
+    }
+    /* Sort: favourites first, then by name */
+    const sorted=[...habits].sort((a,b)=>{if(a.favourite&&!b.favourite)return -1;if(!a.favourite&&b.favourite)return 1;return 0;});
+    let h='';
+    sorted.forEach(hab=>{
+        const msgs=getStreakMsg(hab);
+        const entryCount=hab.entries?hab.entries.length:0;
+        const lastEntry=entryCount>0?formatDate(new Date(hab.entries[hab.entries.length-1].createdAt)):'No entries yet';
+        let statusIcon='';
+        const starColor=hab.favourite?'#5e8a5a':'var(--text-muted)';
+        const starFill=hab.favourite?'#5e8a5a':'none';
+        const starOpacity=hab.favourite?'1':'0.4';
+        h+='<div class="capture-card habit-card" data-habit-id="'+hab.id+'">';
+        h+='<div class="capture-card-header"><div class="capture-card-date" style="font-size:15px;font-weight:600;color:var(--text-primary);">'+escapeHtml(hab.name)+statusIcon+'</div>';
+        h+='<div style="display:flex;gap:6px;align-items:center;">';
+        h+='<button class="habit-fav-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;cursor:pointer;padding:4px;opacity:'+starOpacity+';" title="Favourite"><svg viewBox="0 0 24 24" width="18" height="18" fill="'+starFill+'" stroke="'+starColor+'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>';
+        h+='<button class="habit-delete-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;" title="Delete habit"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div></div>';
+        if(msgs.streak)h+='<div style="font-size:12px;color:var(--accent-moss);margin-top:4px;">'+msgs.streak+'</div>';
+        if(msgs.inactivity)h+='<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">'+msgs.inactivity+'</div>';
+        h+='<div class="capture-card-text" style="font-size:12px;color:var(--text-muted);margin-top:6px;">'+entryCount+' entries \u00b7 '+lastEntry+'</div>';
+        h+='</div>';
+    });
+    list.innerHTML=h;
+    list.querySelectorAll('.habit-card').forEach(card=>{
+        card.addEventListener('click',e=>{
+            if(e.target.closest('.habit-delete-btn')||e.target.closest('.habit-fav-btn'))return;
+            openHabitDetail(card.dataset.habitId);
+        });
+    });
+    list.querySelectorAll('.habit-delete-btn').forEach(btn=>{
+        btn.addEventListener('click',e=>{
+            e.stopPropagation();
+            currentHabitId=btn.dataset.habitId;
+            document.getElementById('delete-habit-overlay').classList.add('visible');
+            pushNav('delete-habit-overlay');
+        });
+    });
+    list.querySelectorAll('.habit-fav-btn').forEach(btn=>{
+        btn.addEventListener('click',e=>{
+            e.stopPropagation();
+            const hab=habits.find(h=>h.id===btn.dataset.habitId);
+            if(hab){hab.favourite=!hab.favourite;saveHabits();renderHabits();}
+        });
+    });
+}
+
+function openHabitDetail(id){
+    const hab=habits.find(h=>h.id===id);
+    if(!hab)return;
+    currentHabitId=id;
+    document.getElementById('habit-detail-name').textContent=hab.name;
+    const msgs=getStreakMsg(hab);
+    document.getElementById('habit-streak-msg').textContent=msgs.streak;
+    const inEl=document.getElementById('habit-inactivity-msg');
+    inEl.textContent=msgs.inactivity;
+    inEl.style.color=msgs.inactivity.includes('week')?'var(--mood-1)':'var(--mood-2)';
+    
+    const list=document.getElementById('habit-entries-list');
+    const entries=(hab.entries||[]).slice().reverse();
+    if(!entries.length){
+        list.innerHTML='<div class="empty-state"><div class="empty-state-text">No entries yet. Use the button below to log.</div></div>';
+    }else{
+        let h='';
+        entries.forEach(e=>{
+            const d=new Date(e.createdAt);
+            const inputIcon=e.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>';
+            h+='<div class="capture-card habit-entry-card" data-entry-id="'+e.id+'">';
+            h+='<div class="capture-card-header"><div class="capture-card-date">'+formatDate(d)+inputIcon+'</div></div>';
+            h+='<div class="capture-card-text">'+escapeHtml(e.text.substring(0,150))+(e.text.length>150?'...':'')+'</div>';
+            h+='</div>';
+        });
+        list.innerHTML=h;
+        list.querySelectorAll('.habit-entry-card').forEach(card=>{
+            card.addEventListener('click',()=>{
+                const entry=entries.find(e=>e.id===card.dataset.entryId);
+                if(!entry)return;
+                currentHabitEntryId=entry.id;
+                document.getElementById('habit-entry-date').textContent=formatDate(new Date(entry.createdAt));
+                document.getElementById('habit-entry-text').textContent=entry.text;
+                document.getElementById('habit-entry-overlay').classList.add('visible');
+                pushNav('habit-entry-overlay');
+            });
+        });
+    }
+    screens.forEach(s=>s.classList.remove('active'));
+    document.getElementById('habit-detail-screen').classList.add('active');
+    pushNav('habit-detail-screen');
+}
+
+/* Add Habit */
+document.getElementById('add-habit-btn').addEventListener('click',()=>{
+    document.getElementById('habit-name-input').value='';
+    document.getElementById('add-habit-overlay').classList.add('visible');
+    pushNav('add-habit-overlay');
+    setTimeout(()=>document.getElementById('habit-name-input').focus(),100);
+});
+document.getElementById('add-habit-close-x').addEventListener('click',()=>document.getElementById('add-habit-overlay').classList.remove('visible'));
+document.getElementById('add-habit-cancel').addEventListener('click',()=>document.getElementById('add-habit-overlay').classList.remove('visible'));
+document.getElementById('add-habit-save').addEventListener('click',()=>{
+    const name=document.getElementById('habit-name-input').value.trim();
+    if(!name)return;
+    habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name,entries:[],favourite:false,createdAt:new Date().toISOString()});
+    saveHabits();renderHabits();
+    document.getElementById('add-habit-overlay').classList.remove('visible');
+});
+
+/* Delete Habit */
+document.getElementById('delete-habit-cancel').addEventListener('click',()=>document.getElementById('delete-habit-overlay').classList.remove('visible'));
+document.getElementById('delete-habit-confirm').addEventListener('click',()=>{
+    habits=habits.filter(h=>h.id!==currentHabitId);
+    saveHabits();renderHabits();
+    document.getElementById('delete-habit-overlay').classList.remove('visible');
+});
+
+/* Delete Habit Entry */
+document.getElementById('habit-entry-close-x').addEventListener('click',()=>document.getElementById('habit-entry-overlay').classList.remove('visible'));
+document.getElementById('habit-entry-delete').addEventListener('click',()=>{
+    const hab=habits.find(h=>h.id===currentHabitId);
+    if(hab){hab.entries=hab.entries.filter(e=>e.id!==currentHabitEntryId);saveHabits();}
+    document.getElementById('habit-entry-overlay').classList.remove('visible');
+    openHabitDetail(currentHabitId);
+});
+
+/* Habit Detail Back */
+document.getElementById('habit-detail-back').addEventListener('click',()=>showScreen('habits-screen'));
+
+/* Habit Speak Button - full speak/write with long-press */
+let habitLongPressTimer=null,habitIsLongPress=false,habitIsWriteMode=false,habitIsRecording=false;
+const habitBtn=document.getElementById('habit-speak-btn');
+const habitLpRing=document.getElementById('habit-lp-ring');
+
+function habitEnterWriteMode(){
+    habitIsWriteMode=true;habitIsLongPress=true;
+    try{if(navigator.vibrate)navigator.vibrate([50]);}catch(e){}
+    habitBtn.classList.add('write-mode');
+    habitBtn.querySelector('.speak-btn-label').textContent='Write';
+    habitBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+    habitLpRing.classList.remove('active');
+}
+function habitExitWriteMode(){
+    habitIsWriteMode=false;
+    habitBtn.classList.remove('write-mode');
+    habitBtn.querySelector('.speak-btn-label').textContent='Speak';
+    habitBtn.querySelector('svg').innerHTML='<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+}
+function habitOpenWriteModal(){
+    document.getElementById('write-textarea').value='';
+    const writeTitle=document.querySelector('#write-overlay .modal-title');
+    if(writeTitle)writeTitle.textContent='What did you do today?';
+    document.getElementById('write-overlay').classList.add('habit-write-mode');
+    document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
+    if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
+    document.getElementById('write-overlay').classList.add('visible');
+    pushNav('write-overlay');
+    window._habitDirectSave=true;
+    setTimeout(()=>document.getElementById('write-textarea').focus(),100);
+}
+function habitSaveVoiceEntry(text){
+    const hab=habits.find(h=>h.id===currentHabitId);
+    if(hab&&text){
+        hab.entries.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:cleanupTranscript(text),inputType:'voice',lang:currentLang,createdAt:new Date().toISOString()});
+        saveHabits();
+        openHabitDetail(currentHabitId);
+    }
+}
+
+/* Habit voice recording */
+let habitRecognition=null,habitFT='',habitIT='';
+if(SR){
+    function createHabitRecognition(){
+        const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
+        r.onstart=()=>{habitIsRecording=true;habitBtn.classList.add('recording');habitBtn.querySelector('.speak-btn-label').textContent='Stop';};
+        r.onresult=e=>{habitIT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)habitFT+=e.results[i][0].transcript+' ';else habitIT+=e.results[i][0].transcript;}};
+        r.onerror=e=>{if(e.error==='no-speech'){if(habitIsRecording){setTimeout(()=>{try{habitRecognition.start();}catch(ex){}},100);}return;}
+        if(e.error==='not-allowed'||e.error==='service-not-allowed'){habitIsRecording=false;habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Speak';habitOpenWriteModal();return;}};
+        r.onend=()=>{if(habitIsRecording){setTimeout(()=>{try{habitRecognition.start();}catch(ex){habitIsRecording=false;habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Speak';const t=(habitFT+habitIT).trim();habitFT='';habitIT='';if(t){habitSaveVoiceEntry(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
+        habitBtn.classList.remove('recording');habitBtn.querySelector('.speak-btn-label').textContent='Speak';
+        const t=(habitFT+habitIT).trim();habitFT='';habitIT='';
+        if(t){habitSaveVoiceEntry(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
+        return r;
+    }
+    async function habitStartRecording(){habitFT='';habitIT='';
+        try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop());habitRecognition=createHabitRecognition();habitRecognition.lang=currentLang;habitRecognition.start();}
+        catch(e){habitOpenWriteModal();}}
+}
+
+/* Long press + tap handlers */
+habitBtn.addEventListener('touchstart',e=>{if(habitIsRecording)return;habitIsLongPress=false;habitLpRing.classList.add('active');habitLongPressTimer=setTimeout(()=>{habitEnterWriteMode();},800);},{passive:true});
+habitBtn.addEventListener('touchend',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;habitOpenWriteModal();habitExitWriteMode();return;}habitIsLongPress=false;},{passive:true});
+habitBtn.addEventListener('touchmove',()=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');habitIsLongPress=false;},{passive:true});
+habitBtn.addEventListener('mousedown',e=>{if(habitIsRecording||e.button!==0)return;habitIsLongPress=false;habitLpRing.classList.add('active');habitLongPressTimer=setTimeout(()=>{habitEnterWriteMode();},800);});
+habitBtn.addEventListener('mouseup',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;habitOpenWriteModal();habitExitWriteMode();return;}habitIsLongPress=false;});
+habitBtn.addEventListener('click',e=>{
+    if(habitIsWriteMode){habitOpenWriteModal();habitExitWriteMode();return;}
+    if(habitIsRecording){habitIsRecording=false;try{habitRecognition.stop();}catch(ex){}return;}
+    if(SR){habitStartRecording();}else{habitOpenWriteModal();}
+});
+
+
+/* Habit search */
+document.getElementById('habit-search-input').addEventListener('input',e=>{
+    const q=e.target.value.toLowerCase();
+    document.querySelectorAll('#habits-list .habit-card').forEach(card=>{
+        const name=card.querySelector('.capture-card-date').textContent.toLowerCase();
+        const entries=(habits.find(h=>h.id===card.dataset.habitId)||{}).entries||[];
+        const textMatch=entries.some(en=>en.text.toLowerCase().includes(q));
+        card.style.display=(name.includes(q)||textMatch)?'':'none';
+    });
+});
+_bindPickerAddNew();
+/* Habit Picker (from Speak screen tag flow) */
+document.getElementById('habit-picker-close-x').addEventListener('click',()=>{
+    document.getElementById('habit-picker-overlay').classList.remove('visible');
+    if(window._moveToHabitCapture){
+        /* User cancelled move - save thought normally */
+        window._moveToHabitCapture=null;
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));
+        showScreen('thoughts-screen');renderCaptures();
+    }
+});
+
+function showHabitPicker(){
+    const list=document.getElementById('habit-picker-list');
+    const empty=document.getElementById('habit-picker-empty');
+    if(!habits.length){
+        list.innerHTML='';
+        empty.style.display='block';
+    }
+    empty.style.display='none';
+    /* Sort: favourites first */
+    const sorted=[...habits].sort((a,b)=>{if(a.favourite&&!b.favourite)return -1;if(!a.favourite&&b.favourite)return 1;return 0;});
+    let items=sorted.map(h=>{
+        const star=h.favourite?'<svg viewBox="0 0 24 24" width="14" height="14" fill="#5e8a5a" stroke="#5e8a5a" stroke-width="2" style="margin-right:8px;flex-shrink:0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>':'';
+        return '<button class="habit-picker-item" data-habit-id="'+h.id+'" style="padding:12px 16px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;cursor:pointer;text-align:left;transition:background .15s;display:flex;align-items:center;">'+star+escapeHtml(h.name)+'</button>';
+    }).join('');
+    
+    list.innerHTML=items;
+    list.querySelectorAll('.habit-picker-item').forEach(item=>{
+        item.addEventListener('click',()=>{
+            if(window._moveToHabitCapture){
+                const c=window._moveToHabitCapture;
+                window._moveToHabitCapture=null;
+                const hab=habits.find(h=>h.id===item.dataset.habitId);
+                if(hab){
+                    hab.entries.push({id:c.id,text:c.text,inputType:c.inputType||'voice',lang:c.lang||'en-US',createdAt:c.createdAt});
+                    saveHabits();
+                    captures=captures.filter(x=>x.id!==c.id);
+                    localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));
+                }
+                document.getElementById('habit-picker-overlay').classList.remove('visible');
+                showScreen('thoughts-screen');renderCaptures();
+                return;
+            }
+            currentCapture.habitId=item.dataset.habitId;
+            document.getElementById('habit-picker-overlay').classList.remove('visible');
+            saveCapture();
+        });
+    });
+}
+function _bindPickerAddNew(){
+    const btn=document.getElementById('habit-picker-add-fixed');
     if(!btn)return;
     btn.addEventListener('click',()=>{
         document.getElementById('habit-picker-overlay').classList.remove('visible');
