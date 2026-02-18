@@ -713,7 +713,7 @@ function getStreakMsg(habit){
     
     /* Inactivity - gentle, rolling days */
     let inactivity='';
-    if(daysSinceLast>=5)inactivity='\ud83d\udca4 '+daysSinceLast+' days';
+    if(daysSinceLast>=2)inactivity='\ud83d\udca4 '+daysSinceLast+' days';
     
     /* Streak - rolling 7 day window */
     let streak='';
@@ -732,7 +732,7 @@ function getStreakMsg(habit){
     else if(consecutiveDays>=5)streak=consecutiveDays+' days in a row \ud83d\udd25';
     else if(consecutiveDays>=3)streak=consecutiveDays+' days in a row — keep going!';
     else if(recentEntries>=5)streak=recentEntries+' times in the last 7 days \ud83d\udd25';
-    else if(recentEntries>=3)streak='Active '+recentEntries+' times recently';
+    else if(recentEntries>=3)streak='Active '+recentEntries+' times past week';
     else if(daysSinceLast===0)streak='Logged today \u2713';
     else if(daysSinceLast===1)streak='Logged yesterday';
     
