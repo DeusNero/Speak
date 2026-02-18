@@ -342,9 +342,10 @@ textarea#write-textarea::-webkit-resizer{display:none}
 </div>
     <div class="modal-overlay" id="write-overlay"><div class="modal-dialog" style="max-width:380px;padding:20px;text-align:left;">
         <button class="modal-close-x" id="write-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        <div class="modal-title" style="margin-bottom:16px;text-align:center;">What’s on your mind?</div>
+        <div style="display:flex;justify-content:center;margin-bottom:10px;"><div class="lang-toggle" id="write-lang-toggle" style="display:inline-flex;"><button class="lang-btn write-lang-btn" data-lang="de-DE">DE</button><button class="lang-btn write-lang-btn active" data-lang="en-US">EN</button></div></div>
+        <div class="modal-title" style="margin-bottom:14px;text-align:center;">What’s on your mind?</div>
         <div class="write-textarea-wrap"><textarea id="write-textarea" style="width:100%;min-height:140px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px;color:var(--text-primary);font-family:var(--font-body);font-size:15px;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;" placeholder="Start writing..."></textarea></div>
-        <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;padding:0 12px;"><button class="action-btn secondary" id="write-cancel" style="padding:8px 0;width:28%;font-size:13px;background:rgba(196,180,138,.15);border-color:rgba(196,180,138,.25);color:#c4b48a;">Cancel</button><button id="write-refine-btn" style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(196,180,138,.3);background:rgba(196,180,138,.1);color:#c4b48a;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease;flex-shrink:0;" title="Refine with AI"><svg style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><button class="action-btn primary" id="write-save" style="padding:8px 0;width:28%;font-size:13px;background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);border:none;">Save</button></div>
+        <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;padding:0 12px;"><button class="action-btn secondary" id="write-cancel" style="padding:7px 0;width:21%;font-size:12px;min-width:0;background:rgba(196,180,138,.15);border-color:rgba(196,180,138,.25);color:#c4b48a;">Cancel</button><button id="write-refine-btn" style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(196,180,138,.3);background:rgba(196,180,138,.1);color:#c4b48a;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease;flex-shrink:0;" title="Refine with AI"><svg style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><button class="action-btn primary" id="write-save" style="padding:7px 0;width:21%;font-size:12px;min-width:0;background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);border:none;">Save</button></div>
     </div></div>
     <div class="modal-overlay" id="date-range-overlay"><div class="modal-dialog" style="max-width:340px;padding:20px;">
         <button class="modal-close-x" id="date-range-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
@@ -472,15 +473,19 @@ function exitWriteMode(){
     speakBtn.querySelector('svg').innerHTML='<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="19" x2="12" y2="23" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="23" x2="16" y2="23" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
 }
 function openWriteModal(){
-    document.getElementById('write-textarea').value='';
+    document.getElementById('write-textarea').value='';syncWriteLangToggle();
     document.getElementById('write-overlay').classList.add('visible');pushNav('write-overlay');
     setTimeout(()=>document.getElementById('write-textarea').focus(),100);
 }
+
+/* Write modal lang toggle */
+function syncWriteLangToggle(){document.querySelectorAll('.write-lang-btn').forEach(b=>{b.classList.toggle('active',b.dataset.lang===currentLang);});}
+document.querySelectorAll('.write-lang-btn').forEach(btn=>{btn.addEventListener('click',()=>{currentLang=btn.dataset.lang;document.querySelectorAll('.write-lang-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');/* Also sync main lang toggle */document.querySelectorAll('.lang-btn:not(.write-lang-btn)').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));document.querySelectorAll('.settings-lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));localStorage.setItem('speak_lang',currentLang);});});
 document.getElementById('write-close-x').addEventListener('click',()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
 document.getElementById('write-cancel').addEventListener('click',()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
 document.getElementById('write-save').addEventListener('click',()=>{
     const t=document.getElementById('write-textarea').value.trim();
-    if(t){currentCapture.text=t;currentCapture.inputType='text';document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();showPostRecordFlow();}
+    if(t){currentCapture.text=t;currentCapture.inputType='text';currentCapture.lang=currentLang;document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();showPostRecordFlow();}
 });
 document.getElementById('write-refine-btn').addEventListener('click',async()=>{
     const ta=document.getElementById('write-textarea');
