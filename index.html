@@ -563,7 +563,15 @@ document.getElementById('write-close-x').addEventListener('click',()=>{document.
 document.getElementById('write-cancel').addEventListener('click',()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
 document.getElementById('write-save').addEventListener('click',()=>{
     const t=document.getElementById('write-textarea').value.trim();
-    if(t){
+    const refined=window._writeRefined;
+const previewVisible=document.getElementById('write-refine-preview').style.display!=='none';
+if(previewVisible&&refined)t=refined;
+/* Clear refine state */
+window._writeRefined=null;window._writeRefineOriginal=null;
+document.getElementById('write-refine-preview').style.display='none';
+document.getElementById('write-refine-status').style.display='none';
+document.getElementById('write-refine-actions').style.display='none';
+if(t){
 if(window._habitDirectSave){
     window._habitDirectSave=false;
     const hab=habits.find(h=>h.id===currentHabitId);
