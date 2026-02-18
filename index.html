@@ -701,7 +701,6 @@ speakBtn.addEventListener('touchstart',e=>{
 speakBtn.addEventListener('touchend',e=>{
     clearTimeout(longPressTimer);lpRing.classList.remove('active');
     window._touchHandled=true;
-    showToast('[TE] lp='+isLongPress+' wm='+isWriteMode+' cd='+doubleTapCooldown+' rec='+isRecording);
     if(isLongPress&&isWriteMode){isLongPress=false;try{navigator.vibrate([30]);}catch(ex){}openWriteModal();exitWriteMode();return;}
     isLongPress=false;
     if(isWriteMode){openWriteModal();exitWriteMode();return;}
@@ -715,7 +714,7 @@ speakBtn.addEventListener('touchend',e=>{
         
         window._singleTapTimer=setTimeout(()=>{
             window._singleTapTimer=null;
-            if(!doubleTapCooldown&&!isRecording){startRecording();}else{showToast('[BLOCKED] cd='+doubleTapCooldown+' rec='+isRecording);}
+            if(!doubleTapCooldown&&!isRecording){startRecording();}
         },300);
     }
 },{passive:true});
@@ -794,7 +793,18 @@ document.getElementById('detail-edit').addEventListener('click',()=>{const c=cap
 document.getElementById('edit-cancel').addEventListener('click',()=>document.getElementById('edit-modal').classList.remove('visible'));
 document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');});});
 document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(btn=>{btn.addEventListener('click',()=>btn.classList.toggle('selected'));});
-document.getElementById('edit-save').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;c.text=document.getElementById('edit-text-input').value;const sm=document.querySelector('#edit-mood-row .edit-mood-btn.selected');c.mood=sm?(parseInt(sm.dataset.mood)||null):null;const st=[];document.querySelectorAll('#edit-tag-row .edit-tag-btn.selected').forEach(b=>st.push(b.dataset.tag));c.tags=st;localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));document.getElementById('edit-modal').classList.remove('visible');openDetail(currentDetailId);});
+document.getElementById('edit-save').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;c.text=document.getElementById('edit-text-input').value;const sm=document.querySelector('#edit-mood-row .edit-mood-btn.selected');c.mood=sm?(parseInt(sm.dataset.mood)||null):null;const st=[];document.querySelectorAll('#edit-tag-row .edit-tag-btn.selected').forEach(b=>st.push(b.dataset.tag));c.tags=st;
+/* If habit tag added, move to habit */
+if(st.includes('habit')&&!(c._wasHabit)){
+    document.getElementById('edit-modal').classList.remove('visible');
+    /* Store the capture to move */
+    window._moveToHabitCapture=c;
+    showHabitPicker();
+    document.getElementById('habit-picker-overlay').classList.add('visible');
+    pushNav('habit-picker-overlay');
+    return;
+}
+localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));document.getElementById('edit-modal').classList.remove('visible');openDetail(currentDetailId);});
 
 document.getElementById('detail-refine').addEventListener('click',async()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const ov=document.getElementById('refine-overlay'),bd=document.getElementById('refine-body'),ac=document.getElementById('refine-actions');bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div><div class="refine-loading"><div class="refine-loading-spinner"></div>Refining your text...</div>';ac.style.display='none';ov.classList.add('visible');pushNav('refine-overlay');const result=await refineText(c.text,c.lang||'en-US');let statusHtml='';if(typeof result==='object'){if(result.source==='local'&&result.error){statusHtml='<div style="font-size:12px;color:var(--mood-1);margin-bottom:12px;">Gemini unavailable: '+escapeHtml(result.error)+'. Showing local cleanup.</div>';}else if(result.source==='local'){statusHtml='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">No API key. Showing local cleanup.</div>';}else{statusHtml='<div style="font-size:12px;color:var(--accent-moss);margin-bottom:12px;">Refined with Gemini AI</div>';}}const refinedText=typeof result==='object'?result.text:result;bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text">'+escapeHtml(refinedText)+'</div>';ac.style.display='flex';});
 document.getElementById('refine-dismiss').addEventListener('click',()=>document.getElementById('refine-overlay').classList.remove('visible'));
@@ -863,25 +873,31 @@ function renderHabits(){
         list.innerHTML='<div class="empty-state"><div class="empty-state-icon" style="font-size:40px;"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/><path d="M12 22c-2 0-3-1-3-3"/><path d="M12 22c2 0 3-1 3-3"/></svg></div><div class="empty-state-text">No habits yet.<br>Tap + Add habit to start tracking.</div></div>';
         return;
     }
+    /* Sort: favourites first, then by name */
+    const sorted=[...habits].sort((a,b)=>{if(a.favourite&&!b.favourite)return -1;if(!a.favourite&&b.favourite)return 1;return 0;});
     let h='';
-    habits.forEach(hab=>{
+    sorted.forEach(hab=>{
         const msgs=getStreakMsg(hab);
         const entryCount=hab.entries?hab.entries.length:0;
         const lastEntry=entryCount>0?formatDate(new Date(hab.entries[hab.entries.length-1].createdAt)):'No entries yet';
-        const daysSinceLast=entryCount>0?Math.floor((new Date()-new Date(hab.entries[hab.entries.length-1].createdAt))/(1000*60*60*24)):999;
         let statusIcon='';
+        const starColor=hab.favourite?'#5e8a5a':'var(--text-muted)';
+        const starFill=hab.favourite?'#5e8a5a':'none';
+        const starOpacity=hab.favourite?'1':'0.4';
         h+='<div class="capture-card habit-card" data-habit-id="'+hab.id+'">';
         h+='<div class="capture-card-header"><div class="capture-card-date" style="font-size:15px;font-weight:600;color:var(--text-primary);">'+escapeHtml(hab.name)+statusIcon+'</div>';
-        h+='<button class="habit-delete-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;" title="Delete habit"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div>';
+        h+='<div style="display:flex;gap:6px;align-items:center;">';
+        h+='<button class="habit-fav-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;cursor:pointer;padding:4px;opacity:'+starOpacity+';" title="Favourite"><svg viewBox="0 0 24 24" width="18" height="18" fill="'+starFill+'" stroke="'+starColor+'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>';
+        h+='<button class="habit-delete-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;" title="Delete habit"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div></div>';
         if(msgs.streak)h+='<div style="font-size:12px;color:var(--accent-moss);margin-top:4px;">'+msgs.streak+'</div>';
-        if(msgs.inactivity)h+='<div style="font-size:12px;color:var(--mood-2);margin-top:2px;">'+msgs.inactivity+'</div>';
+        if(msgs.inactivity)h+='<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">'+msgs.inactivity+'</div>';
         h+='<div class="capture-card-text" style="font-size:12px;color:var(--text-muted);margin-top:6px;">'+entryCount+' entries \u00b7 '+lastEntry+'</div>';
         h+='</div>';
     });
     list.innerHTML=h;
     list.querySelectorAll('.habit-card').forEach(card=>{
         card.addEventListener('click',e=>{
-            if(e.target.closest('.habit-delete-btn'))return;
+            if(e.target.closest('.habit-delete-btn')||e.target.closest('.habit-fav-btn'))return;
             openHabitDetail(card.dataset.habitId);
         });
     });
@@ -891,6 +907,13 @@ function renderHabits(){
             currentHabitId=btn.dataset.habitId;
             document.getElementById('delete-habit-overlay').classList.add('visible');
             pushNav('delete-habit-overlay');
+        });
+    });
+    list.querySelectorAll('.habit-fav-btn').forEach(btn=>{
+        btn.addEventListener('click',e=>{
+            e.stopPropagation();
+            const hab=habits.find(h=>h.id===btn.dataset.habitId);
+            if(hab){hab.favourite=!hab.favourite;saveHabits();renderHabits();}
         });
     });
 }
@@ -950,7 +973,7 @@ document.getElementById('add-habit-cancel').addEventListener('click',()=>documen
 document.getElementById('add-habit-save').addEventListener('click',()=>{
     const name=document.getElementById('habit-name-input').value.trim();
     if(!name)return;
-    habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name,entries:[],createdAt:new Date().toISOString()});
+    habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name,entries:[],favourite:false,createdAt:new Date().toISOString()});
     saveHabits();renderHabits();
     document.getElementById('add-habit-overlay').classList.remove('visible');
 });
@@ -1059,6 +1082,12 @@ document.getElementById('habit-search-input').addEventListener('input',e=>{
 /* Habit Picker (from Speak screen tag flow) */
 document.getElementById('habit-picker-close-x').addEventListener('click',()=>{
     document.getElementById('habit-picker-overlay').classList.remove('visible');
+    if(window._moveToHabitCapture){
+        /* User cancelled move - save thought normally */
+        window._moveToHabitCapture=null;
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));
+        showScreen('thoughts-screen');renderCaptures();
+    }
 });
 
 function showHabitPicker(){
@@ -1069,6 +1098,22 @@ function showHabitPicker(){
     list.innerHTML=habits.map(h=>'<button class="habit-picker-item" data-habit-id="'+h.id+'" style="padding:12px 16px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;cursor:pointer;text-align:left;transition:background .15s;">'+escapeHtml(h.name)+'</button>').join('');
     list.querySelectorAll('.habit-picker-item').forEach(item=>{
         item.addEventListener('click',()=>{
+            if(window._moveToHabitCapture){
+                /* Moving a thought to a habit */
+                const c=window._moveToHabitCapture;
+                window._moveToHabitCapture=null;
+                const hab=habits.find(h=>h.id===item.dataset.habitId);
+                if(hab){
+                    hab.entries.push({id:c.id,text:c.text,inputType:c.inputType||'voice',lang:c.lang||'en-US',createdAt:c.createdAt});
+                    saveHabits();
+                    /* Remove from thoughts */
+                    captures=captures.filter(x=>x.id!==c.id);
+                    localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));
+                }
+                document.getElementById('habit-picker-overlay').classList.remove('visible');
+                showScreen('thoughts-screen');renderCaptures();
+                return;
+            }
             currentCapture.habitId=item.dataset.habitId;
             document.getElementById('habit-picker-overlay').classList.remove('visible');
             saveCapture();
