@@ -97,6 +97,13 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .lang-btn{padding:6px 14px;border:none;background:none;color:var(--text-muted);font-family:var(--font-body);font-size:12px;font-weight:500;cursor:pointer;border-radius:var(--radius-full);transition:all .25s ease}
 
 .speak-btn-container.habit-mode .sand-ripple{border-color:rgba(90,140,85,.3) !important;}
+
+.habit-write-mode #write-save{background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%) !important;}
+.habit-write-mode #write-cancel{background:rgba(90,140,85,.15) !important;border-color:rgba(90,140,85,.25) !important;color:#7da87a !important;}
+.habit-write-mode #write-refine-btn{border-color:rgba(90,140,85,.3) !important;background:rgba(90,140,85,.1) !important;}
+.habit-write-mode #write-refine-btn svg path{fill:#7da87a !important;}
+.habit-write-mode .mode-toggle-btn.active{background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%) !important;}
+.habit-write-mode .write-lang-btn.active{background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%) !important;}
 .mode-toggle-btn{background:none;color:var(--text-muted);}
 .mode-toggle-btn.active{background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);}
 .lang-btn.active{background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep)}
@@ -317,7 +324,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
     <!-- HABITS -->
     <div id="habits-screen" class="screen"><div class="thoughts-screen">
         <div class="thoughts-header"><div class="thoughts-title">Habits</div>
-            <button id="add-habit-btn" style="padding:6px 14px;font-size:12px;font-family:var(--font-body);font-weight:500;background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);border:none;border-radius:var(--radius-full);cursor:pointer;white-space:nowrap;">+ Add habit</button>
+            <button id="add-habit-btn" style="padding:6px 14px;font-size:12px;font-family:var(--font-body);font-weight:500;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);color:var(--bg-deep);border:none;border-radius:var(--radius-full);cursor:pointer;white-space:nowrap;">+ Add habit</button>
         </div>
         <div class="search-bar"><svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" class="search-input" id="habit-search-input" placeholder="Search habits..." autocomplete="off"></div>
         <div id="habits-list" class="capture-list"></div>
@@ -543,11 +550,11 @@ function createRecognition(){
 const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
 r.onstart=()=>{isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');if(!recordingTimer){recordingSeconds=0;updateTimer();recordingTimer=setInterval(()=>{recordingSeconds++;updateTimer();},1000);}};
 r.onresult=e=>{iT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fT+=e.results[i][0].transcript+' ';else iT+=e.results[i][0].transcript;}};
-r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');};
-r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
+r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');};
+r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
-showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}clearInterval(recordingTimer);speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
+showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='Speak';timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
 showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
@@ -576,6 +583,7 @@ function exitWriteMode(){
 }
 function openWriteModal(){
     document.getElementById('write-textarea').value='';syncWriteLangToggle();
+    const wo=document.getElementById('write-overlay');wo.classList.toggle('habit-write-mode',currentMode==='habit');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     document.getElementById('write-overlay').classList.add('visible');pushNav('write-overlay');
     setTimeout(()=>document.getElementById('write-textarea').focus(),100);
@@ -978,6 +986,7 @@ function habitExitWriteMode(){
 }
 function habitOpenWriteModal(){
     document.getElementById('write-textarea').value='';
+    document.getElementById('write-overlay').classList.add('habit-write-mode');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
     document.getElementById('write-overlay').classList.add('visible');
