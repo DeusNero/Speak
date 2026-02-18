@@ -364,15 +364,15 @@ textarea#write-textarea::-webkit-resizer{display:none}
         <div class="modal-title" style="margin-bottom:16px;">New habit</div>
         <input type="text" id="habit-name-input" autocomplete="off" placeholder="Habit name (e.g. Breathing, Affection)" style="width:100%;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;outline:none;box-sizing:border-box;margin-bottom:16px;">
         <div style="display:flex;gap:10px;justify-content:center;">
-            <button class="action-btn secondary" id="add-habit-cancel" style="min-width:0;flex:1;background:rgba(196,180,138,.15);border-color:rgba(196,180,138,.25);color:#c4b48a;">Cancel</button>
-            <button class="action-btn primary" id="add-habit-save" style="min-width:0;flex:1;background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);border:none;">Create</button>
+            <button class="action-btn secondary" id="add-habit-cancel" style="min-width:0;flex:1;background:rgba(90,140,85,.15);border-color:rgba(90,140,85,.25);color:#7da87a;">Cancel</button>
+            <button class="action-btn primary" id="add-habit-save" style="min-width:0;flex:1;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);color:var(--bg-deep);border:none;">Create</button>
         </div>
     </div></div>
 
     <!-- HABIT PICKER MODAL (for tagging from Speak screen) -->
     <div class="modal-overlay" id="habit-picker-overlay"><div class="modal-dialog" style="max-width:340px;padding:24px;">
         <button class="modal-close-x" id="habit-picker-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        <div class="modal-title" style="margin-bottom:16px;">Select habit</div>
+        <div class="modal-title" style="margin-bottom:16px;">Talk about your habits</div>
         <div id="habit-picker-list" style="max-height:250px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
         <div id="habit-picker-empty" style="text-align:center;color:var(--text-muted);font-size:14px;padding:20px 0;">No habits yet — create one in the Habits tab.</div>
     </div></div>
@@ -1093,20 +1093,30 @@ document.getElementById('habit-picker-close-x').addEventListener('click',()=>{
 function showHabitPicker(){
     const list=document.getElementById('habit-picker-list');
     const empty=document.getElementById('habit-picker-empty');
-    if(!habits.length){list.innerHTML='';empty.style.display='block';return;}
+    if(!habits.length){
+        list.innerHTML='<button id="habit-picker-add-new" style="padding:12px 16px;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);border:none;border-radius:var(--radius-md);color:var(--bg-deep);font-family:var(--font-body);font-size:14px;cursor:pointer;text-align:center;font-weight:500;width:100%;">+ Add new habit</button>';
+        empty.style.display='none';
+        _bindPickerAddNew();
+        return;
+    }
     empty.style.display='none';
-    list.innerHTML=habits.map(h=>'<button class="habit-picker-item" data-habit-id="'+h.id+'" style="padding:12px 16px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;cursor:pointer;text-align:left;transition:background .15s;">'+escapeHtml(h.name)+'</button>').join('');
+    /* Sort: favourites first */
+    const sorted=[...habits].sort((a,b)=>{if(a.favourite&&!b.favourite)return -1;if(!a.favourite&&b.favourite)return 1;return 0;});
+    let items=sorted.map(h=>{
+        const star=h.favourite?'<svg viewBox="0 0 24 24" width="14" height="14" fill="#5e8a5a" stroke="#5e8a5a" stroke-width="2" style="margin-right:8px;flex-shrink:0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>':'';
+        return '<button class="habit-picker-item" data-habit-id="'+h.id+'" style="padding:12px 16px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;cursor:pointer;text-align:left;transition:background .15s;display:flex;align-items:center;">'+star+escapeHtml(h.name)+'</button>';
+    }).join('');
+    items+='<button id="habit-picker-add-new" style="padding:12px 16px;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);border:none;border-radius:var(--radius-md);color:var(--bg-deep);font-family:var(--font-body);font-size:14px;cursor:pointer;text-align:center;font-weight:500;width:100%;">+ Add new habit</button>';
+    list.innerHTML=items;
     list.querySelectorAll('.habit-picker-item').forEach(item=>{
         item.addEventListener('click',()=>{
             if(window._moveToHabitCapture){
-                /* Moving a thought to a habit */
                 const c=window._moveToHabitCapture;
                 window._moveToHabitCapture=null;
                 const hab=habits.find(h=>h.id===item.dataset.habitId);
                 if(hab){
                     hab.entries.push({id:c.id,text:c.text,inputType:c.inputType||'voice',lang:c.lang||'en-US',createdAt:c.createdAt});
                     saveHabits();
-                    /* Remove from thoughts */
                     captures=captures.filter(x=>x.id!==c.id);
                     localStorage.setItem(STORAGE_KEY,JSON.stringify(captures));
                 }
@@ -1118,6 +1128,19 @@ function showHabitPicker(){
             document.getElementById('habit-picker-overlay').classList.remove('visible');
             saveCapture();
         });
+    });
+    _bindPickerAddNew();
+}
+function _bindPickerAddNew(){
+    const btn=document.getElementById('habit-picker-add-new');
+    if(!btn)return;
+    btn.addEventListener('click',()=>{
+        document.getElementById('habit-picker-overlay').classList.remove('visible');
+        document.getElementById('habit-name-input').value='';
+        document.getElementById('add-habit-overlay').classList.add('visible');
+        pushNav('add-habit-overlay');
+        window._pickerAddHabit=true;
+        setTimeout(()=>document.getElementById('habit-name-input').focus(),100);
     });
 }
 
