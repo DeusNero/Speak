@@ -659,9 +659,12 @@ document.getElementById('write-refine-dismiss').addEventListener('click',()=>{
 
 
 speakBtn.addEventListener('touchstart',e=>{
-    /* Double-tap detection */
     const now=Date.now();
+    /* Double-tap: if second tap within 300ms */
     if(now-lastTapTime<300&&now-lastTapTime>50){
+        /* Cancel any pending single-tap action */
+        clearTimeout(window._singleTapTimer);
+        window._singleTapTimer=null;
         clearTimeout(longPressTimer);
         currentMode=currentMode==='thought'?'habit':'thought';
         document.querySelectorAll('.mode-toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===currentMode));
@@ -674,7 +677,11 @@ speakBtn.addEventListener('touchstart',e=>{
     }
     lastTapTime=now;
     /* Long-press detection */
-    if(isRecording||doubleTapCooldown)return;isLongPress=false;lpRing.classList.add('active');longPressTimer=setTimeout(()=>{enterWriteMode();},800);},{passive:true});
+    if(isRecording||doubleTapCooldown)return;
+    isLongPress=false;
+    lpRing.classList.add('active');
+    longPressTimer=setTimeout(()=>{enterWriteMode();},800);
+},{passive:true});
 speakBtn.addEventListener('touchend',e=>{
     clearTimeout(longPressTimer);lpRing.classList.remove('active');
     window._touchHandled=true;
@@ -682,8 +689,17 @@ speakBtn.addEventListener('touchend',e=>{
     if(isLongPress&&isWriteMode){isLongPress=false;try{navigator.vibrate([30]);}catch(ex){}openWriteModal();exitWriteMode();return;}
     isLongPress=false;
     if(isWriteMode){openWriteModal();exitWriteMode();return;}
-    if(isRecording){isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(ex){}}
-    else{startRecording();}
+    /* Delay action to allow double-tap detection */
+    if(isRecording){
+        /* Stop immediately - no need to wait */
+        isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(ex){}
+    }else{
+        /* Delay start by 300ms to see if double-tap comes */
+        window._singleTapTimer=setTimeout(()=>{
+            window._singleTapTimer=null;
+            if(!doubleTapCooldown&&!isRecording){startRecording();}
+        },300);
+    }
 },{passive:true});
 speakBtn.addEventListener('touchmove',()=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');isLongPress=false;},{passive:true});
 /* Desktop mouse long-press */
