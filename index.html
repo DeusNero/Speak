@@ -705,40 +705,38 @@ let currentHabitId=null,currentHabitEntryId=null;
 function saveHabits(){localStorage.setItem(HABITS_KEY,JSON.stringify(habits));}
 
 function getStreakMsg(habit){
-    if(!habit.entries||habit.entries.length===0)return{streak:'',inactivity:''};
+    if(!habit.entries||habit.entries.length===0)return{streak:'',inactivity:'',daysSince:-1};
     const now=new Date(),entries=habit.entries.map(e=>new Date(e.createdAt));
     entries.sort((a,b)=>b-a);
     const lastEntry=entries[0];
     const daysSinceLast=Math.floor((now-lastEntry)/(1000*60*60*24));
     
-    /* Inactivity warnings */
+    /* Inactivity - gentle, rolling days */
     let inactivity='';
-    if(daysSinceLast>=7)inactivity='It\'s been over a week — small steps count too';
-    else if(daysSinceLast>=5)inactivity='5 days since last entry — maybe today?';
+    if(daysSinceLast>=5)inactivity='\ud83d\udca4 '+daysSinceLast+' days';
     
-    /* Streak / encouragement */
+    /* Streak - rolling 7 day window */
     let streak='';
-    const thisWeekStart=new Date(now);thisWeekStart.setDate(now.getDate()-now.getDay());thisWeekStart.setHours(0,0,0,0);
-    const thisWeekEntries=entries.filter(e=>e>=thisWeekStart).length;
+    const sevenDaysAgo=new Date(now.getTime()-7*24*60*60*1000);
+    const recentEntries=entries.filter(e=>e>=sevenDaysAgo).length;
     
     /* Check consecutive days */
     let consecutiveDays=1;
-    const today=new Date(now);today.setHours(0,0,0,0);
     const uniqueDays=[...new Set(entries.map(e=>{const d=new Date(e);d.setHours(0,0,0,0);return d.getTime();}))].sort((a,b)=>b-a);
     for(let i=1;i<uniqueDays.length;i++){
         const diff=(uniqueDays[i-1]-uniqueDays[i])/(1000*60*60*24);
         if(diff===1)consecutiveDays++;else break;
     }
     
-    if(consecutiveDays>=7)streak='7 days in a row! Incredible \ud83d\udd25';
+    if(consecutiveDays>=7)streak='7 days in a row! \ud83d\udd25';
     else if(consecutiveDays>=5)streak=consecutiveDays+' days in a row \ud83d\udd25';
     else if(consecutiveDays>=3)streak=consecutiveDays+' days in a row — keep going!';
-    else if(thisWeekEntries>=5)streak='5 times this week! \ud83d\udd25';
-    else if(thisWeekEntries>=3)streak='Active '+thisWeekEntries+' times this week';
-    else if(thisWeekEntries>=1)streak=thisWeekEntries+' time'+(thisWeekEntries>1?'s':'')+' this week';
-    else if(daysSinceLast<=1)streak='Logged today \u2713';
+    else if(recentEntries>=5)streak=recentEntries+' times in the last 7 days \ud83d\udd25';
+    else if(recentEntries>=3)streak='Active '+recentEntries+' times recently';
+    else if(daysSinceLast===0)streak='Logged today \u2713';
+    else if(daysSinceLast===1)streak='Logged yesterday';
     
-    return{streak,inactivity};
+    return{streak,inactivity,daysSince:daysSinceLast};
 }
 
 function renderHabits(){
@@ -754,8 +752,6 @@ function renderHabits(){
         const lastEntry=entryCount>0?formatDate(new Date(hab.entries[hab.entries.length-1].createdAt)):'No entries yet';
         const daysSinceLast=entryCount>0?Math.floor((new Date()-new Date(hab.entries[hab.entries.length-1].createdAt))/(1000*60*60*24)):999;
         let statusIcon='';
-        if(daysSinceLast>=7)statusIcon='<span style="color:var(--mood-1);font-size:16px;margin-left:6px;" title="Inactive over a week">\u26a0\ufe0f</span>';
-        else if(daysSinceLast>=5)statusIcon='<span style="color:var(--mood-2);font-size:14px;margin-left:6px;" title="5 days inactive">\u23f0</span>';
         h+='<div class="capture-card habit-card" data-habit-id="'+hab.id+'">';
         h+='<div class="capture-card-header"><div class="capture-card-date" style="font-size:15px;font-weight:600;color:var(--text-primary);">'+escapeHtml(hab.name)+statusIcon+'</div>';
         h+='<button class="habit-delete-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;" title="Delete habit"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div>';
