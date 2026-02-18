@@ -675,7 +675,6 @@ document.getElementById('write-refine-dismiss').addEventListener('click',()=>{
 
 speakBtn.addEventListener('touchstart',e=>{
     const now=Date.now();
-    
     /* Double-tap: if second tap within 300ms */
     if(now-lastTapTime<300&&now-lastTapTime>50){
         /* Cancel any pending single-tap action */
@@ -688,7 +687,7 @@ speakBtn.addEventListener('touchstart',e=>{
         try{if(navigator.vibrate)navigator.vibrate([30,50,30]);}catch(ex){}
         lastTapTime=0;
         doubleTapCooldown=true;
-        setTimeout(()=>{doubleTapCooldown=false;},500);
+        setTimeout(()=>{doubleTapCooldown=false;},180000);
         return;
     }
     lastTapTime=now;
@@ -701,7 +700,6 @@ speakBtn.addEventListener('touchstart',e=>{
 speakBtn.addEventListener('touchend',e=>{
     clearTimeout(longPressTimer);lpRing.classList.remove('active');
     window._touchHandled=true;
-    showToast('[TE] lp='+isLongPress+' wm='+isWriteMode+' cd='+doubleTapCooldown+' rec='+isRecording);
     if(isLongPress&&isWriteMode){isLongPress=false;try{navigator.vibrate([30]);}catch(ex){}openWriteModal();exitWriteMode();return;}
     isLongPress=false;
     if(isWriteMode){openWriteModal();exitWriteMode();return;}
@@ -712,10 +710,9 @@ speakBtn.addEventListener('touchend',e=>{
         isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(ex){}
     }else{
         /* Delay start by 300ms to see if double-tap comes */
-        
         window._singleTapTimer=setTimeout(()=>{
             window._singleTapTimer=null;
-            if(!doubleTapCooldown&&!isRecording){startRecording();}else{showToast('[BLOCKED] cd='+doubleTapCooldown+' rec='+isRecording);}
+            if(!doubleTapCooldown&&!isRecording){startRecording();}
         },300);
     }
 },{passive:true});
