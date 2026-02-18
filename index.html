@@ -76,7 +76,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
     background:radial-gradient(circle at 45% 40%,#e8c090 0%,#d4a870 35%,#c49058 70%,#a87840 100%);
     box-shadow:0 2px 4px rgba(255,255,255,.1) inset,0 -3px 6px rgba(0,0,0,.2) inset,0 8px 24px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3),0 0 30px rgba(212,168,112,.25);
     transition:all .4s ease}
-.speak-btn.write-mode .speak-btn-label{font-size:14px}
+.speak-btn.write-mode .speak-btn-label{-webkit-user-select:none;user-select:none;pointer-events:none;font-size:14px}
 .long-press-progress{position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent-warm);pointer-events:none;opacity:0;z-index:3}
 .long-press-progress.active{opacity:1;animation:longPressRing .8s linear forwards}
 @keyframes longPressRing{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
@@ -127,7 +127,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .sand-ripple:nth-child(4){inset:-106px;opacity:.4;animation:breatheRing 4s ease-in-out infinite 1.8s}
 @keyframes breatheRing{0%,100%{transform:scale(1);opacity:1;border-color:rgba(196,180,138,.35)}50%{transform:scale(1.05);opacity:.5;border-color:rgba(196,180,138,.15)}}
 
-.speak-btn{width:140px;height:140px;border-radius:50%;border:none;cursor:pointer;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+.speak-btn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;width:140px;height:140px;border-radius:50%;border:none;cursor:pointer;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
     /* Stone effect */
     background:radial-gradient(circle at 45% 40%,#c8b890 0%,#b0a070 35%,#98885a 70%,#847448 100%);
     box-shadow:
@@ -139,9 +139,9 @@ textarea#write-textarea::-webkit-resizer{display:none}
     color:#fff;transition:transform .2s ease,box-shadow .2s ease}
 .speak-btn:active{transform:scale(.96)}
 .speak-btn svg{width:30px;height:30px;opacity:.9;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
-.speak-btn-label{font-size:15px;font-weight:500;font-family:var(--font-body);letter-spacing:.5px;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.speak-btn-label{-webkit-user-select:none;user-select:none;pointer-events:none;font-size:15px;font-weight:500;font-family:var(--font-body);letter-spacing:.5px;text-shadow:0 1px 3px rgba(0,0,0,.3)}
 
-.speak-btn-container.habit-mode .speak-btn{background:radial-gradient(circle at 45% 40%,#7da87a 0%,#5e8a5a 35%,#4a7248 70%,#3a5e38 100%) !important;}
+.speak-btn-container.habit-mode .speak-btn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;background:radial-gradient(circle at 45% 40%,#7da87a 0%,#5e8a5a 35%,#4a7248 70%,#3a5e38 100%) !important;}
 .speak-btn.recording{
     background:radial-gradient(circle at 45% 40%,#e8c090 0%,#d4a870 35%,#c49058 70%,#a87840 100%);
     box-shadow:0 2px 4px rgba(255,255,255,.1) inset,0 -3px 6px rgba(0,0,0,.2) inset,0 8px 24px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3),0 0 40px rgba(196,149,107,.25);
@@ -374,7 +374,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
     <!-- HABIT PICKER MODAL (for tagging from Speak screen) -->
     <div class="modal-overlay" id="habit-picker-overlay"><div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:340px;margin:0 auto;"><div class="modal-dialog" style="max-width:340px;padding:24px;width:100%;margin:0;position:relative;">
         <button class="modal-close-x" id="habit-picker-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        <div class="modal-title" style="margin-bottom:4px;">Add to your habits</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;font-style:italic;">Small steps. every day.</div>
+        <div class="modal-title" style="margin-bottom:4px;">Add to your habits</div><div style="font-size:13px;color:#5e8a5a;margin-bottom:16px;font-style:italic;">Small steps. every day.</div>
         <div id="habit-picker-list" style="max-height:250px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
         <div id="habit-picker-empty" style="text-align:center;color:var(--text-muted);font-size:14px;padding:20px 0;">No habits yet.</div>
     </div><div class="modal-dialog" style="max-width:340px;padding:14px 24px;width:100%;margin:0;position:relative;"><button id="habit-picker-add-fixed" style="padding:12px 16px;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);border:none;border-radius:var(--radius-md);color:var(--bg-deep);font-family:var(--font-body);font-size:14px;cursor:pointer;text-align:center;font-weight:500;width:100%;">+ Add new habit</button></div></div></div>
@@ -593,7 +593,7 @@ function openWriteModal(){
     var _wt=document.querySelector('#write-overlay .modal-title');
     if(_wt){if(currentMode==='habit'||window._habitDirectSave){_wt.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';}else{_wt.textContent='What\u2019s on your mind?';}}
     const writeTitle=document.querySelector('#write-overlay .modal-title');
-    if(writeTitle)writeTitle.textContent=(currentMode==='habit'||window._habitDirectSave)?'What did you do today?':'What\u2019s on your mind?';
+    
     document.getElementById('write-textarea').value='';syncWriteLangToggle();
     const wo=document.getElementById('write-overlay');wo.classList.toggle('habit-write-mode',currentMode==='habit');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
@@ -1026,7 +1026,7 @@ function habitOpenWriteModal(){
     document.getElementById('write-textarea').value='';
     var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';
     const writeTitle=document.querySelector('#write-overlay .modal-title');
-    if(writeTitle)writeTitle.textContent='What did you do today?';
+    if(writeTitle)writeTitle.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';
     document.getElementById('write-overlay').classList.add('habit-write-mode');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
