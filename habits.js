@@ -259,10 +259,9 @@ function openHabitDetail(id){
         list.querySelectorAll('.entry-delete-btn').forEach(btn=>{
             btn.addEventListener('click',e=>{
                 e.stopPropagation();
-                if(confirm('Delete this entry?')){
-                    hab.entries=hab.entries.filter(x=>x.id!==btn.dataset.entryId);
-                    saveHabits();openHabitDetail(id);
-                }
+                window._pendingEntryDeleteId=btn.dataset.entryId;
+                document.getElementById('entry-delete-overlay').classList.add('visible');
+                pushNav('entry-delete-overlay');
             });
         });
         list.querySelectorAll('.entry-star-btn').forEach(btn=>{
@@ -305,13 +304,23 @@ document.getElementById('delete-habit-confirm').addEventListener('click',()=>{
     document.getElementById('delete-habit-overlay').classList.remove('visible');
 });
 
-/* Delete Habit Entry */
+/* Delete Habit Entry (from card trash icon) */
+document.getElementById('entry-delete-cancel').addEventListener('click',()=>document.getElementById('entry-delete-overlay').classList.remove('visible'));
+document.getElementById('entry-delete-confirm').addEventListener('click',()=>{
+    const hab=habits.find(h=>h.id===currentHabitId);
+    if(hab&&window._pendingEntryDeleteId){hab.entries=hab.entries.filter(e=>e.id!==window._pendingEntryDeleteId);saveHabits();}
+    document.getElementById('entry-delete-overlay').classList.remove('visible');
+    window._pendingEntryDeleteId=null;
+    openHabitDetail(currentHabitId);
+});
+
+/* Delete Habit Entry (from entry detail overlay) */
 document.getElementById('habit-entry-close-x').addEventListener('click',()=>document.getElementById('habit-entry-overlay').classList.remove('visible'));
 document.getElementById('habit-entry-delete').addEventListener('click',()=>{
-    const hab=habits.find(h=>h.id===currentHabitId);
-    if(hab){hab.entries=hab.entries.filter(e=>e.id!==currentHabitEntryId);saveHabits();}
+    window._pendingEntryDeleteId=currentHabitEntryId;
     document.getElementById('habit-entry-overlay').classList.remove('visible');
-    openHabitDetail(currentHabitId);
+    document.getElementById('entry-delete-overlay').classList.add('visible');
+    pushNav('entry-delete-overlay');
 });
 
 /* Habit Detail Back */
