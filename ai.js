@@ -30,7 +30,15 @@ async function refineText(raw,lang){
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3}})
         });
-        if(!r.ok){const errBody=await r.text();console.error('Gemini API error:',r.status,errBody);return{text:localRefine(raw),source:'local',error:'API error: '+r.status};}
+        if(!r.ok){
+            const errBody=await r.text();console.error('Gemini API error:',r.status,errBody);
+            let errMsg='API error: '+r.status;
+            if(r.status===429)errMsg='Too many requests — wait a moment and try again';
+            else if(r.status===400)errMsg='Invalid request — check your API key';
+            else if(r.status===403)errMsg='Access denied — API key may be invalid or expired';
+            else if(r.status===500||r.status===503)errMsg='Gemini is temporarily unavailable — try again shortly';
+            return{text:localRefine(raw),source:'local',error:errMsg};
+        }
         const d=await r.json();
         console.log('Gemini response:',JSON.stringify(d).substring(0,500));
         const txt=d.candidates?.[0]?.content?.parts?.[0]?.text;

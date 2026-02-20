@@ -270,7 +270,8 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .select-action-delete.habits-delete{background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);color:var(--bg-deep);}
 .capture-card.selected{border-color:rgba(196,180,138,.5);background:var(--bg-card-hover);}
 .capture-card.selected.habit-card{border-color:rgba(94,138,90,.5);}
-.select-checkbox{width:20px;height:20px;border-radius:50%;border:2px solid var(--border-subtle);background:var(--bg-elevated);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s ease;}
+.select-checkbox{width:20px;height:20px;border-radius:50%;border:2px solid var(--border-subtle);background:var(--bg-elevated);flex-shrink:0;display:none;align-items:center;justify-content:center;transition:all .15s ease;}
+.selecting .select-checkbox{display:flex;}
 .capture-card.selected .select-checkbox{background:#c4b48a;border-color:#c4b48a;}
 .capture-card.selected.habit-card .select-checkbox{background:#5e8a5a;border-color:#5e8a5a;}
 .select-checkbox svg{display:none;}

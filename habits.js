@@ -145,6 +145,7 @@ function renderHabits(){
             if(hab){hab.favourite=!hab.favourite;saveHabits();renderHabits();}
         });
     });
+    list.classList.toggle('selecting',habitsSelectMode);
 }
 
 
@@ -239,6 +240,7 @@ function openHabitDetail(id){
                 if(entry){entry.starred=!entry.starred;saveHabits();openHabitDetail(id);}
             });
         });
+        list.classList.toggle('selecting',habitEntriesSelectMode);
     }
     screens.forEach(s=>s.classList.remove('active'));
     document.getElementById('habit-detail-screen').classList.add('active');

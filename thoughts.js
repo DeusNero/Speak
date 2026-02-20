@@ -74,6 +74,7 @@ list.querySelectorAll('.card-edit-btn').forEach(btn=>{
 list.querySelectorAll('.card-delete-btn').forEach(btn=>{
     btn.addEventListener('click',e=>{e.stopPropagation();openDeleteFromCard(btn.dataset.id);});
 });
+list.classList.toggle('selecting',thoughtsSelectMode);
 }
 
 document.getElementById('thoughts-select-cancel').addEventListener('click',exitThoughtsSelection);
