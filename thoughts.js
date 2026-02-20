@@ -145,6 +145,68 @@ if(st.includes('habit')&&!(c._wasHabit)){
 }
 saveCaptures();document.getElementById('edit-modal').classList.remove('visible');openDetail(currentDetailId);});
 
+/* ---- Thoughts Screen Speak Button ---- */
+const thoughtsSpeakBtn=document.getElementById('thoughts-speak-btn');
+const thoughtsLpRing=document.getElementById('thoughts-lp-ring');
+let thoughtsLpTimer=null,thoughtsIsLP=false,thoughtsIsWrite=false,thoughtsIsRec=false;
+let thoughtsRec=null,thoughtsFT='',thoughtsIT='';
+
+function thoughtsEnterWrite(){
+    thoughtsIsWrite=true;thoughtsIsLP=true;
+    try{if(navigator.vibrate)navigator.vibrate([50]);}catch(e){}
+    thoughtsSpeakBtn.classList.add('write-mode');
+    thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Write';
+    thoughtsSpeakBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+    thoughtsLpRing.classList.remove('active');
+}
+function thoughtsExitWrite(){
+    thoughtsIsWrite=false;
+    thoughtsSpeakBtn.classList.remove('write-mode');
+    thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';
+    thoughtsSpeakBtn.querySelector('svg').innerHTML='<path d="M12 21l-1.5-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 5.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.5 11.2L12 21" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="21" stroke="currentColor" stroke-width="1.5"/><path d="M4 9c1.5-.5 3 .5 3.5 1.5s0 2.5-1 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5.5 7c1-.5 2.5 0 3 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 13c-1 .5-1.5 2-.5 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+}
+function thoughtsOpenWrite(){
+    currentMode='thought';window._habitDirectSave=false;
+    document.getElementById('write-textarea').value='';
+    var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.textContent='What\u2019s on your mind?';
+    const wo=document.getElementById('write-overlay');wo.classList.remove('habit-write-mode');
+    document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
+    if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
+    wo.classList.add('visible');pushNav('write-overlay');
+    setTimeout(()=>document.getElementById('write-textarea').focus(),100);
+}
+function thoughtsSaveVoice(text){
+    if(text){currentCapture.text=cleanupTranscript(text);currentCapture.inputType='voice';currentCapture.lang=currentLang;currentMode='thought';showPostRecordFlow();}
+}
+if(SR){
+function createThoughtsRec(){
+    const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
+    r.onstart=()=>{thoughtsIsRec=true;thoughtsSpeakBtn.classList.add('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Stop';};
+    r.onresult=e=>{thoughtsIT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)thoughtsFT+=e.results[i][0].transcript+' ';else thoughtsIT+=e.results[i][0].transcript;}};
+    r.onerror=e=>{if(e.error==='no-speech'){if(thoughtsIsRec){setTimeout(()=>{try{thoughtsRec.start();}catch(ex){}},100);}return;}
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsOpenWrite();return;}};
+    r.onend=()=>{if(thoughtsIsRec){setTimeout(()=>{try{thoughtsRec.start();}catch(ex){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';const t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
+    thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';
+    const t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';
+    if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
+    return r;
+}
+async function thoughtsStartRec(){thoughtsFT='';thoughtsIT='';
+    try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop());thoughtsRec=createThoughtsRec();thoughtsRec.lang=currentLang;thoughtsRec.start();}
+    catch(e){thoughtsOpenWrite();}}
+}
+thoughtsSpeakBtn.addEventListener('touchstart',e=>{if(thoughtsIsRec)return;thoughtsIsLP=false;thoughtsLpRing.classList.add('active');thoughtsLpTimer=setTimeout(()=>{thoughtsEnterWrite();},800);},{passive:true});
+thoughtsSpeakBtn.addEventListener('touchend',e=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');window._thoughtsTouchHandled=true;if(thoughtsIsLP&&thoughtsIsWrite){thoughtsIsLP=false;thoughtsOpenWrite();thoughtsExitWrite();return;}thoughtsIsLP=false;if(thoughtsIsWrite){thoughtsOpenWrite();thoughtsExitWrite();return;}if(thoughtsIsRec){thoughtsIsRec=false;try{thoughtsRec.stop();}catch(ex){}}else if(SR){thoughtsStartRec();}else{thoughtsOpenWrite();}},{passive:true});
+thoughtsSpeakBtn.addEventListener('touchmove',()=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');thoughtsIsLP=false;},{passive:true});
+thoughtsSpeakBtn.addEventListener('mousedown',e=>{if(thoughtsIsRec||e.button!==0)return;thoughtsIsLP=false;thoughtsLpRing.classList.add('active');thoughtsLpTimer=setTimeout(()=>{thoughtsEnterWrite();},800);});
+thoughtsSpeakBtn.addEventListener('mouseup',e=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');if(thoughtsIsLP&&thoughtsIsWrite){thoughtsIsLP=false;thoughtsOpenWrite();thoughtsExitWrite();return;}thoughtsIsLP=false;});
+thoughtsSpeakBtn.addEventListener('click',e=>{
+    if(window._thoughtsTouchHandled){window._thoughtsTouchHandled=false;return;}
+    if(thoughtsIsWrite){thoughtsOpenWrite();thoughtsExitWrite();return;}
+    if(thoughtsIsRec){thoughtsIsRec=false;try{thoughtsRec.stop();}catch(ex){}return;}
+    if(SR){thoughtsStartRec();}else{thoughtsOpenWrite();}
+});
+
 let _isRefining=false;
 document.getElementById('detail-refine').addEventListener('click',async()=>{if(_isRefining)return;_isRefining=true;const c=captures.find(x=>x.id===currentDetailId);if(!c){_isRefining=false;return;}const ov=document.getElementById('refine-overlay'),bd=document.getElementById('refine-body'),ac=document.getElementById('refine-actions');bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div><div class="refine-loading"><div class="refine-loading-spinner"></div>Refining your text...</div>';ac.style.display='none';ov.classList.add('visible');pushNav('refine-overlay');const result=await refineText(c.text,c.lang||'en-US');_isRefining=false;let statusHtml='';if(typeof result==='object'){if(result.source==='local'&&result.error){statusHtml='<div style="font-size:12px;color:var(--mood-1);margin-bottom:12px;">Gemini unavailable: '+escapeHtml(result.error)+'. Showing local cleanup.</div>';}else if(result.source==='local'){statusHtml='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">No API key. Showing local cleanup.</div>';}else{statusHtml='<div style="font-size:12px;color:var(--accent-moss);margin-bottom:12px;">Refined with Gemini AI</div>';}}const refinedText=typeof result==='object'?result.text:result;bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text">'+escapeHtml(refinedText)+'</div>';ac.style.display='flex';});
 document.getElementById('refine-dismiss').addEventListener('click',()=>document.getElementById('refine-overlay').classList.remove('visible'));

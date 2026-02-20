@@ -317,7 +317,71 @@ document.getElementById('habit-entry-delete').addEventListener('click',()=>{
 /* Habit Detail Back */
 document.getElementById('habit-detail-back').addEventListener('click',()=>showScreen('habits-screen'));
 
-/* Habit Speak Button - full speak/write with long-press */
+/* ---- Habits Screen Speak Button ---- */
+const habitsPgBtn=document.getElementById('habits-speak-btn');
+const habitsPgLpRing=document.getElementById('habits-lp-ring');
+let habitsPgLpTimer=null,habitsPgIsLP=false,habitsPgIsWrite=false,habitsPgIsRec=false;
+let habitsPgRec=null,habitsPgFT='',habitsPgIT='';
+
+function habitsPgEnterWrite(){
+    habitsPgIsWrite=true;habitsPgIsLP=true;
+    try{if(navigator.vibrate)navigator.vibrate([50]);}catch(e){}
+    habitsPgBtn.classList.add('write-mode');
+    habitsPgBtn.querySelector('.speak-btn-label').textContent='Write';
+    habitsPgBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+    habitsPgLpRing.classList.remove('active');
+}
+function habitsPgExitWrite(){
+    habitsPgIsWrite=false;
+    habitsPgBtn.classList.remove('write-mode');
+    habitsPgBtn.querySelector('.speak-btn-label').textContent='Speak';
+    habitsPgBtn.querySelector('svg').innerHTML='<path d="M12 22V12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22c-2 0-3-1-3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 22c2 0 3-1 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+}
+function habitsPgOpenWrite(){
+    currentMode='habit';window._habitDirectSave=false;
+    document.getElementById('write-textarea').value='';
+    var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';
+    const wo=document.getElementById('write-overlay');wo.classList.add('habit-write-mode');
+    document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
+    if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
+    wo.classList.add('visible');pushNav('write-overlay');
+    setTimeout(()=>document.getElementById('write-textarea').focus(),100);
+}
+function habitsPgSaveVoice(text){
+    if(text){currentCapture.text=cleanupTranscript(text);currentCapture.inputType='voice';currentCapture.lang=currentLang;currentCapture.tags=['habit'];currentMode='habit';
+    if(habits.length>0){showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
+    else{showPostRecordFlow();}}
+}
+if(SR){
+function createHabitsPgRec(){
+    const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
+    r.onstart=()=>{habitsPgIsRec=true;habitsPgBtn.classList.add('recording');habitsPgBtn.querySelector('.speak-btn-label').textContent='Stop';};
+    r.onresult=e=>{habitsPgIT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)habitsPgFT+=e.results[i][0].transcript+' ';else habitsPgIT+=e.results[i][0].transcript;}};
+    r.onerror=e=>{if(e.error==='no-speech'){if(habitsPgIsRec){setTimeout(()=>{try{habitsPgRec.start();}catch(ex){}},100);}return;}
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){habitsPgIsRec=false;habitsPgBtn.classList.remove('recording');habitsPgBtn.querySelector('.speak-btn-label').textContent='Speak';habitsPgOpenWrite();return;}};
+    r.onend=()=>{if(habitsPgIsRec){setTimeout(()=>{try{habitsPgRec.start();}catch(ex){habitsPgIsRec=false;habitsPgBtn.classList.remove('recording');habitsPgBtn.querySelector('.speak-btn-label').textContent='Speak';const t=(habitsPgFT+habitsPgIT).trim();habitsPgFT='';habitsPgIT='';if(t){habitsPgSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
+    habitsPgBtn.classList.remove('recording');habitsPgBtn.querySelector('.speak-btn-label').textContent='Speak';
+    const t=(habitsPgFT+habitsPgIT).trim();habitsPgFT='';habitsPgIT='';
+    if(t){habitsPgSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
+    return r;
+}
+async function habitsPgStartRec(){habitsPgFT='';habitsPgIT='';
+    try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop());habitsPgRec=createHabitsPgRec();habitsPgRec.lang=currentLang;habitsPgRec.start();}
+    catch(e){habitsPgOpenWrite();}}
+}
+habitsPgBtn.addEventListener('touchstart',e=>{if(habitsPgIsRec)return;habitsPgIsLP=false;habitsPgLpRing.classList.add('active');habitsPgLpTimer=setTimeout(()=>{habitsPgEnterWrite();},800);},{passive:true});
+habitsPgBtn.addEventListener('touchend',e=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');window._habitsPgTouchHandled=true;if(habitsPgIsLP&&habitsPgIsWrite){habitsPgIsLP=false;habitsPgOpenWrite();habitsPgExitWrite();return;}habitsPgIsLP=false;if(habitsPgIsWrite){habitsPgOpenWrite();habitsPgExitWrite();return;}if(habitsPgIsRec){habitsPgIsRec=false;try{habitsPgRec.stop();}catch(ex){}}else if(SR){habitsPgStartRec();}else{habitsPgOpenWrite();}},{passive:true});
+habitsPgBtn.addEventListener('touchmove',()=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');habitsPgIsLP=false;},{passive:true});
+habitsPgBtn.addEventListener('mousedown',e=>{if(habitsPgIsRec||e.button!==0)return;habitsPgIsLP=false;habitsPgLpRing.classList.add('active');habitsPgLpTimer=setTimeout(()=>{habitsPgEnterWrite();},800);});
+habitsPgBtn.addEventListener('mouseup',e=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');if(habitsPgIsLP&&habitsPgIsWrite){habitsPgIsLP=false;habitsPgOpenWrite();habitsPgExitWrite();return;}habitsPgIsLP=false;});
+habitsPgBtn.addEventListener('click',e=>{
+    if(window._habitsPgTouchHandled){window._habitsPgTouchHandled=false;return;}
+    if(habitsPgIsWrite){habitsPgOpenWrite();habitsPgExitWrite();return;}
+    if(habitsPgIsRec){habitsPgIsRec=false;try{habitsPgRec.stop();}catch(ex){}return;}
+    if(SR){habitsPgStartRec();}else{habitsPgOpenWrite();}
+});
+
+/* Habit Detail Speak Button - full speak/write with long-press */
 let habitLongPressTimer=null,habitIsLongPress=false,habitIsWriteMode=false,habitIsRecording=false;
 const habitBtn=document.getElementById('habit-speak-btn');
 const habitLpRing=document.getElementById('habit-lp-ring');

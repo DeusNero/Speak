@@ -1,4 +1,4 @@
-const CACHE_NAME = 'speak-v24';
+const CACHE_NAME = 'speak-v25';
 const ASSETS = [
     './',
     './index.html',
