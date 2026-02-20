@@ -314,14 +314,8 @@ document.getElementById('entry-delete-confirm').addEventListener('click',()=>{
     openHabitDetail(currentHabitId);
 });
 
-/* Delete Habit Entry (from entry detail overlay) */
+/* Habit Entry Detail overlay */
 document.getElementById('habit-entry-close-x').addEventListener('click',()=>document.getElementById('habit-entry-overlay').classList.remove('visible'));
-document.getElementById('habit-entry-delete').addEventListener('click',()=>{
-    window._pendingEntryDeleteId=currentHabitEntryId;
-    document.getElementById('habit-entry-overlay').classList.remove('visible');
-    document.getElementById('entry-delete-overlay').classList.add('visible');
-    pushNav('entry-delete-overlay');
-});
 
 /* Habit Detail Back */
 document.getElementById('habit-detail-back').addEventListener('click',()=>showScreen('habits-screen'));
