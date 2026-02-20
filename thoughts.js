@@ -132,7 +132,18 @@ document.getElementById('detail-edit').addEventListener('click',()=>{const c=cap
 document.getElementById('edit-cancel').addEventListener('click',()=>document.getElementById('edit-modal').classList.remove('visible'));
 document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');});});
 document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(btn=>{btn.addEventListener('click',()=>btn.classList.toggle('selected'));});
-document.getElementById('edit-save').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;c.text=document.getElementById('edit-text-input').value;const sm=document.querySelector('#edit-mood-row .edit-mood-btn.selected');c.mood=sm?(parseInt(sm.dataset.mood)||null):null;const st=[];document.querySelectorAll('#edit-tag-row .edit-tag-btn.selected').forEach(b=>st.push(b.dataset.tag));c.tags=st;
+document.getElementById('edit-save').addEventListener('click',()=>{
+if(window._heEditMode){
+    window._heEditMode=false;
+    var hab=habits.find(function(h){return h.id===currentHabitId;});
+    if(!hab)return;
+    var entry=(hab.entries||[]).find(function(e){return e.id===currentHabitEntryId;});
+    if(!entry)return;
+    entry.text=document.getElementById('edit-text-input').value;
+    saveHabits();document.getElementById('edit-modal').classList.remove('visible');
+    openHabitEntryDetail(entry);return;
+}
+const c=captures.find(x=>x.id===currentDetailId);if(!c)return;c.text=document.getElementById('edit-text-input').value;const sm=document.querySelector('#edit-mood-row .edit-mood-btn.selected');c.mood=sm?(parseInt(sm.dataset.mood)||null):null;const st=[];document.querySelectorAll('#edit-tag-row .edit-tag-btn.selected').forEach(b=>st.push(b.dataset.tag));c.tags=st;
 /* If habit tag added, move to habit */
 if(st.includes('habit')&&!(c._wasHabit)){
     document.getElementById('edit-modal').classList.remove('visible');
@@ -222,7 +233,17 @@ let _isRefining=false;
 document.getElementById('detail-refine').addEventListener('click',async()=>{if(_isRefining)return;_isRefining=true;const c=captures.find(x=>x.id===currentDetailId);if(!c){_isRefining=false;return;}const ov=document.getElementById('refine-overlay'),bd=document.getElementById('refine-body'),ac=document.getElementById('refine-actions');bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div><div class="refine-loading"><div class="refine-loading-spinner"></div>Refining your text...</div>';ac.style.display='none';ov.classList.add('visible');pushNav('refine-overlay');const result=await refineText(c.text,c.lang||'en-US');_isRefining=false;let statusHtml='';if(typeof result==='object'){if(result.source==='local'&&result.error){statusHtml='<div style="font-size:12px;color:var(--mood-1);margin-bottom:12px;">Gemini unavailable: '+escapeHtml(result.error)+'. Showing local cleanup.</div>';}else if(result.source==='local'){statusHtml='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">No API key. Showing local cleanup.</div>';}else{statusHtml='<div style="font-size:12px;color:var(--accent-moss);margin-bottom:12px;">Refined with Gemini AI</div>';}}const refinedText=typeof result==='object'?result.text:result;bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(c.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text">'+escapeHtml(refinedText)+'</div>';ac.style.display='flex';});
 document.getElementById('refine-dismiss').addEventListener('click',()=>document.getElementById('refine-overlay').classList.remove('visible'));
 document.getElementById('refine-reject').addEventListener('click',()=>document.getElementById('refine-overlay').classList.remove('visible'));
-document.getElementById('refine-accept').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const el=document.getElementById('refined-text');if(el){c.text=el.textContent;saveCaptures();}document.getElementById('refine-overlay').classList.remove('visible');openDetail(currentDetailId);});
+document.getElementById('refine-accept').addEventListener('click',()=>{
+if(window._heRefineTarget){
+    window._heRefineTarget=false;
+    var hab=habits.find(function(h){return h.id===currentHabitId;});
+    if(hab){var entry=(hab.entries||[]).find(function(e){return e.id===currentHabitEntryId;});
+    var el=document.getElementById('refined-text');if(entry&&el){entry.text=el.textContent;saveHabits();}}
+    document.getElementById('refine-overlay').classList.remove('visible');
+    var updEntry=hab?(hab.entries||[]).find(function(e){return e.id===currentHabitEntryId;}):null;
+    if(updEntry)openHabitEntryDetail(updEntry);return;
+}
+const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const rEl=document.getElementById('refined-text');if(rEl){c.text=rEl.textContent;saveCaptures();}document.getElementById('refine-overlay').classList.remove('visible');openDetail(currentDetailId);});
 
 function updateSettingsUI(){document.getElementById('total-captures').textContent=captures.length;document.getElementById('last-backup').textContent=settings.lastBackup?'Last: '+new Date(settings.lastBackup).toLocaleDateString():'Never backed up';document.querySelectorAll('#settings-lang-toggle .settings-lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===settings.defaultLang));document.getElementById('api-key-status').textContent=settings.geminiApiKey?'Configured \u2713':'Not configured';}
 document.getElementById('export-btn').addEventListener('click',e=>{e.stopPropagation();const d={exportDate:new Date().toISOString(),version:'1.5.0',captures,habits,settings:{defaultLang:settings.defaultLang,lastBackup:settings.lastBackup}};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='speak-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(u);settings.lastBackup=new Date().toISOString();saveSettings();updateSettingsUI();});

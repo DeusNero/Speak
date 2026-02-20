@@ -278,8 +278,10 @@ const speakBtnMain=document.querySelector('.speak-btn-container .speak-btn');
 window.addEventListener('popstate',e=>{
     if(navHistory.length>0){
         navHistory.pop();
-        const overlays=['write-overlay','date-range-overlay','confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','habit-entry-overlay','delete-habit-overlay','entry-delete-overlay'];
+        const overlays=['write-overlay','date-range-overlay','confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay'];
         for(const oid of overlays){const oel=document.getElementById(oid);if(oel&&(oel.classList.contains('visible'))){oel.classList.remove('visible');return;}}
+        const heDetailScreen=document.getElementById('habit-entry-detail-screen');
+        if(heDetailScreen&&heDetailScreen.classList.contains('active')){if(typeof openHabitDetail==='function')openHabitDetail(currentHabitId);return;}
         const habitDetailScreen=document.getElementById('habit-detail-screen');
         if(habitDetailScreen&&habitDetailScreen.classList.contains('active')){showScreen('habits-screen');return;}
         const detailScreen=document.getElementById('detail-screen');

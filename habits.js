@@ -240,11 +240,7 @@ function openHabitDetail(id){
                 }
                 const entry=entries.find(x=>x.id===card.dataset.entryId);
                 if(!entry)return;
-                currentHabitEntryId=entry.id;
-                document.getElementById('habit-entry-date').textContent=formatDate(new Date(entry.createdAt));
-                document.getElementById('habit-entry-text').textContent=entry.text;
-                document.getElementById('habit-entry-overlay').classList.add('visible');
-                pushNav('habit-entry-overlay');
+                openHabitEntryDetail(entry);
             });
         });
         list.querySelectorAll('.entry-edit-btn').forEach(btn=>{
@@ -314,8 +310,55 @@ document.getElementById('entry-delete-confirm').addEventListener('click',()=>{
     openHabitDetail(currentHabitId);
 });
 
-/* Habit Entry Detail overlay */
-document.getElementById('habit-entry-close-x').addEventListener('click',()=>document.getElementById('habit-entry-overlay').classList.remove('visible'));
+/* Habit Entry Detail Screen */
+var _heCurrentEntry=null;
+function openHabitEntryDetail(entry){
+    _heCurrentEntry=entry;
+    currentHabitEntryId=entry.id;
+    var inputIcon=entry.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#5e8a5a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#5e8a5a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>';
+    document.getElementById('he-detail-date').innerHTML=formatDate(new Date(entry.createdAt))+' '+inputIcon;
+    document.getElementById('he-detail-text').textContent=entry.text;
+    screens.forEach(function(s){s.classList.remove('active');});
+    document.getElementById('habit-entry-detail-screen').classList.add('active');
+    pushNav('habit-entry-detail-screen');
+}
+function _heRefreshEntry(){
+    var hab=habits.find(function(h){return h.id===currentHabitId;});
+    if(!hab)return null;
+    var entry=(hab.entries||[]).find(function(e){return e.id===currentHabitEntryId;});
+    if(entry)_heCurrentEntry=entry;
+    return entry;
+}
+document.getElementById('habit-entry-back').addEventListener('click',function(){openHabitDetail(currentHabitId);});
+document.getElementById('he-detail-edit').addEventListener('click',function(){
+    var entry=_heRefreshEntry();if(!entry)return;
+    document.getElementById('edit-text-input').value=entry.text;
+    document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(function(b){b.classList.remove('selected');});
+    document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(function(b){b.classList.remove('selected');});
+    window._heEditMode=true;
+    document.getElementById('edit-modal').classList.add('visible');pushNav('edit-modal');
+});
+document.getElementById('he-detail-delete').addEventListener('click',function(){
+    window._pendingEntryDeleteId=currentHabitEntryId;
+    document.getElementById('entry-delete-overlay').classList.add('visible');pushNav('entry-delete-overlay');
+});
+var _heIsRefining=false;
+document.getElementById('he-detail-refine').addEventListener('click',function(){
+    if(_heIsRefining)return;_heIsRefining=true;
+    var entry=_heRefreshEntry();if(!entry){_heIsRefining=false;return;}
+    var ov=document.getElementById('refine-overlay'),bd=document.getElementById('refine-body'),ac=document.getElementById('refine-actions');
+    bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(entry.text)+'</div><div class="refine-label">Refined</div><div class="refine-loading"><div class="refine-loading-spinner"></div>Refining your text...</div>';
+    ac.style.display='none';ov.classList.add('visible');pushNav('refine-overlay');
+    window._heRefineTarget=true;
+    refineText(entry.text,entry.lang||'en-US').then(function(result){
+        _heIsRefining=false;
+        var statusHtml='';
+        if(typeof result==='object'){if(result.source==='local'&&result.error){statusHtml='<div style="font-size:12px;color:var(--mood-1);margin-bottom:12px;">Gemini unavailable: '+escapeHtml(result.error)+'. Showing local cleanup.</div>';}else if(result.source==='local'){statusHtml='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">No API key. Showing local cleanup.</div>';}else{statusHtml='<div style="font-size:12px;color:var(--accent-moss);margin-bottom:12px;">Refined with Gemini AI</div>';}}
+        var refinedText=typeof result==='object'?result.text:result;
+        bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(entry.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text">'+escapeHtml(refinedText)+'</div>';
+        ac.style.display='flex';
+    });
+});
 
 /* Habit Detail Back */
 document.getElementById('habit-detail-back').addEventListener('click',()=>showScreen('habits-screen'));

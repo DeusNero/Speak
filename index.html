@@ -142,11 +142,16 @@
         <div id="habit-picker-empty" style="text-align:center;color:var(--text-muted);font-size:14px;padding:20px 0;">No habits yet.</div>
     </div><div class="modal-dialog" style="max-width:340px;padding:14px 24px;width:100%;margin:0;position:relative;"><button id="habit-picker-add-fixed" style="padding:12px 16px;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);border:none;border-radius:var(--radius-md);color:var(--bg-deep);font-family:var(--font-body);font-size:14px;cursor:pointer;text-align:center;font-weight:500;width:100%;">+ Add new habit</button></div></div></div>
 
-    <!-- HABIT ENTRY DETAIL -->
-    <div class="modal-overlay" id="habit-entry-overlay"><div class="modal-dialog" style="max-width:380px;padding:24px;text-align:left;">
-        <button class="modal-close-x" id="habit-entry-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        <div id="habit-entry-date" style="font-size:12px;color:var(--text-muted);margin-bottom:8px;"></div>
-        <div id="habit-entry-text" style="font-size:15px;line-height:1.6;color:var(--text-primary);"></div>
+    <!-- HABIT ENTRY DETAIL (full screen) -->
+    <div id="habit-entry-detail-screen" class="screen"><div class="detail-screen">
+        <button class="detail-back" id="habit-entry-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+        <div class="detail-header"><div class="detail-date" id="he-detail-date"></div></div>
+        <div class="detail-text" id="he-detail-text"></div>
+        <div class="detail-actions" style="display:flex;align-items:center;justify-content:center;gap:12px;">
+            <button class="detail-action-btn" id="he-detail-edit" style="border-color:rgba(90,140,85,.25);color:#7da87a;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>Edit</button>
+            <div class="gemini-btn-wrap"><div class="gemini-ripple" style="border-color:rgba(90,140,85,.2);"></div><div class="gemini-ripple" style="border-color:rgba(90,140,85,.15);"></div><button class="detail-action-btn refine" id="he-detail-refine" style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(90,140,85,.3);background:rgba(90,140,85,.1);display:flex;align-items:center;justify-content:center;padding:0;position:relative;z-index:1;"><svg style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="#5e8a5a"/><path d="M18 14L18.75 16.5L21 17.25L18.75 18L18 20.5L17.25 18L15 17.25L17.25 16.5L18 14Z" fill="#5e8a5a" opacity=".7"/></svg></button></div>
+            <button class="detail-action-btn danger" id="he-detail-delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Delete</button>
+        </div>
     </div></div>
 
     <!-- DELETE HABIT CONFIRM -->
