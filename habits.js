@@ -104,10 +104,10 @@ function renderHabits(){
     list.innerHTML=h;
     list.querySelectorAll('.habit-card').forEach(card=>{
         let lpTimer=null;
-        card.addEventListener('touchstart',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitsSelectMode)enterHabitsSelection(card.dataset.habitId);},500);},{passive:true});
+        card.addEventListener('touchstart',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitsSelectMode)enterHabitsSelection(card.dataset.habitId);},700);},{passive:true});
         card.addEventListener('touchend',()=>clearTimeout(lpTimer),{passive:true});
         card.addEventListener('touchmove',()=>clearTimeout(lpTimer),{passive:true});
-        card.addEventListener('mousedown',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitsSelectMode)enterHabitsSelection(card.dataset.habitId);},500);});
+        card.addEventListener('mousedown',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitsSelectMode)enterHabitsSelection(card.dataset.habitId);},700);});
         card.addEventListener('mouseup',()=>clearTimeout(lpTimer));
         card.addEventListener('click',e=>{
             if(e.target.closest('.habit-delete-btn')||e.target.closest('.habit-fav-btn')||e.target.closest('.habit-edit-btn'))return;
@@ -192,10 +192,10 @@ function openHabitDetail(id){
         list.innerHTML=h;
         list.querySelectorAll('.habit-entry-card').forEach(card=>{
             let lpTimer=null;
-            card.addEventListener('touchstart',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitEntriesSelectMode)enterHabitEntriesSelection(card.dataset.entryId);},500);},{passive:true});
+            card.addEventListener('touchstart',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitEntriesSelectMode)enterHabitEntriesSelection(card.dataset.entryId);},700);},{passive:true});
             card.addEventListener('touchend',()=>clearTimeout(lpTimer),{passive:true});
             card.addEventListener('touchmove',()=>clearTimeout(lpTimer),{passive:true});
-            card.addEventListener('mousedown',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitEntriesSelectMode)enterHabitEntriesSelection(card.dataset.entryId);},500);});
+            card.addEventListener('mousedown',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitEntriesSelectMode)enterHabitEntriesSelection(card.dataset.entryId);},700);});
             card.addEventListener('mouseup',()=>clearTimeout(lpTimer));
             card.addEventListener('click',e=>{
                 if(e.target.closest('.entry-edit-btn')||e.target.closest('.entry-delete-btn')||e.target.closest('.entry-star-btn'))return;
