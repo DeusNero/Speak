@@ -188,12 +188,14 @@ speakBtn.addEventListener('touchstart',e=>{
     if(isRecording)return;
     isLongPress=false;
     lpRing.classList.add('active');
+    try{navigator.vibrate([1,750,300]);}catch(ex){}
     longPressTimer=setTimeout(()=>{enterWriteMode();},800);
 },{passive:true});
 speakBtn.addEventListener('touchend',e=>{
     clearTimeout(longPressTimer);lpRing.classList.remove('active');
     window._touchHandled=true;
-    if(isLongPress&&isWriteMode){isLongPress=false;try{navigator.vibrate(100);}catch(ex){}openWriteModal();exitWriteMode();return;}
+    if(isLongPress&&isWriteMode){isLongPress=false;openWriteModal();exitWriteMode();return;}
+    try{navigator.vibrate(0);}catch(ex){}
     isLongPress=false;
     if(isWriteMode){openWriteModal();exitWriteMode();return;}
     if(doubleTapCooldown)return;
@@ -210,7 +212,7 @@ speakBtn.addEventListener('touchend',e=>{
         },300);
     }
 },{passive:true});
-speakBtn.addEventListener('touchmove',()=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');isLongPress=false;},{passive:true});
+speakBtn.addEventListener('touchmove',()=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');isLongPress=false;try{navigator.vibrate(0);}catch(ex){}},{passive:true});
 /* Desktop mouse long-press */
 speakBtn.addEventListener('mousedown',e=>{if(isRecording||doubleTapCooldown||e.button!==0)return;isLongPress=false;lpRing.classList.add('active');longPressTimer=setTimeout(()=>{enterWriteMode();},800);});
 speakBtn.addEventListener('mouseup',e=>{clearTimeout(longPressTimer);lpRing.classList.remove('active');if(isLongPress&&isWriteMode){isLongPress=false;openWriteModal();return;}isLongPress=false;});
