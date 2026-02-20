@@ -1,8 +1,15 @@
-const CACHE_NAME = 'speak-v16';
+const CACHE_NAME = 'speak-v17';
 const ASSETS = [
     './',
     './index.html',
-    './manifest.json'
+    './manifest.json',
+    './styles.css',
+    './storage.js',
+    './ai.js',
+    './app.js',
+    './thoughts.js',
+    './habits.js',
+    './insights.js'
 ];
 self.addEventListener('install', (e) => {
     e.waitUntil(
