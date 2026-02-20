@@ -68,10 +68,10 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .long-press-progress{position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent-warm);pointer-events:none;opacity:0;z-index:3}
 .long-press-progress.active{opacity:1;animation:longPressRing .8s linear forwards}
 @keyframes longPressRing{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-@keyframes longPressPop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
-.speak-btn.lp-pop{animation:longPressPop .3s ease-out}
-.speak-btn.lp-pop-beige{box-shadow:0 0 28px rgba(196,180,138,.6),0 4px 16px rgba(0,0,0,.4)}
-.speak-btn.lp-pop-green{box-shadow:0 0 28px rgba(90,140,85,.6),0 4px 16px rgba(0,0,0,.4)}
+@keyframes longPressPop{0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
+.speak-btn.lp-pop{animation:longPressPop .3s ease-out !important}
+.speak-btn.lp-pop-beige{box-shadow:0 0 32px rgba(196,180,138,.7),0 0 12px rgba(196,180,138,.4),0 4px 16px rgba(0,0,0,.4) !important}
+.speak-btn.lp-pop-green{box-shadow:0 0 32px rgba(90,140,85,.7),0 0 12px rgba(90,140,85,.4),0 4px 16px rgba(0,0,0,.4) !important}
 /* ---- TAB BAR (glassmorphism) ---- */
 .tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;justify-content:space-around;align-items:center;padding:8px 16px calc(8px + var(--safe-bottom));background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-top:1px solid var(--glass-border);z-index:100}
 .tab-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 16px;border:none;background:none;color:var(--text-muted);font-family:var(--font-body);font-size:10px;font-weight:500;cursor:pointer;transition:color .25s ease}
