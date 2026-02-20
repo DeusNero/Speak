@@ -148,8 +148,13 @@ saveCaptures();document.getElementById('edit-modal').classList.remove('visible')
 /* ---- Thoughts Screen Speak Button ---- */
 const thoughtsSpeakBtn=document.getElementById('thoughts-speak-btn');
 const thoughtsLpRing=document.getElementById('thoughts-lp-ring');
+const thoughtsTimerEl=document.getElementById('thoughts-speak-timer');
 let thoughtsLpTimer=null,thoughtsIsLP=false,thoughtsIsWrite=false,thoughtsIsRec=false;
 let thoughtsRec=null,thoughtsFT='',thoughtsIT='';
+let thoughtsRecSecs=0,thoughtsRecInterval=null;
+function thoughtsUpdateTimer(){const m=Math.floor(thoughtsRecSecs/60),s=thoughtsRecSecs%60;thoughtsTimerEl.textContent=m+':'+String(s).padStart(2,'0');}
+function thoughtsStartTimer(){thoughtsRecSecs=0;thoughtsUpdateTimer();thoughtsTimerEl.classList.add('visible');thoughtsRecInterval=setInterval(()=>{thoughtsRecSecs++;thoughtsUpdateTimer();},1000);}
+function thoughtsStopTimer(){clearInterval(thoughtsRecInterval);thoughtsRecInterval=null;thoughtsTimerEl.classList.remove('visible');}
 
 function thoughtsEnterWrite(){
     thoughtsIsWrite=true;thoughtsIsLP=true;
@@ -182,12 +187,12 @@ function thoughtsSaveVoice(text){
 if(SR){
 function createThoughtsRec(){
     const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
-    r.onstart=()=>{thoughtsIsRec=true;thoughtsSpeakBtn.classList.add('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Stop';};
+    r.onstart=()=>{thoughtsIsRec=true;thoughtsSpeakBtn.classList.add('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Stop';thoughtsStartTimer();};
     r.onresult=e=>{thoughtsIT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)thoughtsFT+=e.results[i][0].transcript+' ';else thoughtsIT+=e.results[i][0].transcript;}};
     r.onerror=e=>{if(e.error==='no-speech'){if(thoughtsIsRec){setTimeout(()=>{try{thoughtsRec.start();}catch(ex){}},100);}return;}
-    if(e.error==='not-allowed'||e.error==='service-not-allowed'){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsOpenWrite();return;}};
-    r.onend=()=>{if(thoughtsIsRec){setTimeout(()=>{try{thoughtsRec.start();}catch(ex){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';const t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
-    thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();thoughtsOpenWrite();return;}};
+    r.onend=()=>{if(thoughtsIsRec){setTimeout(()=>{try{thoughtsRec.start();}catch(ex){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();const t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
+    thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();
     const t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';
     if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
     return r;
