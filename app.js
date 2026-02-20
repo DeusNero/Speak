@@ -27,7 +27,7 @@ function showScreen(id){
     if(typeof thoughtsSelectMode!=='undefined'&&thoughtsSelectMode)exitThoughtsSelection();
     if(typeof habitsSelectMode!=='undefined'&&habitsSelectMode)exitHabitsSelection();
     if(typeof habitEntriesSelectMode!=='undefined'&&habitEntriesSelectMode)exitHabitEntriesSelection();
-    screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen')renderHabits();if(id==='settings-screen')updateSettingsUI();
+    screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen'){_overdueBannerDismissed=false;renderHabits();}if(id==='settings-screen')updateSettingsUI();
 }
 tabItems.forEach(tab=>{tab.addEventListener('click',()=>{if(!tab.classList.contains('disabled'))showScreen(tab.dataset.screen);});});
 

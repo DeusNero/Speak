@@ -71,6 +71,37 @@ function getStreakMsg(habit){
     return{streak,inactivity,daysSince:daysSinceLast};
 }
 
+let _overdueBannerDismissed=false;
+
+function updateOverdueNotifications(){
+    const overdue=habits.filter(h=>h.entries&&h.entries.length>0&&getStreakMsg(h).daysSince>=2);
+
+    /* Tab badge */
+    const tab=document.querySelector('[data-screen="habits-screen"]');
+    if(tab){
+        const existing=tab.querySelector('.overdue-dot');
+        if(overdue.length>0&&!existing){
+            const dot=document.createElement('span');
+            dot.className='overdue-dot reminder-dot';
+            dot.style.cssText='width:8px;height:8px;background:var(--accent-moss);border-radius:50%;position:absolute;top:4px;right:10px;';
+            tab.style.position='relative';
+            tab.appendChild(dot);
+        }else if(overdue.length===0&&existing){
+            existing.remove();
+        }
+    }
+
+    /* Banner */
+    const banner=document.getElementById('habits-overdue-banner');
+    if(!banner)return;
+    if(overdue.length===0||_overdueBannerDismissed){banner.style.display='none';return;}
+    const names=overdue.map(h=>'<strong>'+escapeHtml(h.name)+'</strong>').join(', ');
+    const days=overdue.length===1?getStreakMsg(overdue[0]).daysSince+' days':overdue.length+' habits';
+    banner.style.display='block';
+    banner.innerHTML='<div class="overdue-banner"><div class="overdue-banner-text">💤 Not logged in a while: '+names+' ('+days+')</div><button class="overdue-banner-dismiss" id="overdue-dismiss" title="Dismiss"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
+    document.getElementById('overdue-dismiss').addEventListener('click',()=>{_overdueBannerDismissed=true;banner.style.display='none';});
+}
+
 function renderHabits(){
     const list=document.getElementById('habits-list');
     if(!habits.length){
@@ -146,6 +177,7 @@ function renderHabits(){
         });
     });
     list.classList.toggle('selecting',habitsSelectMode);
+    updateOverdueNotifications();
 }
 
 

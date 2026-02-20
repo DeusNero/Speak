@@ -276,3 +276,9 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .capture-card.selected.habit-card .select-checkbox{background:#5e8a5a;border-color:#5e8a5a;}
 .select-checkbox svg{display:none;}
 .capture-card.selected .select-checkbox svg{display:block;}
+
+/* ---- OVERDUE BANNER ---- */
+.overdue-banner{background:rgba(106,138,90,.12);border:1px solid rgba(106,138,90,.25);border-radius:var(--radius-md);padding:12px 14px;margin-bottom:12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.overdue-banner-text{font-size:13px;color:var(--text-secondary);line-height:1.5;flex:1;}
+.overdue-banner-text strong{color:var(--accent-moss);font-weight:500;}
+.overdue-banner-dismiss{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;flex-shrink:0;line-height:1;}
