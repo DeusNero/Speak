@@ -12,12 +12,34 @@ if(currentCapture.habitId){
 }saveCaptures();const o=document.getElementById('success-overlay');o.classList.add('visible');createParticles();setTimeout(()=>{o.classList.remove('visible');showScreen('speak-screen');currentCapture={text:'',mood:null,tags:[],inputType:'voice'};},1600);}
 function createParticles(){const c=['#5b9ec4','#8ab88a','#b8a9cc','#c4956b','#6aaa8a'];for(let i=0;i<12;i++){const p=document.createElement('div');p.className='particle';p.style.background=c[Math.floor(Math.random()*c.length)];p.style.left='50%';p.style.top='50%';const a=(Math.PI*2*i)/12,d=80+Math.random()*60;p.style.setProperty('--tx',Math.cos(a)*d+'px');p.style.setProperty('--ty',Math.sin(a)*d+'px');p.style.animation='particleFly .8s cubic-bezier(.25,.46,.45,.94) forwards';p.style.animationDelay=Math.random()*.2+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),1200);}}
 
+let thoughtsSelectMode=false,thoughtsSelected=new Set();
+const CHECKBOX_SVG='<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--bg-deep)" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+function updateThoughtsBar(){
+    const n=thoughtsSelected.size;
+    document.getElementById('thoughts-select-count').textContent=n+' selected';
+    document.getElementById('thoughts-select-bar').classList.toggle('visible',n>0||thoughtsSelectMode);
+}
+function exitThoughtsSelection(){
+    thoughtsSelectMode=false;thoughtsSelected.clear();
+    document.getElementById('thoughts-select-bar').classList.remove('visible');
+    renderCaptures();
+}
+function enterThoughtsSelection(id){
+    thoughtsSelectMode=true;thoughtsSelected.add(id);
+    renderCaptures();
+    updateThoughtsBar();
+}
+
 function renderCaptures(){const list=document.getElementById('capture-list');let f=[...captures];if(currentFilter==='untagged')f=f.filter(c=>!c.tags||c.tags.length===0);else if(currentFilter!=='all')f=f.filter(c=>c.tags&&c.tags.includes(currentFilter));if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);const dr=document.getElementById('date-range-start').value;const dre=document.getElementById('date-range-end').value;if(dr){const ds=new Date(dr);ds.setHours(0,0,0,0);f=f.filter(c=>new Date(c.createdAt)>=ds);}if(dre){const de=new Date(dre);de.setHours(23,59,59,999);f=f.filter(c=>new Date(c.createdAt)<=de);}f.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));if(!f.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u2728</div><div class="empty-state-text">No thoughts yet.<br>Tap the circle below to begin.</div></div>';return;}
 let h='';f.forEach(c=>{const d=new Date(c.createdAt);const moods={1:'\ud83d\ude14',2:'\ud83d\ude15',3:'\ud83d\ude10',4:'\ud83d\ude0a',5:'\ud83d\ude04'};const me=c.mood?moods[c.mood]||'':'';const pv=c.text.substring(0,120);let tg='';if(c.tags&&c.tags.length)tg=c.tags.map(t=>'<span class="capture-tag">'+t+'</span>').join('');
 const inputIcon=c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>';
-h+='<div class="capture-card" data-id="'+c.id+'">';
-h+='<div class="capture-card-header"><div class="capture-card-date">'+formatDate(d)+' '+inputIcon+'</div>';
-h+='<div style="display:flex;gap:6px;align-items:center;">';
+const isSel=thoughtsSelected.has(c.id);
+h+='<div class="capture-card'+(isSel?' selected':'')+'" data-id="'+c.id+'">';
+h+='<div class="capture-card-header"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">';
+h+='<div class="select-checkbox">'+CHECKBOX_SVG+'</div>';
+h+='<div class="capture-card-date">'+formatDate(d)+' '+inputIcon+'</div></div>';
+h+='<div class="card-actions" style="display:flex;gap:6px;align-items:center;'+(thoughtsSelectMode?'visibility:hidden;':'')+'">';
 h+='<button class="card-edit-btn" data-id="'+c.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Edit"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>';
 h+='<button class="card-delete-btn" data-id="'+c.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Delete"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
 h+='</div></div>';
@@ -28,8 +50,21 @@ if(me)h+='<div class="capture-card-mood" style="font-size:18px;">'+me+'</div>';
 h+='</div></div>';
 });list.innerHTML=h;
 list.querySelectorAll('.capture-card').forEach(card=>{
+    let lpTimer=null;
+    card.addEventListener('touchstart',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!thoughtsSelectMode)enterThoughtsSelection(card.dataset.id);},{passive:true},500);},{passive:true});
+    card.addEventListener('touchend',()=>clearTimeout(lpTimer),{passive:true});
+    card.addEventListener('touchmove',()=>clearTimeout(lpTimer),{passive:true});
+    card.addEventListener('mousedown',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!thoughtsSelectMode)enterThoughtsSelection(card.dataset.id);},500);});
+    card.addEventListener('mouseup',()=>clearTimeout(lpTimer));
     card.addEventListener('click',e=>{
         if(e.target.closest('.card-edit-btn')||e.target.closest('.card-delete-btn'))return;
+        if(thoughtsSelectMode){
+            if(thoughtsSelected.has(card.dataset.id))thoughtsSelected.delete(card.dataset.id);
+            else thoughtsSelected.add(card.dataset.id);
+            card.classList.toggle('selected',thoughtsSelected.has(card.dataset.id));
+            updateThoughtsBar();
+            return;
+        }
         openDetail(card.dataset.id);
     });
 });
@@ -40,6 +75,14 @@ list.querySelectorAll('.card-delete-btn').forEach(btn=>{
     btn.addEventListener('click',e=>{e.stopPropagation();openDeleteFromCard(btn.dataset.id);});
 });
 }
+
+document.getElementById('thoughts-select-cancel').addEventListener('click',exitThoughtsSelection);
+document.getElementById('thoughts-select-delete').addEventListener('click',()=>{
+    if(!thoughtsSelected.size)return;
+    captures=captures.filter(c=>!thoughtsSelected.has(c.id));
+    saveCaptures();
+    exitThoughtsSelection();
+});
 function getDateGroup(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);if(d.toDateString()===t.toDateString())return'Today';if(d.toDateString()===y.toDateString())return'Yesterday';return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 
 document.querySelectorAll('.filter-chip').forEach(chip=>{chip.addEventListener('click',()=>{document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));chip.classList.add('active');currentFilter=chip.dataset.filter;renderCaptures();});});

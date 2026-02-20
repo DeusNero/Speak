@@ -1,5 +1,39 @@
 /* ============ HABITS SYSTEM ============ */
 let currentHabitId=null,currentHabitEntryId=null;
+let habitsSelectMode=false,habitsSelected=new Set();
+let habitEntriesSelectMode=false,habitEntriesSelected=new Set();
+
+function updateHabitsBar(){
+    const n=habitsSelected.size;
+    document.getElementById('habits-select-count').textContent=n+' selected';
+    document.getElementById('habits-select-bar').classList.toggle('visible',n>0||habitsSelectMode);
+}
+function exitHabitsSelection(){
+    habitsSelectMode=false;habitsSelected.clear();
+    document.getElementById('habits-select-bar').classList.remove('visible');
+    renderHabits();
+}
+function enterHabitsSelection(id){
+    habitsSelectMode=true;habitsSelected.add(id);
+    renderHabits();
+    updateHabitsBar();
+}
+
+function updateHabitEntriesBar(){
+    const n=habitEntriesSelected.size;
+    document.getElementById('habit-entries-select-count').textContent=n+' selected';
+    document.getElementById('habit-entries-select-bar').classList.toggle('visible',n>0||habitEntriesSelectMode);
+}
+function exitHabitEntriesSelection(){
+    habitEntriesSelectMode=false;habitEntriesSelected.clear();
+    document.getElementById('habit-entries-select-bar').classList.remove('visible');
+    openHabitDetail(currentHabitId);
+}
+function enterHabitEntriesSelection(id){
+    habitEntriesSelectMode=true;habitEntriesSelected.add(id);
+    openHabitDetail(currentHabitId);
+    updateHabitEntriesBar();
+}
 
 
 function getStreakMsg(habit){
@@ -52,9 +86,12 @@ function renderHabits(){
         const starColor=hab.favourite?'#5e8a5a':'var(--text-muted)';
         const starFill=hab.favourite?'#5e8a5a':'none';
         const starOpacity=hab.favourite?'1':'0.4';
-        h+='<div class="capture-card habit-card" data-habit-id="'+hab.id+'">';
-        h+='<div class="capture-card-header"><div class="capture-card-date" style="font-size:15px;font-weight:600;color:var(--text-primary);">'+escapeHtml(hab.name)+'</div>';
-        h+='<div style="display:flex;gap:6px;align-items:center;">';
+        const isHabSel=habitsSelected.has(hab.id);
+        h+='<div class="capture-card habit-card'+(isHabSel?' selected':'')+'" data-habit-id="'+hab.id+'">';
+        h+='<div class="capture-card-header"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">';
+        h+='<div class="select-checkbox">'+CHECKBOX_SVG+'</div>';
+        h+='<div class="capture-card-date" style="font-size:15px;font-weight:600;color:var(--text-primary);">'+escapeHtml(hab.name)+'</div></div>';
+        h+='<div class="card-actions" style="display:flex;gap:6px;align-items:center;'+(habitsSelectMode?'visibility:hidden;':'')+'">';
         h+='<button class="habit-edit-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Edit"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>';
         h+='<button class="habit-delete-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Delete"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
         h+='<button class="habit-fav-btn" data-habit-id="'+hab.id+'" style="background:none;border:none;cursor:pointer;padding:4px;opacity:'+starOpacity+';" title="Favourite"><svg viewBox="0 0 24 24" width="18" height="18" fill="'+starFill+'" stroke="'+starColor+'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>';
@@ -66,8 +103,21 @@ function renderHabits(){
     });
     list.innerHTML=h;
     list.querySelectorAll('.habit-card').forEach(card=>{
+        let lpTimer=null;
+        card.addEventListener('touchstart',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitsSelectMode)enterHabitsSelection(card.dataset.habitId);},500);},{passive:true});
+        card.addEventListener('touchend',()=>clearTimeout(lpTimer),{passive:true});
+        card.addEventListener('touchmove',()=>clearTimeout(lpTimer),{passive:true});
+        card.addEventListener('mousedown',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitsSelectMode)enterHabitsSelection(card.dataset.habitId);},500);});
+        card.addEventListener('mouseup',()=>clearTimeout(lpTimer));
         card.addEventListener('click',e=>{
             if(e.target.closest('.habit-delete-btn')||e.target.closest('.habit-fav-btn')||e.target.closest('.habit-edit-btn'))return;
+            if(habitsSelectMode){
+                if(habitsSelected.has(card.dataset.habitId))habitsSelected.delete(card.dataset.habitId);
+                else habitsSelected.add(card.dataset.habitId);
+                card.classList.toggle('selected',habitsSelected.has(card.dataset.habitId));
+                updateHabitsBar();
+                return;
+            }
             openHabitDetail(card.dataset.habitId);
         });
     });
@@ -125,9 +175,12 @@ function openHabitDetail(id){
             const starColor=e.starred?'#5e8a5a':'var(--text-muted)';
             const starFill=e.starred?'#5e8a5a':'none';
             const starOpacity=e.starred?'1':'0.4';
-            h+='<div class="capture-card habit-entry-card" data-entry-id="'+e.id+'">';
-            h+='<div class="capture-card-header"><div class="capture-card-date">'+formatDate(d)+inputIcon+'</div>';
-            h+='<div style="display:flex;gap:6px;align-items:center;">';
+            const isEntrySel=habitEntriesSelected.has(e.id);
+            h+='<div class="capture-card habit-entry-card'+(isEntrySel?' selected':'')+'" data-entry-id="'+e.id+'">';
+            h+='<div class="capture-card-header"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">';
+            h+='<div class="select-checkbox">'+CHECKBOX_SVG+'</div>';
+            h+='<div class="capture-card-date">'+formatDate(d)+inputIcon+'</div></div>';
+            h+='<div class="card-actions" style="display:flex;gap:6px;align-items:center;'+(habitEntriesSelectMode?'visibility:hidden;':'')+'">';
             h+='<button class="entry-edit-btn" data-entry-id="'+e.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Edit"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>';
             h+='<button class="entry-delete-btn" data-entry-id="'+e.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Delete"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
             h+='<button class="entry-star-btn" data-entry-id="'+e.id+'" style="background:none;border:none;cursor:pointer;padding:4px;opacity:'+starOpacity+';" title="Star"><svg viewBox="0 0 24 24" width="18" height="18" fill="'+starFill+'" stroke="'+starColor+'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>';
@@ -137,8 +190,21 @@ function openHabitDetail(id){
         });
         list.innerHTML=h;
         list.querySelectorAll('.habit-entry-card').forEach(card=>{
+            let lpTimer=null;
+            card.addEventListener('touchstart',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitEntriesSelectMode)enterHabitEntriesSelection(card.dataset.entryId);},500);},{passive:true});
+            card.addEventListener('touchend',()=>clearTimeout(lpTimer),{passive:true});
+            card.addEventListener('touchmove',()=>clearTimeout(lpTimer),{passive:true});
+            card.addEventListener('mousedown',()=>{lpTimer=setTimeout(()=>{lpTimer=null;if(!habitEntriesSelectMode)enterHabitEntriesSelection(card.dataset.entryId);},500);});
+            card.addEventListener('mouseup',()=>clearTimeout(lpTimer));
             card.addEventListener('click',e=>{
                 if(e.target.closest('.entry-edit-btn')||e.target.closest('.entry-delete-btn')||e.target.closest('.entry-star-btn'))return;
+                if(habitEntriesSelectMode){
+                    if(habitEntriesSelected.has(card.dataset.entryId))habitEntriesSelected.delete(card.dataset.entryId);
+                    else habitEntriesSelected.add(card.dataset.entryId);
+                    card.classList.toggle('selected',habitEntriesSelected.has(card.dataset.entryId));
+                    updateHabitEntriesBar();
+                    return;
+                }
                 const entry=entries.find(x=>x.id===card.dataset.entryId);
                 if(!entry)return;
                 currentHabitEntryId=entry.id;
@@ -350,3 +416,21 @@ function _bindPickerAddNew(){
         setTimeout(()=>document.getElementById('habit-name-input').focus(),100);
     });
 }
+
+/* Action bar — habits overview */
+document.getElementById('habits-select-cancel').addEventListener('click',exitHabitsSelection);
+document.getElementById('habits-select-delete').addEventListener('click',()=>{
+    if(!habitsSelected.size)return;
+    habits=habits.filter(h=>!habitsSelected.has(h.id));
+    saveHabits();
+    exitHabitsSelection();
+});
+
+/* Action bar — habit entries */
+document.getElementById('habit-entries-select-cancel').addEventListener('click',exitHabitEntriesSelection);
+document.getElementById('habit-entries-select-delete').addEventListener('click',()=>{
+    if(!habitEntriesSelected.size)return;
+    const hab=habits.find(h=>h.id===currentHabitId);
+    if(hab){hab.entries=hab.entries.filter(e=>!habitEntriesSelected.has(e.id));saveHabits();}
+    exitHabitEntriesSelection();
+});

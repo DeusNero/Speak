@@ -259,3 +259,19 @@ textarea#write-textarea::-webkit-resizer{display:none}
 /* ---- HABITS ---- */
 .habits-screen{padding:20px 16px 100px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1}
 .habits-placeholder{text-align:center;padding:40px 24px}.habits-placeholder-icon{font-size:48px;opacity:.3;margin-bottom:16px}.habits-placeholder-text{font-family:var(--font-display);font-size:16px;font-style:italic;color:var(--text-muted);line-height:1.6}
+
+/* ---- MULTI-SELECT ---- */
+.select-action-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border-subtle);padding:12px 20px 28px;display:none;align-items:center;justify-content:space-between;z-index:150;backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);}
+.select-action-bar.visible{display:flex;}
+.select-action-count{font-size:14px;color:var(--text-secondary);font-family:var(--font-body);}
+.select-action-cancel{padding:8px 16px;background:none;border:1px solid var(--border-subtle);border-radius:var(--radius-full);color:var(--text-secondary);font-family:var(--font-body);font-size:13px;cursor:pointer;}
+.select-action-delete{padding:8px 16px;border:none;border-radius:var(--radius-full);font-family:var(--font-body);font-size:13px;font-weight:500;cursor:pointer;}
+.select-action-delete.thoughts-delete{background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);}
+.select-action-delete.habits-delete{background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);color:var(--bg-deep);}
+.capture-card.selected{border-color:rgba(196,180,138,.5);background:var(--bg-card-hover);}
+.capture-card.selected.habit-card{border-color:rgba(94,138,90,.5);}
+.select-checkbox{width:20px;height:20px;border-radius:50%;border:2px solid var(--border-subtle);background:var(--bg-elevated);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s ease;}
+.capture-card.selected .select-checkbox{background:#c4b48a;border-color:#c4b48a;}
+.capture-card.selected.habit-card .select-checkbox{background:#5e8a5a;border-color:#5e8a5a;}
+.select-checkbox svg{display:none;}
+.capture-card.selected .select-checkbox svg{display:block;}
