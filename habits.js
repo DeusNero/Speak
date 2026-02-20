@@ -326,6 +326,7 @@ let habitsPgRec=null,habitsPgFT='',habitsPgIT='';
 function habitsPgEnterWrite(){
     habitsPgIsWrite=true;habitsPgIsLP=true;
     try{navigator.vibrate(200);}catch(e){}
+    habitsPgBtn.classList.add('lp-pop','lp-pop-green');setTimeout(()=>{habitsPgBtn.classList.remove('lp-pop','lp-pop-green');},350);
     habitsPgBtn.classList.add('write-mode');
     habitsPgBtn.querySelector('.speak-btn-label').textContent='Write';
     habitsPgBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
@@ -389,6 +390,7 @@ const habitLpRing=document.getElementById('habit-lp-ring');
 function habitEnterWriteMode(){
     habitIsWriteMode=true;habitIsLongPress=true;
     try{navigator.vibrate(200);}catch(e){}
+    habitBtn.classList.add('lp-pop','lp-pop-green');setTimeout(()=>{habitBtn.classList.remove('lp-pop','lp-pop-green');},350);
     habitBtn.classList.add('write-mode');
     habitBtn.querySelector('.speak-btn-label').textContent='Write';
     habitBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
