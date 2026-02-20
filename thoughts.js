@@ -162,9 +162,9 @@ const thoughtsLpRing=document.getElementById('thoughts-lp-ring');
 const thoughtsTimerEl=document.getElementById('thoughts-speak-timer');
 let thoughtsLpTimer=null,thoughtsIsLP=false,thoughtsIsWrite=false,thoughtsIsRec=false;
 let thoughtsRec=null,thoughtsFT='',thoughtsIT='';
-let thoughtsRecSecs=0,thoughtsRecInterval=null;
-function thoughtsUpdateTimer(){const m=Math.floor(thoughtsRecSecs/60),s=thoughtsRecSecs%60;thoughtsTimerEl.textContent=m+':'+String(s).padStart(2,'0');}
-function thoughtsStartTimer(){thoughtsRecSecs=0;thoughtsUpdateTimer();thoughtsTimerEl.classList.add('visible');thoughtsRecInterval=setInterval(()=>{thoughtsRecSecs++;thoughtsUpdateTimer();},1000);}
+let thoughtsRecStart=0,thoughtsRecInterval=null;
+function thoughtsUpdateTimer(){var elapsed=Math.floor((Date.now()-thoughtsRecStart)/1000);var m=Math.floor(elapsed/60),s=elapsed%60;thoughtsTimerEl.textContent=m+':'+String(s).padStart(2,'0');}
+function thoughtsStartTimer(){thoughtsRecStart=Date.now();thoughtsUpdateTimer();thoughtsTimerEl.classList.add('visible');thoughtsRecInterval=setInterval(thoughtsUpdateTimer,250);}
 function thoughtsStopTimer(){clearInterval(thoughtsRecInterval);thoughtsRecInterval=null;thoughtsTimerEl.classList.remove('visible');}
 
 function thoughtsPopFeedback(){

@@ -369,9 +369,9 @@ const habitsPgLpRing=document.getElementById('habits-lp-ring');
 const habitsPgTimerEl=document.getElementById('habits-speak-timer');
 let habitsPgLpTimer=null,habitsPgIsLP=false,habitsPgIsWrite=false,habitsPgIsRec=false;
 let habitsPgRec=null,habitsPgFT='',habitsPgIT='';
-let habitsPgRecSecs=0,habitsPgRecInterval=null;
-function habitsPgUpdateTimer(){const m=Math.floor(habitsPgRecSecs/60),s=habitsPgRecSecs%60;habitsPgTimerEl.textContent=m+':'+String(s).padStart(2,'0');}
-function habitsPgStartTimer(){habitsPgRecSecs=0;habitsPgUpdateTimer();habitsPgTimerEl.classList.add('visible');habitsPgRecInterval=setInterval(()=>{habitsPgRecSecs++;habitsPgUpdateTimer();},1000);}
+let habitsPgRecStart=0,habitsPgRecInterval=null;
+function habitsPgUpdateTimer(){var elapsed=Math.floor((Date.now()-habitsPgRecStart)/1000);var m=Math.floor(elapsed/60),s=elapsed%60;habitsPgTimerEl.textContent=m+':'+String(s).padStart(2,'0');}
+function habitsPgStartTimer(){habitsPgRecStart=Date.now();habitsPgUpdateTimer();habitsPgTimerEl.classList.add('visible');habitsPgRecInterval=setInterval(habitsPgUpdateTimer,250);}
 function habitsPgStopTimer(){clearInterval(habitsPgRecInterval);habitsPgRecInterval=null;habitsPgTimerEl.classList.remove('visible');}
 
 function habitsPgPopFeedback(){
@@ -443,9 +443,9 @@ let habitLongPressTimer=null,habitIsLongPress=false,habitIsWriteMode=false,habit
 const habitBtn=document.getElementById('habit-speak-btn');
 const habitLpRing=document.getElementById('habit-lp-ring');
 const habitTimerEl=document.getElementById('habit-speak-timer');
-let habitRecSecs=0,habitRecInterval=null;
-function habitUpdateTimer(){const m=Math.floor(habitRecSecs/60),s=habitRecSecs%60;habitTimerEl.textContent=m+':'+String(s).padStart(2,'0');}
-function habitStartTimer(){habitRecSecs=0;habitUpdateTimer();habitTimerEl.classList.add('visible');habitRecInterval=setInterval(()=>{habitRecSecs++;habitUpdateTimer();},1000);}
+let habitRecStart=0,habitRecInterval=null;
+function habitUpdateTimer(){var elapsed=Math.floor((Date.now()-habitRecStart)/1000);var m=Math.floor(elapsed/60),s=elapsed%60;habitTimerEl.textContent=m+':'+String(s).padStart(2,'0');}
+function habitStartTimer(){habitRecStart=Date.now();habitUpdateTimer();habitTimerEl.classList.add('visible');habitRecInterval=setInterval(habitUpdateTimer,250);}
 function habitStopTimer(){clearInterval(habitRecInterval);habitRecInterval=null;habitTimerEl.classList.remove('visible');}
 
 function habitPopFeedback(){
