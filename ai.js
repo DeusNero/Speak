@@ -23,8 +23,10 @@ return t;}
 async function refineText(raw,lang){
     if(!settings.geminiApiKey){console.warn('No API key');return{text:localRefine(raw),source:'local'};}
     try{
-        const ln=lang&&lang.startsWith('de')?'German':'English';
-        const prompt='You are a text editor. The following is a raw voice transcription in '+ln+'. Please:\n1. Add proper punctuation (periods, commas, question marks, exclamation marks)\n2. Fix capitalization\n3. Fix obvious speech recognition errors\n4. Improve sentence structure where needed\n5. Keep the original meaning, tone and personal voice\n\nRespond with ONLY the corrected text, nothing else.\n\nOriginal transcript:\n'+raw;
+        const isDE=lang&&lang.startsWith('de');
+        const prompt=isDE
+            ?'Du bist ein präziser Texteditor. Der folgende Text ist eine rohe Spracheingabe oder schnell getippter Text auf Deutsch. Bitte:\n1. Korrigiere alle Grammatikfehler (Kasus, Artikel, Verb-Konjugation)\n2. Schreibe alle Substantive groß (zwingend im Deutschen)\n3. Füge korrekte Satzzeichen hinzu\n4. Korrigiere Diktierfehler bei Umlauten (z.B. "ue"→"ü", "oe"→"ö", "ae"→"ä", "ss"→"ß" wo passend)\n5. Setze zusammengesetzte Wörter korrekt zusammen\n6. Verwandle Stichworte oder Fragmente in vollständige, korrekte Sätze\n7. Behalte den persönlichen Ton und die Bedeutung bei — nicht formalisieren, nur korrigieren\n\nAntworte NUR mit dem korrigierten Text, ohne Erklärungen.\n\nOriginaltext:\n'+raw
+            :'You are a precise text editor. The following is raw voice input or quickly typed text in English. Please:\n1. Fix all grammar errors (subject-verb agreement, tense, articles)\n2. Add correct punctuation\n3. Fix speech recognition errors (e.g. their/there, your/you\'re, to/too/two)\n4. Turn fragments, run-ons, or shorthand into clean complete sentences\n5. Keep the personal tone and original meaning — improve correctness, not formality\n\nRespond with ONLY the corrected text, no explanations.\n\nOriginal text:\n'+raw;
         const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+settings.geminiApiKey,{
             method:'POST',
             headers:{'Content-Type':'application/json'},
