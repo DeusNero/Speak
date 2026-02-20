@@ -325,7 +325,7 @@ let habitsPgRec=null,habitsPgFT='',habitsPgIT='';
 
 function habitsPgEnterWrite(){
     habitsPgIsWrite=true;habitsPgIsLP=true;
-    try{if(navigator.vibrate)navigator.vibrate([50]);}catch(e){}
+    try{navigator.vibrate(200);}catch(e){}
     habitsPgBtn.classList.add('write-mode');
     habitsPgBtn.querySelector('.speak-btn-label').textContent='Write';
     habitsPgBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
@@ -370,7 +370,7 @@ async function habitsPgStartRec(){habitsPgFT='';habitsPgIT='';
     catch(e){habitsPgOpenWrite();}}
 }
 habitsPgBtn.addEventListener('touchstart',e=>{if(habitsPgIsRec)return;habitsPgIsLP=false;habitsPgLpRing.classList.add('active');habitsPgLpTimer=setTimeout(()=>{habitsPgEnterWrite();},800);},{passive:true});
-habitsPgBtn.addEventListener('touchend',e=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');window._habitsPgTouchHandled=true;if(habitsPgIsLP&&habitsPgIsWrite){habitsPgIsLP=false;habitsPgOpenWrite();habitsPgExitWrite();return;}habitsPgIsLP=false;if(habitsPgIsWrite){habitsPgOpenWrite();habitsPgExitWrite();return;}if(habitsPgIsRec){habitsPgIsRec=false;try{habitsPgRec.stop();}catch(ex){}}else if(SR){habitsPgStartRec();}else{habitsPgOpenWrite();}},{passive:true});
+habitsPgBtn.addEventListener('touchend',e=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');window._habitsPgTouchHandled=true;if(habitsPgIsLP&&habitsPgIsWrite){habitsPgIsLP=false;try{navigator.vibrate(100);}catch(ex){}habitsPgOpenWrite();habitsPgExitWrite();return;}habitsPgIsLP=false;if(habitsPgIsWrite){habitsPgOpenWrite();habitsPgExitWrite();return;}if(habitsPgIsRec){habitsPgIsRec=false;try{habitsPgRec.stop();}catch(ex){}}else if(SR){habitsPgStartRec();}else{habitsPgOpenWrite();}},{passive:true});
 habitsPgBtn.addEventListener('touchmove',()=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');habitsPgIsLP=false;},{passive:true});
 habitsPgBtn.addEventListener('mousedown',e=>{if(habitsPgIsRec||e.button!==0)return;habitsPgIsLP=false;habitsPgLpRing.classList.add('active');habitsPgLpTimer=setTimeout(()=>{habitsPgEnterWrite();},800);});
 habitsPgBtn.addEventListener('mouseup',e=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');if(habitsPgIsLP&&habitsPgIsWrite){habitsPgIsLP=false;habitsPgOpenWrite();habitsPgExitWrite();return;}habitsPgIsLP=false;});
@@ -388,7 +388,7 @@ const habitLpRing=document.getElementById('habit-lp-ring');
 
 function habitEnterWriteMode(){
     habitIsWriteMode=true;habitIsLongPress=true;
-    try{if(navigator.vibrate)navigator.vibrate([50]);}catch(e){}
+    try{navigator.vibrate(200);}catch(e){}
     habitBtn.classList.add('write-mode');
     habitBtn.querySelector('.speak-btn-label').textContent='Write';
     habitBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
@@ -444,7 +444,7 @@ if(SR){
 
 /* Long press + tap handlers */
 habitBtn.addEventListener('touchstart',e=>{if(habitIsRecording)return;habitIsLongPress=false;habitLpRing.classList.add('active');habitLongPressTimer=setTimeout(()=>{habitEnterWriteMode();},800);},{passive:true});
-habitBtn.addEventListener('touchend',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');window._habitTouchHandled=true;if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;habitOpenWriteModal();habitExitWriteMode();return;}habitIsLongPress=false;if(habitIsWriteMode){habitOpenWriteModal();habitExitWriteMode();return;}if(habitIsRecording){habitIsRecording=false;try{habitRecognition.stop();}catch(ex){}}else if(SR){habitStartRecording();}else{habitOpenWriteModal();}},{passive:true});
+habitBtn.addEventListener('touchend',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');window._habitTouchHandled=true;if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;try{navigator.vibrate(100);}catch(ex){}habitOpenWriteModal();habitExitWriteMode();return;}habitIsLongPress=false;if(habitIsWriteMode){habitOpenWriteModal();habitExitWriteMode();return;}if(habitIsRecording){habitIsRecording=false;try{habitRecognition.stop();}catch(ex){}}else if(SR){habitStartRecording();}else{habitOpenWriteModal();}},{passive:true});
 habitBtn.addEventListener('touchmove',()=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');habitIsLongPress=false;},{passive:true});
 habitBtn.addEventListener('mousedown',e=>{if(habitIsRecording||e.button!==0)return;habitIsLongPress=false;habitLpRing.classList.add('active');habitLongPressTimer=setTimeout(()=>{habitEnterWriteMode();},800);});
 habitBtn.addEventListener('mouseup',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;habitOpenWriteModal();habitExitWriteMode();return;}habitIsLongPress=false;});

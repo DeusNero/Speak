@@ -65,7 +65,7 @@ let longPressTimer=null,isLongPress=false,isWriteMode=false;
 const lpRing=document.getElementById('long-press-ring');
 function enterWriteMode(){
     isWriteMode=true;isLongPress=true;
-    try{if(navigator.vibrate)navigator.vibrate([50]);}catch(e){}
+    try{navigator.vibrate(200);}catch(e){}
     speakBtn.classList.add('write-mode');
     speakBtn.querySelector('.speak-btn-label').textContent='Write';
     speakBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
@@ -193,7 +193,7 @@ speakBtn.addEventListener('touchstart',e=>{
 speakBtn.addEventListener('touchend',e=>{
     clearTimeout(longPressTimer);lpRing.classList.remove('active');
     window._touchHandled=true;
-    if(isLongPress&&isWriteMode){isLongPress=false;try{navigator.vibrate([30]);}catch(ex){}openWriteModal();exitWriteMode();return;}
+    if(isLongPress&&isWriteMode){isLongPress=false;try{navigator.vibrate(100);}catch(ex){}openWriteModal();exitWriteMode();return;}
     isLongPress=false;
     if(isWriteMode){openWriteModal();exitWriteMode();return;}
     if(doubleTapCooldown)return;

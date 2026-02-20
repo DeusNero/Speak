@@ -153,7 +153,7 @@ let thoughtsRec=null,thoughtsFT='',thoughtsIT='';
 
 function thoughtsEnterWrite(){
     thoughtsIsWrite=true;thoughtsIsLP=true;
-    try{if(navigator.vibrate)navigator.vibrate([50]);}catch(e){}
+    try{navigator.vibrate(200);}catch(e){}
     thoughtsSpeakBtn.classList.add('write-mode');
     thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Write';
     thoughtsSpeakBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
@@ -196,7 +196,7 @@ async function thoughtsStartRec(){thoughtsFT='';thoughtsIT='';
     catch(e){thoughtsOpenWrite();}}
 }
 thoughtsSpeakBtn.addEventListener('touchstart',e=>{if(thoughtsIsRec)return;thoughtsIsLP=false;thoughtsLpRing.classList.add('active');thoughtsLpTimer=setTimeout(()=>{thoughtsEnterWrite();},800);},{passive:true});
-thoughtsSpeakBtn.addEventListener('touchend',e=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');window._thoughtsTouchHandled=true;if(thoughtsIsLP&&thoughtsIsWrite){thoughtsIsLP=false;thoughtsOpenWrite();thoughtsExitWrite();return;}thoughtsIsLP=false;if(thoughtsIsWrite){thoughtsOpenWrite();thoughtsExitWrite();return;}if(thoughtsIsRec){thoughtsIsRec=false;try{thoughtsRec.stop();}catch(ex){}}else if(SR){thoughtsStartRec();}else{thoughtsOpenWrite();}},{passive:true});
+thoughtsSpeakBtn.addEventListener('touchend',e=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');window._thoughtsTouchHandled=true;if(thoughtsIsLP&&thoughtsIsWrite){thoughtsIsLP=false;try{navigator.vibrate(100);}catch(ex){}thoughtsOpenWrite();thoughtsExitWrite();return;}thoughtsIsLP=false;if(thoughtsIsWrite){thoughtsOpenWrite();thoughtsExitWrite();return;}if(thoughtsIsRec){thoughtsIsRec=false;try{thoughtsRec.stop();}catch(ex){}}else if(SR){thoughtsStartRec();}else{thoughtsOpenWrite();}},{passive:true});
 thoughtsSpeakBtn.addEventListener('touchmove',()=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');thoughtsIsLP=false;},{passive:true});
 thoughtsSpeakBtn.addEventListener('mousedown',e=>{if(thoughtsIsRec||e.button!==0)return;thoughtsIsLP=false;thoughtsLpRing.classList.add('active');thoughtsLpTimer=setTimeout(()=>{thoughtsEnterWrite();},800);});
 thoughtsSpeakBtn.addEventListener('mouseup',e=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');if(thoughtsIsLP&&thoughtsIsWrite){thoughtsIsLP=false;thoughtsOpenWrite();thoughtsExitWrite();return;}thoughtsIsLP=false;});
