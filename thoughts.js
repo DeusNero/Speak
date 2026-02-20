@@ -156,10 +156,15 @@ function thoughtsUpdateTimer(){const m=Math.floor(thoughtsRecSecs/60),s=thoughts
 function thoughtsStartTimer(){thoughtsRecSecs=0;thoughtsUpdateTimer();thoughtsTimerEl.classList.add('visible');thoughtsRecInterval=setInterval(()=>{thoughtsRecSecs++;thoughtsUpdateTimer();},1000);}
 function thoughtsStopTimer(){clearInterval(thoughtsRecInterval);thoughtsRecInterval=null;thoughtsTimerEl.classList.remove('visible');}
 
+function thoughtsPopFeedback(){
+    thoughtsSpeakBtn.style.transform='scale(1.3)';
+    thoughtsSpeakBtn.style.boxShadow='0 0 32px rgba(196,180,138,.7),0 0 12px rgba(196,180,138,.4),0 4px 16px rgba(0,0,0,.4)';
+    setTimeout(()=>{thoughtsSpeakBtn.style.transform='';thoughtsSpeakBtn.style.boxShadow='';},300);
+}
 function thoughtsEnterWrite(){
     thoughtsIsWrite=true;thoughtsIsLP=true;
     try{navigator.vibrate(200);}catch(e){}
-    thoughtsSpeakBtn.classList.add('lp-pop','lp-pop-beige');setTimeout(()=>{thoughtsSpeakBtn.classList.remove('lp-pop','lp-pop-beige');},350);
+    thoughtsPopFeedback();
     thoughtsSpeakBtn.classList.add('write-mode');
     thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Write';
     thoughtsSpeakBtn.querySelector('svg').innerHTML='<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
@@ -184,22 +189,22 @@ function thoughtsOpenWrite(){
 function thoughtsSaveVoice(text){
     if(text){currentCapture.text=cleanupTranscript(text);currentCapture.inputType='voice';currentCapture.lang=currentLang;currentMode='thought';showPostRecordFlow();}
 }
-if(SR){
 function createThoughtsRec(){
-    const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
-    r.onstart=()=>{thoughtsIsRec=true;thoughtsSpeakBtn.classList.add('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Stop';thoughtsStartTimer();};
-    r.onresult=e=>{thoughtsIT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)thoughtsFT+=e.results[i][0].transcript+' ';else thoughtsIT+=e.results[i][0].transcript;}};
-    r.onerror=e=>{if(e.error==='no-speech'){if(thoughtsIsRec){setTimeout(()=>{try{thoughtsRec.start();}catch(ex){}},100);}return;}
+    var SRApi=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SRApi)return null;
+    var r=new SRApi();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
+    r.onstart=function(){thoughtsIsRec=true;thoughtsSpeakBtn.classList.add('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Stop';thoughtsStartTimer();};
+    r.onresult=function(e){thoughtsIT='';for(var i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)thoughtsFT+=e.results[i][0].transcript+' ';else thoughtsIT+=e.results[i][0].transcript;}};
+    r.onerror=function(e){if(e.error==='no-speech'){if(thoughtsIsRec){setTimeout(function(){try{thoughtsRec.start();}catch(ex){}},100);}return;}
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();thoughtsOpenWrite();return;}};
-    r.onend=()=>{if(thoughtsIsRec){setTimeout(()=>{try{thoughtsRec.start();}catch(ex){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();const t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
+    r.onend=function(){if(thoughtsIsRec){setTimeout(function(){try{thoughtsRec.start();}catch(ex){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();var t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
     thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();
-    const t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';
+    var t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';
     if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
     return r;
 }
-async function thoughtsStartRec(){thoughtsFT='';thoughtsIT='';
-    try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop());thoughtsRec=createThoughtsRec();thoughtsRec.lang=currentLang;thoughtsRec.start();}
-    catch(e){thoughtsOpenWrite();}}
+function thoughtsStartRec(){thoughtsFT='';thoughtsIT='';
+    navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){stream.getTracks().forEach(function(t){t.stop();});thoughtsRec=createThoughtsRec();if(!thoughtsRec){thoughtsOpenWrite();return;}thoughtsRec.lang=currentLang;thoughtsRec.start();}).catch(function(){thoughtsOpenWrite();});
 }
 thoughtsSpeakBtn.addEventListener('touchstart',e=>{if(thoughtsIsRec)return;thoughtsIsLP=false;thoughtsLpRing.classList.add('active');try{navigator.vibrate([1,750,300]);}catch(ex){}thoughtsLpTimer=setTimeout(()=>{thoughtsEnterWrite();},800);},{passive:true});
 thoughtsSpeakBtn.addEventListener('touchend',e=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');window._thoughtsTouchHandled=true;if(thoughtsIsLP&&thoughtsIsWrite){thoughtsIsLP=false;thoughtsOpenWrite();thoughtsExitWrite();return;}try{navigator.vibrate(0);}catch(ex){}thoughtsIsLP=false;if(thoughtsIsWrite){thoughtsOpenWrite();thoughtsExitWrite();return;}if(thoughtsIsRec){thoughtsIsRec=false;try{thoughtsRec.stop();}catch(ex){}}else if(SR){thoughtsStartRec();}else{thoughtsOpenWrite();}},{passive:true});
