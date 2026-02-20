@@ -22,7 +22,13 @@ function showToast(text){
     document.body.appendChild(toast);
     setTimeout(()=>{toast.style.animation='toastOut .3s ease forwards';setTimeout(()=>toast.remove(),300);},3000);
 }
-function showScreen(id){screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen')renderHabits();if(id==='settings-screen')updateSettingsUI();}
+function showScreen(id){
+    /* Exit any active selection mode when navigating away */
+    if(typeof thoughtsSelectMode!=='undefined'&&thoughtsSelectMode)exitThoughtsSelection();
+    if(typeof habitsSelectMode!=='undefined'&&habitsSelectMode)exitHabitsSelection();
+    if(typeof habitEntriesSelectMode!=='undefined'&&habitEntriesSelectMode)exitHabitEntriesSelection();
+    screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen')renderHabits();if(id==='settings-screen')updateSettingsUI();
+}
 tabItems.forEach(tab=>{tab.addEventListener('click',()=>{if(!tab.classList.contains('disabled'))showScreen(tab.dataset.screen);});});
 
 (function(){const h=new Date().getHours(),el=document.getElementById('greeting-text');if(h<6)el.textContent='Late night reflection';else if(h<12)el.textContent='Morning reflection';else if(h<17)el.textContent='Afternoon reflection';else if(h<21)el.textContent='Reflect and relax';else el.textContent='Calm reflection';})();
