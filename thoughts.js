@@ -1,5 +1,5 @@
 function saveCapture(){
-const entry={id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:currentCapture.text,mood:currentCapture.mood,tags:currentCapture.tags,lang:currentCapture.lang||currentLang,inputType:currentCapture.inputType||'voice',createdAt:new Date().toISOString()};
+const entry={id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:currentCapture.text,mood:currentCapture.mood,eventMood:currentCapture.eventMood||null,tags:currentCapture.tags,lang:currentCapture.lang||currentLang,inputType:currentCapture.inputType||'voice',createdAt:new Date().toISOString()};
 if(currentCapture.habitId){
     const hab=habits.find(h=>h.id===currentCapture.habitId);
     if(hab){hab.entries.push(entry);saveHabits();}
@@ -46,7 +46,8 @@ h+='</div></div>';
 h+='<div class="capture-card-text">'+escapeHtml(pv)+(c.text.length>pv.length?'...':'')+'</div>';
 h+='<div class="capture-card-footer" style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">';
 h+='<div class="capture-card-tags">'+tg+'</div>';
-if(me)h+='<div class="capture-card-mood" style="font-size:18px;">'+me+'</div>';
+var eme=c.eventMood?moods[c.eventMood]||'':'';
+if(me||eme)h+='<div style="display:flex;gap:4px;font-size:16px;">'+(me?'<span title="General mood">'+me+'</span>':'')+(eme?'<span title="Event mood" style="opacity:.7;">'+eme+'</span>':'')+'</div>';
 h+='</div></div>';
 });list.innerHTML=h;
 list.querySelectorAll('.capture-card').forEach(card=>{
@@ -122,15 +123,16 @@ function openDeleteFromCard(id){
     currentDetailId=id;
     document.getElementById('confirm-overlay').classList.add('visible');pushNav('confirm-overlay');
 }
-function openDetail(id){const c=captures.find(x=>x.id===id);if(!c)return;currentDetailId=id;document.getElementById('detail-date').innerHTML=formatDate(new Date(c.createdAt))+' '+(c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>');document.getElementById('detail-mood').textContent=c.mood?MOODS[c.mood]:'';document.getElementById('detail-text').textContent=c.text;const tc=document.getElementById('detail-tags');tc.innerHTML=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Thought',poem:'Poetry',habit:'Habit'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';screens.forEach(s=>s.classList.remove('active'));document.getElementById('detail-screen').classList.add('active');pushNav('detail-screen');}
+function openDetail(id){const c=captures.find(x=>x.id===id);if(!c)return;currentDetailId=id;document.getElementById('detail-date').innerHTML=formatDate(new Date(c.createdAt))+' '+(c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>');document.getElementById('detail-mood').textContent=c.mood?MOODS[c.mood]:'';document.getElementById('detail-event-mood').textContent=c.eventMood?MOODS[c.eventMood]:'';document.getElementById('detail-text').textContent=c.text;const tc=document.getElementById('detail-tags');tc.innerHTML=(c.tags&&c.tags.length>0)?c.tags.map(t=>'<span class="tag-pill '+t+'">'+({emotion:'Thought',poem:'Poetry',habit:'Habit'}[t]||t.charAt(0).toUpperCase()+t.slice(1))+'</span>').join(''):'<span class="tag-pill untagged">⌛</span>';screens.forEach(s=>s.classList.remove('active'));document.getElementById('detail-screen').classList.add('active');pushNav('detail-screen');}
 document.getElementById('detail-back').addEventListener('click',()=>showScreen('thoughts-screen'));
 document.getElementById('detail-delete').addEventListener('click',()=>{document.getElementById('confirm-overlay').classList.add('visible');pushNav('confirm-overlay');});
 document.getElementById('confirm-cancel').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.remove('visible'));
 document.getElementById('confirm-close-x').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.remove('visible'));
 document.getElementById('confirm-action').addEventListener('click',()=>{captures=captures.filter(c=>c.id!==currentDetailId);saveCaptures();document.getElementById('confirm-overlay').classList.remove('visible');showScreen('thoughts-screen');});
-document.getElementById('detail-edit').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;document.getElementById('edit-title-input').style.display='none';document.getElementById('edit-text-input').value=c.text;document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===(c.mood||0)));document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(b=>b.classList.toggle('selected',c.tags&&c.tags.includes(b.dataset.tag)));document.getElementById('edit-modal').classList.add('visible');pushNav('edit-modal');});
+document.getElementById('detail-edit').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;document.getElementById('edit-title-input').style.display='none';document.getElementById('edit-text-input').value=c.text;document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===(c.mood||0)));document.querySelectorAll('.edit-event-mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===(c.eventMood||0)));document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(b=>b.classList.toggle('selected',c.tags&&c.tags.includes(b.dataset.tag)));document.getElementById('edit-modal').classList.add('visible');pushNav('edit-modal');});
 document.getElementById('edit-cancel').addEventListener('click',()=>{document.getElementById('edit-title-input').style.display='none';document.getElementById('edit-modal').classList.remove('visible');});
 document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');});});
+document.querySelectorAll('.edit-event-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.edit-event-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');});});
 document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(btn=>{btn.addEventListener('click',()=>btn.classList.toggle('selected'));});
 document.getElementById('edit-save').addEventListener('click',()=>{
 if(window._heEditMode){
@@ -146,7 +148,7 @@ if(window._heEditMode){
     saveHabits();document.getElementById('edit-modal').classList.remove('visible');
     openHabitEntryDetail(entry);return;
 }
-const c=captures.find(x=>x.id===currentDetailId);if(!c)return;c.text=document.getElementById('edit-text-input').value;const sm=document.querySelector('#edit-mood-row .edit-mood-btn.selected');c.mood=sm?(parseInt(sm.dataset.mood)||null):null;const st=[];document.querySelectorAll('#edit-tag-row .edit-tag-btn.selected').forEach(b=>st.push(b.dataset.tag));c.tags=st;
+const c=captures.find(x=>x.id===currentDetailId);if(!c)return;c.text=document.getElementById('edit-text-input').value;const sm=document.querySelector('#edit-mood-row .edit-mood-btn.selected');c.mood=sm?(parseInt(sm.dataset.mood)||null):null;const sem=document.querySelector('.edit-event-mood-btn.selected');c.eventMood=sem?(parseInt(sem.dataset.mood)||null):null;const st=[];document.querySelectorAll('#edit-tag-row .edit-tag-btn.selected').forEach(b=>st.push(b.dataset.tag));c.tags=st;
 /* If habit tag added, move to habit */
 if(st.includes('habit')&&!(c._wasHabit)){
     document.getElementById('edit-modal').classList.remove('visible');
