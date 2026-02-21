@@ -218,6 +218,7 @@ function openHabitDetail(id){
             h+='<button class="entry-delete-btn" data-entry-id="'+e.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Delete"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
             h+='<button class="entry-star-btn" data-entry-id="'+e.id+'" style="background:none;border:none;cursor:pointer;padding:4px;opacity:'+starOpacity+';" title="Star"><svg viewBox="0 0 24 24" width="18" height="18" fill="'+starFill+'" stroke="'+starColor+'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>';
             h+='</div></div>';
+            if(e.title)h+='<div style="font-weight:600;font-size:14px;color:var(--text-primary);margin:4px 0 2px;">'+escapeHtml(e.title)+'</div>';
             h+='<div class="capture-card-text">'+escapeHtml(e.text.substring(0,150))+(e.text.length>150?'...':'')+'</div>';
             h+='</div>';
         });
@@ -317,6 +318,8 @@ function openHabitEntryDetail(entry){
     currentHabitEntryId=entry.id;
     var inputIcon=entry.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#5e8a5a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#5e8a5a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>';
     document.getElementById('he-detail-date').innerHTML=formatDate(new Date(entry.createdAt))+' '+inputIcon;
+    var heTitleEl=document.getElementById('he-detail-title');
+    if(entry.title){heTitleEl.textContent=entry.title;heTitleEl.style.display='block';}else{heTitleEl.style.display='none';}
     document.getElementById('he-detail-text').textContent=entry.text;
     screens.forEach(function(s){s.classList.remove('active');});
     document.getElementById('habit-entry-detail-screen').classList.add('active');
@@ -332,6 +335,8 @@ function _heRefreshEntry(){
 document.getElementById('habit-entry-back').addEventListener('click',function(){openHabitDetail(currentHabitId);});
 document.getElementById('he-detail-edit').addEventListener('click',function(){
     var entry=_heRefreshEntry();if(!entry)return;
+    var etInput=document.getElementById('edit-title-input');
+    etInput.value=entry.title||'';etInput.style.display='block';
     document.getElementById('edit-text-input').value=entry.text;
     document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(function(b){b.classList.remove('selected');});
     document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(function(b){b.classList.remove('selected');});
@@ -474,21 +479,37 @@ function habitOpenWriteModal(){
     const writeTitle=document.querySelector('#write-overlay .modal-title');
     if(writeTitle)writeTitle.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';
     document.getElementById('write-overlay').classList.add('habit-write-mode');
+    var titleInput=document.getElementById('write-title-input');
+    titleInput.value='';titleInput.style.display='block';
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
     document.getElementById('write-overlay').classList.add('visible');
     pushNav('write-overlay');
     window._habitDirectSave=true;
-    setTimeout(()=>document.getElementById('write-textarea').focus(),100);
+    setTimeout(()=>document.getElementById('write-title-input').focus(),100);
 }
+var _pendingVoiceText=null;
 function habitSaveVoiceEntry(text){
-    const hab=habits.find(h=>h.id===currentHabitId);
-    if(hab&&text){
-        hab.entries.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:cleanupTranscript(text),inputType:'voice',lang:currentLang,createdAt:new Date().toISOString()});
-        saveHabits();
-        openHabitDetail(currentHabitId);
-    }
+    _pendingVoiceText=cleanupTranscript(text);
+    document.getElementById('voice-title-input').value='';
+    document.getElementById('voice-title-overlay').classList.add('visible');
+    pushNav('voice-title-overlay');
+    setTimeout(()=>document.getElementById('voice-title-input').focus(),100);
 }
+function _commitVoiceEntry(title){
+    var hab=habits.find(h=>h.id===currentHabitId);
+    if(hab&&_pendingVoiceText){
+        var entry={id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:_pendingVoiceText,inputType:'voice',lang:currentLang,createdAt:new Date().toISOString()};
+        if(title)entry.title=title;
+        hab.entries.push(entry);
+        saveHabits();
+    }
+    _pendingVoiceText=null;
+    document.getElementById('voice-title-overlay').classList.remove('visible');
+    openHabitDetail(currentHabitId);
+}
+document.getElementById('voice-title-save').addEventListener('click',()=>{_commitVoiceEntry(document.getElementById('voice-title-input').value.trim());});
+document.getElementById('voice-title-skip').addEventListener('click',()=>{_commitVoiceEntry(null);});
 
 /* Habit voice recording */
 let habitRecognition=null,habitFT='',habitIT='';

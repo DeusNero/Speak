@@ -14,7 +14,7 @@ function showToast(text){
     const existing=document.querySelector('.toast-msg');if(existing)existing.remove();
     const toast=document.createElement('div');
     toast.className='toast-msg';
-    toast.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);width:50%;max-width:200px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px 16px;z-index:200;font-size:13px;color:var(--text-secondary);line-height:1.4;box-shadow:0 4px 16px rgba(0,0,0,.3);overflow:hidden;animation:toastIn .3s ease;text-align:center;';
+    toast.style.cssText='position:fixed;bottom:90px;left:16px;max-width:220px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px 16px;z-index:200;font-size:13px;color:var(--text-secondary);line-height:1.4;box-shadow:0 4px 16px rgba(0,0,0,.3);overflow:hidden;animation:toastIn .3s ease;';
     toast.textContent=text;
     const bar=document.createElement('div');
     bar.style.cssText='position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#c4b48a,#a89870);width:100%;animation:toastBar 3s linear forwards;border-radius:0 0 var(--radius-md) var(--radius-md);';
@@ -81,7 +81,9 @@ function openWriteModal(){
     if(_wt){if(currentMode==='habit'||window._habitDirectSave){_wt.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';}else{_wt.textContent='What\u2019s on your mind?';}}
     const writeTitle=document.querySelector('#write-overlay .modal-title');
     
-    document.getElementById('write-textarea').value='';syncWriteLangToggle();
+    document.getElementById('write-textarea').value='';
+    document.getElementById('write-title-input').value='';document.getElementById('write-title-input').style.display='none';
+    syncWriteLangToggle();
     const wo=document.getElementById('write-overlay');wo.classList.toggle('habit-write-mode',currentMode==='habit');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     document.getElementById('write-overlay').classList.add('visible');pushNav('write-overlay');
@@ -91,8 +93,8 @@ function openWriteModal(){
 /* Write modal lang toggle */
 function syncWriteLangToggle(){document.querySelectorAll('.write-lang-btn').forEach(b=>{b.classList.toggle('active',b.dataset.lang===currentLang);});}
 document.querySelectorAll('.write-lang-btn').forEach(btn=>{btn.addEventListener('click',()=>{currentLang=btn.dataset.lang;document.querySelectorAll('.write-lang-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');/* Also sync main lang toggle */document.querySelectorAll('.lang-btn:not(.write-lang-btn)').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));document.querySelectorAll('.settings-lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));localStorage.setItem('speak_lang',currentLang);});});
-document.getElementById('write-close-x').addEventListener('click',()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
-document.getElementById('write-cancel').addEventListener('click',()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
+document.getElementById('write-close-x').addEventListener('click',()=>{document.getElementById('write-title-input').style.display='none';document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
+document.getElementById('write-cancel').addEventListener('click',()=>{document.getElementById('write-title-input').style.display='none';document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
 document.getElementById('write-save').addEventListener('click',()=>{
     const t=document.getElementById('write-textarea').value.trim();
     const refined=window._writeRefined;
@@ -108,9 +110,13 @@ if(window._habitDirectSave){
     window._habitDirectSave=false;
     const hab=habits.find(h=>h.id===currentHabitId);
     if(hab){
-        hab.entries.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:t,inputType:'text',lang:currentLang,createdAt:new Date().toISOString()});
+        var entry={id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:t,inputType:'text',lang:currentLang,createdAt:new Date().toISOString()};
+        var titleVal=document.getElementById('write-title-input').value.trim();
+        if(titleVal)entry.title=titleVal;
+        hab.entries.push(entry);
         saveHabits();
     }
+    document.getElementById('write-title-input').value='';document.getElementById('write-title-input').style.display='none';
     document.getElementById('write-overlay').classList.remove('visible');
     if(typeof exitWriteMode==='function')exitWriteMode();
     openHabitDetail(currentHabitId);
@@ -278,7 +284,10 @@ const speakBtnMain=document.querySelector('.speak-btn-container .speak-btn');
 window.addEventListener('popstate',e=>{
     if(navHistory.length>0){
         navHistory.pop();
-        const overlays=['write-overlay','date-range-overlay','confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay'];
+        if(typeof thoughtsSelectMode!=='undefined'&&thoughtsSelectMode){exitThoughtsSelection();history.pushState({},'');return;}
+        if(typeof habitsSelectMode!=='undefined'&&habitsSelectMode){exitHabitsSelection();history.pushState({},'');return;}
+        if(typeof habitEntriesSelectMode!=='undefined'&&habitEntriesSelectMode){exitHabitEntriesSelection();history.pushState({},'');return;}
+        const overlays=['write-overlay','date-range-overlay','confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay','voice-title-overlay'];
         for(const oid of overlays){const oel=document.getElementById(oid);if(oel&&(oel.classList.contains('visible'))){oel.classList.remove('visible');return;}}
         const heDetailScreen=document.getElementById('habit-entry-detail-screen');
         if(heDetailScreen&&heDetailScreen.classList.contains('active')){if(typeof openHabitDetail==='function')openHabitDetail(currentHabitId);return;}
