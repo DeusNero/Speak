@@ -106,7 +106,14 @@ document.getElementById('write-refine-preview').style.display='none';
 document.getElementById('write-refine-status').style.display='none';
 document.getElementById('write-refine-actions').style.display='none';
 if(t){
-if(window._habitDirectSave){
+if(window._habitsPgDirectCreate){
+    window._habitsPgDirectCreate=false;
+    habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name:t,entries:[],favourite:false,createdAt:new Date().toISOString()});
+    saveHabits();renderHabits();
+    document.getElementById('write-overlay').classList.remove('visible');
+    if(typeof exitWriteMode==='function')exitWriteMode();
+    showToast('Habit created');
+}else if(window._habitDirectSave){
     window._habitDirectSave=false;
     const hab=habits.find(h=>h.id===currentHabitId);
     if(hab){

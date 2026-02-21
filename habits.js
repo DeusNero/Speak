@@ -277,12 +277,13 @@ function openHabitDetail(id){
 
 
 /* Add Habit */
-document.getElementById('add-habit-btn').addEventListener('click',()=>{
+var _addHabitBtn=document.getElementById('add-habit-btn');
+if(_addHabitBtn){_addHabitBtn.addEventListener('click',()=>{
     document.getElementById('habit-name-input').value='';
     document.getElementById('add-habit-overlay').classList.add('visible');
     pushNav('add-habit-overlay');
     setTimeout(()=>document.getElementById('habit-name-input').focus(),100);
-});
+});}
 document.getElementById('add-habit-close-x').addEventListener('click',()=>document.getElementById('add-habit-overlay').classList.remove('visible'));
 document.getElementById('add-habit-cancel').addEventListener('click',()=>document.getElementById('add-habit-overlay').classList.remove('visible'));
 document.getElementById('add-habit-save').addEventListener('click',()=>{
@@ -400,9 +401,10 @@ function habitsPgExitWrite(){
     habitsPgBtn.querySelector('svg').innerHTML='<path d="M12 22V12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22c-2 0-3-1-3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 22c2 0 3-1 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
 }
 function habitsPgOpenWrite(){
-    currentMode='habit';window._habitDirectSave=false;
+    currentMode='habit';window._habitDirectSave=false;window._habitsPgDirectCreate=true;
     document.getElementById('write-textarea').value='';
-    var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';
+    document.getElementById('write-title-input').value='';document.getElementById('write-title-input').style.display='none';
+    var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.textContent='New habit name';
     const wo=document.getElementById('write-overlay');wo.classList.add('habit-write-mode');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
@@ -410,9 +412,12 @@ function habitsPgOpenWrite(){
     setTimeout(()=>document.getElementById('write-textarea').focus(),100);
 }
 function habitsPgSaveVoice(text){
-    if(text){currentCapture.text=cleanupTranscript(text);currentCapture.inputType='voice';currentCapture.lang=currentLang;currentCapture.tags=['habit'];currentMode='habit';
-    if(habits.length>0){showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
-    else{showPostRecordFlow();}}
+    if(!text)return;
+    var name=cleanupTranscript(text).trim();
+    if(!name)return;
+    habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name:name,entries:[],favourite:false,createdAt:new Date().toISOString()});
+    saveHabits();renderHabits();
+    showToast('Habit created');
 }
 function createHabitsPgRec(){
     var SRApi=window.SpeechRecognition||window.webkitSpeechRecognition;
