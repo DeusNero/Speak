@@ -1,4 +1,26 @@
 /* ============ HABITS SYSTEM ============ */
+var _quickEditCb=null;
+function openQuickEdit(title,value,onSave){
+    _quickEditCb=onSave;
+    document.getElementById('quick-edit-title').textContent=title;
+    document.getElementById('quick-edit-input').value=value||'';
+    document.getElementById('quick-edit-overlay').classList.add('visible');
+    pushNav('quick-edit-overlay');
+    setTimeout(function(){document.getElementById('quick-edit-input').focus();},100);
+}
+document.getElementById('quick-edit-save').addEventListener('click',function(){
+    var val=document.getElementById('quick-edit-input').value.trim();
+    if(!val||!_quickEditCb)return;
+    document.getElementById('quick-edit-overlay').classList.remove('visible');
+    _quickEditCb(val);_quickEditCb=null;
+});
+document.getElementById('quick-edit-cancel').addEventListener('click',function(){
+    document.getElementById('quick-edit-overlay').classList.remove('visible');_quickEditCb=null;
+});
+document.getElementById('quick-edit-close-x').addEventListener('click',function(){
+    document.getElementById('quick-edit-overlay').classList.remove('visible');_quickEditCb=null;
+});
+
 let currentHabitId=null,currentHabitEntryId=null;
 let habitsSelectMode=false,habitsSelected=new Set();
 let habitEntriesSelectMode=false,habitEntriesSelected=new Set();
@@ -157,8 +179,7 @@ function renderHabits(){
             e.stopPropagation();
             const hab=habits.find(h=>h.id===btn.dataset.habitId);
             if(!hab)return;
-            const newName=prompt('Rename habit:',hab.name);
-            if(newName&&newName.trim()){hab.name=newName.trim();saveHabits();renderHabits();}
+            openQuickEdit('Rename habit',hab.name,function(val){hab.name=val;saveHabits();renderHabits();});
         });
     });
     list.querySelectorAll('.habit-delete-btn').forEach(btn=>{
@@ -249,8 +270,7 @@ function openHabitDetail(id){
                 e.stopPropagation();
                 const entry=(hab.entries||[]).find(x=>x.id===btn.dataset.entryId);
                 if(!entry)return;
-                const newText=prompt('Edit entry:',entry.text);
-                if(newText!==null&&newText.trim()){entry.text=newText.trim();saveHabits();openHabitDetail(id);}
+                openQuickEdit('Edit entry',entry.text,function(val){entry.text=val;saveHabits();openHabitDetail(id);});
             });
         });
         list.querySelectorAll('.entry-delete-btn').forEach(btn=>{
