@@ -150,7 +150,7 @@ document.getElementById('write-refine-btn').addEventListener('click',async()=>{
     const refined=typeof result==='object'?result.text:result;
     btn.innerHTML=origHtml;btn.style.pointerEvents='auto';
     /* Show preview */
-    preview.textContent=refined;preview.style.display='block';
+    preview.textContent=refined;preview.style.display='block';preview.contentEditable='true';
     /* Show status */
     status.style.display='block';
     if(typeof result==='object'&&result.source==='gemini'){
@@ -166,7 +166,7 @@ document.getElementById('write-refine-btn').addEventListener('click',async()=>{
     window._writeRefined=refined;
 });
 document.getElementById('write-refine-accept').addEventListener('click',()=>{
-    document.getElementById('write-textarea').value=window._writeRefined||'';
+    document.getElementById('write-textarea').value=document.getElementById('write-refine-preview').textContent||'';
     document.getElementById('write-refine-preview').style.display='none';
     document.getElementById('write-refine-status').style.display='none';
     document.getElementById('write-refine-actions').style.display='none';

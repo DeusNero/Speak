@@ -381,7 +381,7 @@ document.getElementById('he-detail-refine').addEventListener('click',function(){
         var statusHtml='';
         if(typeof result==='object'){if(result.source==='local'&&result.error){statusHtml='<div style="font-size:12px;color:var(--mood-1);margin-bottom:12px;">Gemini unavailable: '+escapeHtml(result.error)+'. Showing local cleanup.</div>';}else if(result.source==='local'){statusHtml='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">No API key. Showing local cleanup.</div>';}else{statusHtml='<div style="font-size:12px;color:var(--accent-moss);margin-bottom:12px;">Refined with Gemini AI</div>';}}
         var refinedText=typeof result==='object'?result.text:result;
-        bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(entry.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text">'+escapeHtml(refinedText)+'</div>';
+        bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(entry.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text" contenteditable="true">'+escapeHtml(refinedText)+'</div>';
         ac.style.display='flex';
     });
 });
