@@ -104,10 +104,9 @@ async function sbFullUpload(){
 }
 
 async function sbSyncThoughts(){
-    if(!_sbUser){if(typeof showToast==='function')showToast('Sync skip: no user');return;}
+    if(!_sbUser)return;
     var local=JSON.parse(localStorage.getItem('speak_captures')||'[]');
-    if(!local.length){if(typeof showToast==='function')showToast('Sync skip: no data');return;}
-    try{
+    if(!local.length)return;
     var rows=local.map(c=>({
         id:c.id,
         user_id:_sbUser.id,
@@ -122,9 +121,7 @@ async function sbSyncThoughts(){
         updated_at:new Date().toISOString()
     }));
     const{error}=await sb.from('thoughts').upsert(rows,{onConflict:'id'});
-    if(error){if(typeof showToast==='function')showToast('Sync err: '+error.message);}
-    else{if(typeof showToast==='function')showToast('Synced '+rows.length+' thoughts');}
-    }catch(ex){if(typeof showToast==='function')showToast('Sync crash: '+ex.message);}
+    if(error){console.error('Thoughts sync error:',error);if(typeof showToast==='function')showToast('Sync error: '+error.message);}
 }
 
 async function sbSyncHabits(){
