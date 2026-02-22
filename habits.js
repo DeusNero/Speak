@@ -324,6 +324,7 @@ document.getElementById('delete-habit-confirm').addEventListener('click',()=>{
     saveHabits();renderHabits();
     if(typeof sbDeleteHabit==='function')sbDeleteHabit(delId);
     document.getElementById('delete-habit-overlay').classList.remove('visible');
+    showSuccessOverlay(true,null,'Deleted');
 });
 
 /* Delete Habit Entry (from card trash icon) */
@@ -333,7 +334,7 @@ document.getElementById('entry-delete-confirm').addEventListener('click',()=>{
     if(hab&&window._pendingEntryDeleteId){var _eid=window._pendingEntryDeleteId;hab.entries=hab.entries.filter(e=>e.id!==_eid);saveHabits();if(typeof sbDeleteHabitEntry==='function')sbDeleteHabitEntry(_eid);}
     document.getElementById('entry-delete-overlay').classList.remove('visible');
     window._pendingEntryDeleteId=null;
-    openHabitDetail(currentHabitId);
+    showSuccessOverlay(true,()=>{openHabitDetail(currentHabitId);},'Deleted');
 });
 
 /* Habit Entry Detail Screen */
@@ -643,6 +644,7 @@ document.getElementById('habits-select-delete').addEventListener('click',()=>{
     saveHabits();
     if(typeof sbDeleteHabits==='function')sbDeleteHabits(delIds);
     exitHabitsSelection();
+    showSuccessOverlay(true,null,'Deleted');
 });
 
 /* Action bar — habit entries */
@@ -654,4 +656,5 @@ document.getElementById('habit-entries-select-delete').addEventListener('click',
     if(hab){hab.entries=hab.entries.filter(e=>!habitEntriesSelected.has(e.id));saveHabits();}
     if(typeof sbDeleteHabitEntries==='function')sbDeleteHabitEntries(delIds);
     exitHabitEntriesSelection();
+    showSuccessOverlay(true,null,'Deleted');
 });

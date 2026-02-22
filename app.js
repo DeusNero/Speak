@@ -8,8 +8,9 @@ const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function formatDate(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);let s;if(d.toDateString()===t.toDateString())s='Today';else if(d.toDateString()===y.toDateString())s='Yesterday';else s=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});return s+' \u00b7 '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
 
-function showSuccessOverlay(green,onDone){
+function showSuccessOverlay(green,onDone,label){
     const o=document.getElementById('success-overlay');
+    var txt=o.querySelector('.success-text');if(txt)txt.textContent=label||'Saved';
     o.classList.toggle('green',!!green);
     o.classList.add('visible');
     if(typeof createParticles==='function')createParticles();

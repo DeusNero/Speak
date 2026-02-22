@@ -84,6 +84,7 @@ document.getElementById('thoughts-select-delete').addEventListener('click',()=>{
     saveCaptures();
     if(typeof sbDeleteThoughts==='function')sbDeleteThoughts(delIds);
     exitThoughtsSelection();
+    showSuccessOverlay(false,null,'Deleted');
 });
 function getDateGroup(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);if(d.toDateString()===t.toDateString())return'Today';if(d.toDateString()===y.toDateString())return'Yesterday';return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 
@@ -128,7 +129,7 @@ document.getElementById('detail-back').addEventListener('click',()=>showScreen('
 document.getElementById('detail-delete').addEventListener('click',()=>{document.getElementById('confirm-overlay').classList.add('visible');pushNav('confirm-overlay');});
 document.getElementById('confirm-cancel').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.remove('visible'));
 document.getElementById('confirm-close-x').addEventListener('click',()=>document.getElementById('confirm-overlay').classList.remove('visible'));
-document.getElementById('confirm-action').addEventListener('click',()=>{var delId=currentDetailId;captures=captures.filter(c=>c.id!==delId);saveCaptures();if(typeof sbDeleteThought==='function')sbDeleteThought(delId);document.getElementById('confirm-overlay').classList.remove('visible');showScreen('thoughts-screen');});
+document.getElementById('confirm-action').addEventListener('click',()=>{var delId=currentDetailId;captures=captures.filter(c=>c.id!==delId);saveCaptures();if(typeof sbDeleteThought==='function')sbDeleteThought(delId);document.getElementById('confirm-overlay').classList.remove('visible');showSuccessOverlay(false,()=>{showScreen('thoughts-screen');},'Deleted');});
 document.getElementById('detail-edit').addEventListener('click',()=>{const c=captures.find(x=>x.id===currentDetailId);if(!c)return;document.getElementById('edit-title-input').style.display='none';document.getElementById('edit-text-input').value=c.text;document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===(c.mood||0)));document.querySelectorAll('.edit-event-mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===(c.eventMood||0)));document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(b=>b.classList.toggle('selected',c.tags&&c.tags.includes(b.dataset.tag)));document.getElementById('edit-modal').classList.add('visible');pushNav('edit-modal');});
 document.getElementById('edit-cancel').addEventListener('click',()=>{document.getElementById('edit-title-input').style.display='none';document.getElementById('edit-modal').classList.remove('visible');});
 document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');});});
