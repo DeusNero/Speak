@@ -28,6 +28,9 @@
 - **Hover modal / Quick edit overlay** — a centered dialog that floats over the current screen with a backdrop blur, as opposed to a full-screen modal that replaces the entire view. Used for quick edits (rename habit, edit entry text) to feel lighter and less disruptive.
 - **`popstate` event** — a browser event fired when the user navigates back (e.g. Android back button). Used in SPAs/PWAs to intercept back navigation and perform custom actions like exiting multi-select mode instead of leaving the page.
 
+## Testing
+- **Think through test plans before suggesting them** — a test that can't prove anything is worse than no test. Always ask: "What would a passing vs failing result look like? Can I actually distinguish them?" If the answer is no, the test is useless.
+
 ## File Splitting (Feb 2026)
 - **Lift block-scoped variables to global scope** — when extracting code into separate files, variables defined inside blocks (e.g. `const x = ...` inside an `else{}`) are invisible to other files. Move them to the top level before splitting.
 - **Strip wrapper tags after extraction** — sed extraction includes `<style>` and `<script>` tags from the original HTML. Always remove them from the extracted CSS/JS files or they will silently break.

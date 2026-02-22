@@ -253,7 +253,29 @@ if(window._heRefineTarget){
 const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const rEl=document.getElementById('refined-text');if(rEl){c.text=rEl.textContent;saveCaptures();}document.getElementById('refine-overlay').classList.remove('visible');openDetail(currentDetailId);});
 
 function updateSettingsUI(){document.getElementById('total-captures').textContent=captures.length;document.getElementById('last-backup').textContent=settings.lastBackup?'Last: '+new Date(settings.lastBackup).toLocaleDateString():'Never backed up';document.querySelectorAll('#settings-lang-toggle .settings-lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===settings.defaultLang));document.getElementById('api-key-status').textContent=settings.geminiApiKey?'Configured \u2713':'Not configured';}
-document.getElementById('export-btn').addEventListener('click',e=>{e.stopPropagation();const d={exportDate:new Date().toISOString(),version:'1.5.0',captures,habits,settings:{defaultLang:settings.defaultLang,lastBackup:settings.lastBackup}};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='speak-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(u);settings.lastBackup=new Date().toISOString();saveSettings();updateSettingsUI();});
+document.getElementById('export-btn').addEventListener('click',e=>{
+    e.stopPropagation();
+    document.getElementById('export-thought-count').textContent=captures.length;
+    document.getElementById('export-habit-count').textContent=habits.length;
+    var totalEntries=0;habits.forEach(h=>{totalEntries+=(h.entries||[]).length;});
+    document.getElementById('export-entry-count').textContent=totalEntries;
+    document.getElementById('export-overlay').classList.add('visible');
+    pushNav('export-overlay');
+});
+document.getElementById('export-confirm').addEventListener('click',()=>{
+    const d={exportDate:new Date().toISOString(),version:'1.5.0',captures,habits,settings:{defaultLang:settings.defaultLang,lastBackup:settings.lastBackup}};
+    const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');
+    a.href=u;a.download='speak-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(u);
+    settings.lastBackup=new Date().toISOString();saveSettings();updateSettingsUI();
+    document.getElementById('export-overlay').classList.remove('visible');
+    showToast('Backup exported');
+});
+document.getElementById('export-cancel').addEventListener('click',()=>{
+    document.getElementById('export-overlay').classList.remove('visible');
+});
+document.getElementById('export-close-x').addEventListener('click',()=>{
+    document.getElementById('export-overlay').classList.remove('visible');
+});
 document.getElementById('import-btn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('import-file-input').click();});
 document.getElementById('import-file-input').addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const d=JSON.parse(ev.target.result);if(!d.captures||!Array.isArray(d.captures)){alert('Invalid backup file.');return;}captures=d.captures;saveCaptures();if(d.habits&&Array.isArray(d.habits)){habits=d.habits;saveHabits();}if(d.settings){if(d.settings.defaultLang)settings.defaultLang=d.settings.defaultLang;if(d.settings.lastBackup)settings.lastBackup=d.settings.lastBackup;saveSettings();}alert('Restored '+captures.length+' thoughts and '+habits.length+' habits.');window.location.reload();}catch(err){alert('Could not read backup file.');}};reader.readAsText(file);e.target.value='';});
 document.getElementById('api-key-btn').addEventListener('click',e=>{

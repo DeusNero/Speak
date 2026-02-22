@@ -230,6 +230,21 @@
             <button class="action-btn primary" id="quick-edit-save" style="min-width:0;flex:1;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);color:var(--bg-deep);border:none;">Save</button>
         </div>
     </div></div>
+    <!-- EXPORT MODAL -->
+    <div class="modal-overlay" id="export-overlay"><div class="modal-dialog" style="max-width:380px;padding:24px;text-align:center;">
+        <button class="modal-close-x" id="export-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <div class="modal-title" style="margin-bottom:6px;">Export data</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Download all your data as a JSON file</div>
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px;margin-bottom:16px;text-align:left;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="color:var(--text-muted);">Thoughts</span><span id="export-thought-count" style="color:var(--text-primary);font-weight:500;">0</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="color:var(--text-muted);">Habits</span><span id="export-habit-count" style="color:var(--text-primary);font-weight:500;">0</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--text-muted);">Habit entries</span><span id="export-entry-count" style="color:var(--text-primary);font-weight:500;">0</span></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+            <button class="action-btn secondary" id="export-cancel" style="min-width:0;flex:1;background:rgba(196,180,138,.15);border-color:rgba(196,180,138,.25);color:#c4b48a;">Cancel</button>
+            <button class="action-btn primary" id="export-confirm" style="min-width:0;flex:1;background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);border:none;">Export</button>
+        </div>
+    </div></div>
     <!-- API KEY MODAL -->
     <div class="modal-overlay" id="api-key-overlay"><div class="modal-dialog" style="max-width:380px;padding:24px;">
         <button class="modal-close-x" id="api-key-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
