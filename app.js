@@ -96,10 +96,9 @@ document.querySelectorAll('.write-lang-btn').forEach(btn=>{btn.addEventListener(
 document.getElementById('write-close-x').addEventListener('click',()=>{document.getElementById('write-title-input').style.display='none';document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
 document.getElementById('write-cancel').addEventListener('click',()=>{document.getElementById('write-title-input').style.display='none';document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
 document.getElementById('write-save').addEventListener('click',()=>{
-    const t=document.getElementById('write-textarea').value.trim();
-    const refined=window._writeRefined;
-const previewVisible=document.getElementById('write-refine-preview').style.display!=='none';
-if(previewVisible&&refined)t=refined;
+    var preview=document.getElementById('write-refine-preview');
+    var previewVisible=preview.style.display!=='none';
+    var t=previewVisible?preview.textContent.trim():document.getElementById('write-textarea').value.trim();
 /* Clear refine state */
 window._writeRefined=null;window._writeRefineOriginal=null;
 document.getElementById('write-refine-preview').style.display='none';

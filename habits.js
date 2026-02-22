@@ -381,7 +381,7 @@ document.getElementById('he-detail-refine').addEventListener('click',function(){
         var statusHtml='';
         if(typeof result==='object'){if(result.source==='local'&&result.error){statusHtml='<div style="font-size:12px;color:var(--mood-1);margin-bottom:12px;">Gemini unavailable: '+escapeHtml(result.error)+'. Showing local cleanup.</div>';}else if(result.source==='local'){statusHtml='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">No API key. Showing local cleanup.</div>';}else{statusHtml='<div style="font-size:12px;color:var(--accent-moss);margin-bottom:12px;">Refined with Gemini AI</div>';}}
         var refinedText=typeof result==='object'?result.text:result;
-        bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(entry.text)+'</div><div class="refine-label">Refined</div>'+statusHtml+'<div class="refine-refined" id="refined-text" contenteditable="true">'+escapeHtml(refinedText)+'</div>';
+        bd.innerHTML='<div class="refine-label">Original</div><div class="refine-original">'+escapeHtml(entry.text)+'</div><div class="refine-label">Refined</div><div class="refine-refined" id="refined-text" contenteditable="true">'+escapeHtml(refinedText)+'</div>'+statusHtml;
         ac.style.display='flex';
     });
 });
@@ -424,7 +424,7 @@ function habitsPgOpenWrite(){
     currentMode='habit';window._habitDirectSave=false;window._habitsPgDirectCreate=true;
     document.getElementById('write-textarea').value='';
     document.getElementById('write-title-input').value='';document.getElementById('write-title-input').style.display='none';
-    var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.textContent='New habit name';
+    var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';
     const wo=document.getElementById('write-overlay');wo.classList.add('habit-write-mode');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
