@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="app">
@@ -290,7 +291,20 @@
         </div>
     </div>
 
+    <!-- AUTH LOGIN -->
+    <div class="modal-overlay" id="auth-overlay" style="z-index:9999;"><div class="modal-dialog" style="max-width:340px;padding:28px 24px;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">🌿</div>
+        <div class="modal-title" style="margin-bottom:4px;">Welcome to Speak</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Sign in to sync your data</div>
+        <input type="email" id="auth-email" autocomplete="off" data-form-type="other" placeholder="Email" style="width:100%;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;outline:none;box-sizing:border-box;margin-bottom:10px;">
+        <input type="password" id="auth-password" autocomplete="off" data-form-type="other" placeholder="Password" style="width:100%;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;outline:none;box-sizing:border-box;margin-bottom:16px;">
+        <div id="auth-error" style="display:none;font-size:12px;color:#e07a5f;margin-bottom:12px;"></div>
+        <button class="action-btn primary" id="auth-login-btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);color:var(--bg-deep);border:none;font-size:15px;font-weight:600;border-radius:var(--radius-md);cursor:pointer;">Sign in</button>
+        <button id="auth-signup-btn" style="background:none;border:none;color:var(--text-muted);font-size:12px;margin-top:12px;cursor:pointer;font-family:var(--font-body);">No account? <span style="color:#7da87a;">Create one</span></button>
+    </div></div>
+
     <script src="storage.js"></script>
+    <script src="supabase.js"></script>
     <script src="ai.js"></script>
     <script src="app.js"></script>
     <script src="thoughts.js"></script>

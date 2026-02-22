@@ -311,3 +311,5 @@ window.addEventListener('popstate',e=>{
         history.back();
     }
 });
+
+if(typeof sbInit==='function')sbInit();
