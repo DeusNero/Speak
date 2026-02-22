@@ -8,6 +8,13 @@ const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function formatDate(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);let s;if(d.toDateString()===t.toDateString())s='Today';else if(d.toDateString()===y.toDateString())s='Yesterday';else s=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});return s+' \u00b7 '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
 
+function showSuccessOverlay(green,onDone){
+    const o=document.getElementById('success-overlay');
+    o.classList.toggle('green',!!green);
+    o.classList.add('visible');
+    if(typeof createParticles==='function')createParticles();
+    setTimeout(()=>{o.classList.remove('visible','green');if(onDone)onDone();},1600);
+}
 const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
 
 function showToast(text){
@@ -113,7 +120,7 @@ if(window._habitsPgDirectCreate){
     saveHabits();renderHabits();
     document.getElementById('write-overlay').classList.remove('visible');
     if(typeof exitWriteMode==='function')exitWriteMode();
-    showToast('Habit created');
+    showSuccessOverlay(true);
 }else if(window._habitDirectSave){
     window._habitDirectSave=false;
     const hab=habits.find(h=>h.id===currentHabitId);
@@ -127,7 +134,7 @@ if(window._habitsPgDirectCreate){
     document.getElementById('write-title-input').value='';document.getElementById('write-title-input').style.display='none';
     document.getElementById('write-overlay').classList.remove('visible');
     if(typeof exitWriteMode==='function')exitWriteMode();
-    openHabitDetail(currentHabitId);
+    showSuccessOverlay(true,()=>{openHabitDetail(currentHabitId);});
 }else{
     currentCapture.text=t;currentCapture.inputType='text';currentCapture.lang=currentLang;
     document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();
@@ -239,16 +246,10 @@ speakBtn.addEventListener('click',e=>{
 });}
 function updateTimer(){var elapsed=Math.floor((Date.now()-recordingStartTime)/1000);var m=Math.floor(elapsed/60),s=elapsed%60;timerEl.textContent=m+':'+String(s).padStart(2,'0');}
 
-function showPostRecordFlow(){currentCapture.mood=null;currentCapture.eventMood=null;currentCapture.tags=[];showScreen('post-record-screen');document.getElementById('mood-step').classList.add('active');document.getElementById('tag-step').classList.remove('active');document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));document.querySelectorAll('.event-mood-btn').forEach(b=>b.classList.remove('selected'));document.querySelectorAll('#tag-step .tag-btn').forEach(b=>b.classList.remove('selected'));}
+function showPostRecordFlow(){currentCapture.mood=null;currentCapture.tags=[];showScreen('post-record-screen');document.getElementById('mood-step').classList.add('active');document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));}
 document.querySelectorAll('.general-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');currentCapture.mood=parseInt(btn.dataset.mood);});});
-document.querySelectorAll('.event-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.event-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');currentCapture.eventMood=parseInt(btn.dataset.mood);});});
-document.getElementById('mood-next').addEventListener('click',()=>{document.getElementById('mood-step').classList.remove('active');document.getElementById('tag-step').classList.add('active');});
-document.getElementById('mood-skip').addEventListener('click',()=>{currentCapture.mood=null;currentCapture.eventMood=null;document.getElementById('mood-step').classList.remove('active');document.getElementById('tag-step').classList.add('active');});
-document.querySelectorAll('#tag-step .tag-btn').forEach(btn=>{btn.addEventListener('click',()=>btn.classList.toggle('selected'));});
-document.getElementById('tag-save').addEventListener('click',()=>{const tags=[];document.querySelectorAll('#tag-step .tag-btn.selected').forEach(b=>tags.push(b.dataset.tag));currentCapture.tags=tags;
-if(tags.includes('habit')&&habits.length>0){showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
-else{saveCapture();}});
-document.getElementById('tag-skip').addEventListener('click',()=>{currentCapture.tags=[];saveCapture();});
+document.getElementById('mood-next').addEventListener('click',()=>{currentCapture.tags=['emotion'];saveCapture();});
+document.getElementById('mood-skip').addEventListener('click',()=>{currentCapture.mood=null;currentCapture.tags=['emotion'];saveCapture();});
 
 if('serviceWorker' in navigator){
 navigator.serviceWorker.register('./sw.js').then(reg=>{

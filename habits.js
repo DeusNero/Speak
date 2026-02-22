@@ -1,4 +1,6 @@
 /* ============ HABITS SYSTEM ============ */
+var habitsView='feed';
+document.querySelectorAll('#habits-screen .habit-view-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#habits-screen .habit-view-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');habitsView=btn.dataset.view;document.getElementById('habits-list').classList.toggle('list-view',habitsView==='list');renderHabits();});});
 var _quickEditCb=null;
 function openQuickEdit(title,value,onSave){
     _quickEditCb=onSave;
@@ -439,7 +441,7 @@ function habitsPgSaveVoice(text){
     if(!name)return;
     habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name:name,entries:[],favourite:false,createdAt:new Date().toISOString()});
     saveHabits();renderHabits();
-    showToast('Habit created');
+    showSuccessOverlay(true);
 }
 function createHabitsPgRec(){
     var SRApi=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -533,7 +535,8 @@ function _commitVoiceEntry(title){
     }
     _pendingVoiceText=null;
     document.getElementById('voice-title-overlay').classList.remove('visible');
-    openHabitDetail(currentHabitId);
+    var _hid=currentHabitId;
+    showSuccessOverlay(true,()=>{openHabitDetail(_hid);});
 }
 document.getElementById('voice-title-save').addEventListener('click',()=>{_commitVoiceEntry(document.getElementById('voice-title-input').value.trim());});
 document.getElementById('voice-title-skip').addEventListener('click',()=>{_commitVoiceEntry(null);});
