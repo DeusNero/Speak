@@ -6,13 +6,19 @@ var _sbUser=null;
 var _syncInProgress=false;
 
 async function sbInit(){
-    const{data}=await sb.auth.getSession();
-    if(data.session){
-        _sbUser=data.session.user;
-        document.getElementById('auth-overlay').classList.remove('visible');
-        sbRestoreIfNeeded();
-    }else{
-        document.getElementById('auth-overlay').classList.add('visible');
+    try{
+        const{data,error}=await sb.auth.getSession();
+        if(error){console.error('Auth init error:',error);document.getElementById('auth-overlay').classList.add('visible');return;}
+        if(data.session){
+            _sbUser=data.session.user;
+            document.getElementById('auth-overlay').classList.remove('visible');
+            sbRestoreIfNeeded();
+        }else{
+            document.getElementById('auth-overlay').classList.add('visible');
+        }
+    }catch(err){
+        console.error('sbInit failed:',err);
+        if(typeof showToast==='function')showToast('Cloud sync unavailable');
     }
 }
 
@@ -115,7 +121,7 @@ async function sbSyncThoughts(){
         updated_at:new Date().toISOString()
     }));
     const{error}=await sb.from('thoughts').upsert(rows,{onConflict:'id'});
-    if(error)console.error('Thoughts sync error:',error);
+    if(error){console.error('Thoughts sync error:',error);if(typeof showToast==='function')showToast('Sync error: '+error.message);}
 }
 
 async function sbSyncHabits(){
@@ -131,7 +137,7 @@ async function sbSyncHabits(){
         updated_at:new Date().toISOString()
     }));
     const{error:hErr}=await sb.from('habits').upsert(habitRows,{onConflict:'id'});
-    if(hErr){console.error('Habits sync error:',hErr);return;}
+    if(hErr){console.error('Habits sync error:',hErr);if(typeof showToast==='function')showToast('Sync error: '+hErr.message);return;}
     var entryRows=[];
     local.forEach(h=>{
         (h.entries||[]).forEach(e=>{
@@ -151,7 +157,7 @@ async function sbSyncHabits(){
     });
     if(entryRows.length){
         const{error:eErr}=await sb.from('habit_entries').upsert(entryRows,{onConflict:'id'});
-        if(eErr)console.error('Habit entries sync error:',eErr);
+        if(eErr){console.error('Habit entries sync error:',eErr);if(typeof showToast==='function')showToast('Sync error: '+eErr.message);}
     }
 }
 
