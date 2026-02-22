@@ -77,6 +77,8 @@ function exitWriteMode(){
     updateSpeakButtonForMode();
 }
 function openWriteModal(){
+    window._habitsPgDirectCreate=false;
+    window._habitDirectSave=false;
     var _wt=document.querySelector('#write-overlay .modal-title');
     if(_wt){if(currentMode==='habit'||window._habitDirectSave){_wt.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';}else{_wt.textContent='What\u2019s on your mind?';}}
     const writeTitle=document.querySelector('#write-overlay .modal-title');
@@ -93,8 +95,8 @@ function openWriteModal(){
 /* Write modal lang toggle */
 function syncWriteLangToggle(){document.querySelectorAll('.write-lang-btn').forEach(b=>{b.classList.toggle('active',b.dataset.lang===currentLang);});}
 document.querySelectorAll('.write-lang-btn').forEach(btn=>{btn.addEventListener('click',()=>{currentLang=btn.dataset.lang;document.querySelectorAll('.write-lang-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');/* Also sync main lang toggle */document.querySelectorAll('.lang-btn:not(.write-lang-btn)').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));document.querySelectorAll('.settings-lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));localStorage.setItem('speak_lang',currentLang);});});
-document.getElementById('write-close-x').addEventListener('click',()=>{document.getElementById('write-title-input').style.display='none';document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
-document.getElementById('write-cancel').addEventListener('click',()=>{document.getElementById('write-title-input').style.display='none';document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
+document.getElementById('write-close-x').addEventListener('click',()=>{document.getElementById('write-title-input').style.display='none';window._habitsPgDirectCreate=false;window._habitDirectSave=false;document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
+document.getElementById('write-cancel').addEventListener('click',()=>{document.getElementById('write-title-input').style.display='none';window._habitsPgDirectCreate=false;window._habitDirectSave=false;document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();});
 document.getElementById('write-save').addEventListener('click',()=>{
     var preview=document.getElementById('write-refine-preview');
     var previewVisible=preview.style.display!=='none';
