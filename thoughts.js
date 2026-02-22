@@ -256,7 +256,24 @@ function updateSettingsUI(){document.getElementById('total-captures').textConten
 document.getElementById('export-btn').addEventListener('click',e=>{e.stopPropagation();const d={exportDate:new Date().toISOString(),version:'1.5.0',captures,habits,settings:{defaultLang:settings.defaultLang,lastBackup:settings.lastBackup}};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='speak-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(u);settings.lastBackup=new Date().toISOString();saveSettings();updateSettingsUI();});
 document.getElementById('import-btn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('import-file-input').click();});
 document.getElementById('import-file-input').addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const d=JSON.parse(ev.target.result);if(!d.captures||!Array.isArray(d.captures)){alert('Invalid backup file.');return;}captures=d.captures;saveCaptures();if(d.habits&&Array.isArray(d.habits)){habits=d.habits;saveHabits();}if(d.settings){if(d.settings.defaultLang)settings.defaultLang=d.settings.defaultLang;if(d.settings.lastBackup)settings.lastBackup=d.settings.lastBackup;saveSettings();}alert('Restored '+captures.length+' thoughts and '+habits.length+' habits.');window.location.reload();}catch(err){alert('Could not read backup file.');}};reader.readAsText(file);e.target.value='';});
-document.getElementById('api-key-btn').addEventListener('click',e=>{e.stopPropagation();const key=prompt('Enter your Gemini API key from Google AI Studio:\n(Leave empty to clear)',settings.geminiApiKey||'');if(key!==null){settings.geminiApiKey=key.trim();saveSettings();updateSettingsUI();}});
+document.getElementById('api-key-btn').addEventListener('click',e=>{
+    e.stopPropagation();
+    document.getElementById('api-key-input').value=settings.geminiApiKey||'';
+    document.getElementById('api-key-overlay').classList.add('visible');
+    pushNav('api-key-overlay');
+    setTimeout(()=>document.getElementById('api-key-input').focus(),100);
+});
+document.getElementById('api-key-save').addEventListener('click',()=>{
+    settings.geminiApiKey=document.getElementById('api-key-input').value.trim();
+    saveSettings();updateSettingsUI();
+    document.getElementById('api-key-overlay').classList.remove('visible');
+});
+document.getElementById('api-key-cancel').addEventListener('click',()=>{
+    document.getElementById('api-key-overlay').classList.remove('visible');
+});
+document.getElementById('api-key-close-x').addEventListener('click',()=>{
+    document.getElementById('api-key-overlay').classList.remove('visible');
+});
 document.querySelectorAll('#settings-lang-toggle .settings-lang-btn').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();settings.defaultLang=btn.dataset.lang;currentLang=settings.defaultLang;langBtns.forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));saveSettings();updateSettingsUI();});});
 (function(){if(!settings.lastBackup)return;const ds=Math.floor((new Date()-new Date(settings.lastBackup))/864e5);if(ds>=14&&captures.length>0){const tab=document.querySelector('[data-screen="settings-screen"]');if(tab&&!tab.querySelector('.reminder-dot')){const d=document.createElement('span');d.className='reminder-dot';d.style.cssText='width:6px;height:6px;background:var(--accent-warm);border-radius:50%;position:absolute;top:6px;right:12px;';tab.style.position='relative';tab.appendChild(d);}}})();
 updateSettingsUI();
