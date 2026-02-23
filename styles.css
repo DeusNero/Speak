@@ -199,7 +199,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .capture-list{display:flex;flex-direction:column;gap:10px}
 .capture-card{background:var(--bg-card);border-radius:var(--radius-md);padding:16px;border:1px solid var(--border-subtle);cursor:pointer;transition:all .2s ease;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.capture-card:active{background:var(--bg-card-hover);transform:scale(.99)}
 .capture-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.capture-card-date{font-size:12px;color:var(--text-muted)}.capture-card-mood{font-size:18px}
-.capture-card-text{font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.capture-card-text{font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .capture-card-tags{display:flex;gap:6px;flex-wrap:wrap}
 .tag-pill{padding:3px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:500}
 .tag-pill.emotion{background:var(--tag-emotion-bg);color:var(--tag-emotion)}.tag-pill.poem{background:var(--tag-poem-bg);color:var(--tag-poem)}.tag-pill.habit{background:var(--tag-task-bg);color:var(--tag-task)}.tag-pill.untagged{background:var(--tag-untagged-bg);color:var(--tag-untagged)}
@@ -247,7 +247,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .edit-textarea{width:100%;min-height:160px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px;color:var(--text-primary);font-family:var(--font-body);font-size:15px;line-height:1.7;resize:vertical;outline:none;box-sizing:border-box;margin-bottom:16px}.edit-textarea:focus{border-color:var(--accent-primary)}
 .edit-section-label{font-size:12px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
 .edit-mood-row{display:flex;gap:10px;margin-bottom:20px}
-.edit-mood-btn{width:44px;height:44px;border-radius:50%;border:2px solid var(--border-subtle);background:var(--bg-card);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease}.edit-mood-btn.selected{border-color:var(--accent-primary);background:var(--accent-primary-soft);transform:scale(1.08)}
+.edit-mood-btn{width:44px;height:44px;border-radius:50%;border:2px solid var(--border-subtle);background:var(--bg-card);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease}.edit-mood-btn.selected{border-color:#c4b48a;background:rgba(196,180,138,.15);transform:scale(1.08)}
 .edit-tag-row{display:flex;gap:8px;flex-wrap:wrap}
 .edit-tag-btn{padding:8px 16px;border-radius:var(--radius-full);border:1.5px solid var(--border-subtle);background:var(--bg-card);color:var(--text-secondary);font-family:var(--font-body);font-size:13px;cursor:pointer;transition:all .2s ease}
 .edit-tag-btn.selected{border-color:var(--tag-emotion);background:var(--tag-emotion-bg);color:var(--tag-emotion)}

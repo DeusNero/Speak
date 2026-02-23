@@ -38,6 +38,10 @@
 
 - **Feed view / List view** — the toggle buttons in the top-right of the thoughts and habits pages. Feed view shows full cards with text previews and metadata. List view shows compact single-line items (controlled by the CSS class `list-view` on the card container, which reduces padding and clamps text to one line).
 
-- **Success overlay** — the full-screen checkmark animation with floating particles that appears for 1.6 seconds after saving. We have two color variants: beige (for thoughts, using `radial-gradient(#c8b890, #98885a)`) and green (for habits, using `.success-overlay.green` with `radial-gradient(#7da87a, #4a7248)`). It replaced the "Habit created" toast for habits.
+- **Success overlay** — the full-screen checkmark animation with floating particles that appears for 1.6 seconds after saving or deleting. We have two color variants: beige (for thoughts) and green (for habits). The `showSuccessOverlay(green, onDone, label)` function accepts an optional third parameter to change the text — defaults to "Saved", but we pass "Deleted" for all delete actions.
 
-- **Auto-tagging** — when we removed the "What kind of thought?" tag selection page, we needed thoughts to still have a tag for filtering. So now `mood-next` (Save) and `mood-skip` (Skip) both set `currentCapture.tags=['emotion']` automatically before calling `saveCapture()`. The user never has to pick — it's always tagged as "thought."
+- **Auto-tagging** — originally, when we removed the tag selection page, thoughts were automatically tagged as `['emotion']`. We later removed this too — thoughts now save with empty tags. The "Thought" filter chip works by showing everything that *isn't* tagged as a habit, so it catches both old (emotion-tagged) and new (untagged) thoughts.
+
+- **`z-index`** — a CSS property that controls stacking order of overlapping elements. Higher values sit on top. We hit this when the version label on the speak home screen was invisible — the `.speak-screen::after` gradient overlay was painting over it. Adding `z-index:2` to the version div fixed it.
+
+- **`::after` pseudo-element** — a CSS-generated element appended to a real element, created via `.speak-screen::after { content:''; ... }`. We use it to add a dark gradient overlay on top of the speak screen's background image, making text readable. It covers `position:absolute` children unless they have a higher `z-index`.

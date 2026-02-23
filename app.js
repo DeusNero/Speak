@@ -14,7 +14,7 @@ function showSuccessOverlay(green,onDone,label){
     o.classList.toggle('green',!!green);
     o.classList.add('visible');
     if(typeof createParticles==='function')createParticles();
-    setTimeout(()=>{o.classList.remove('visible','green');if(onDone)onDone();},1600);
+    setTimeout(()=>{o.classList.remove('visible','green');if(onDone)onDone();},1100);
 }
 const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
 

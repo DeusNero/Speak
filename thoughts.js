@@ -41,12 +41,8 @@ h+='<div class="card-actions" style="display:flex;gap:6px;align-items:center;'+(
 h+='<button class="card-edit-btn" data-id="'+c.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Edit"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>';
 h+='<button class="card-delete-btn" data-id="'+c.id+'" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);" title="Delete"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>';
 h+='</div></div>';
-h+='<div class="capture-card-text">'+escapeHtml(pv)+(c.text.length>pv.length?'...':'')+'</div>';
-h+='<div class="capture-card-footer" style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">';
-h+='<div class="capture-card-tags">'+tg+'</div>';
-var eme=c.eventMood?moods[c.eventMood]||'':'';
-if(me||eme)h+='<div style="display:flex;gap:4px;font-size:16px;">'+(me?'<span title="General mood">'+me+'</span>':'')+(eme?'<span title="Event mood" style="opacity:.7;">'+eme+'</span>':'')+'</div>';
-h+='</div></div>';
+h+='<div class="capture-card-text">'+escapeHtml(pv)+(c.text.length>pv.length?'...':'')+(me?' <span style="font-size:16px;vertical-align:middle;margin-left:4px;">'+me+'</span>':'')+'</div>';
+h+='</div>';
 });list.innerHTML=h;
 list.querySelectorAll('.capture-card').forEach(card=>{
     let lpTimer=null;
