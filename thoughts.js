@@ -7,7 +7,7 @@ if(currentCapture.habitId){
     currentCapture.habitId=null;
 }else{
     captures.unshift(entry);
-}saveCaptures();showSuccessOverlay(isHabit,()=>{showScreen('speak-screen');currentCapture={text:'',mood:null,tags:[],inputType:'voice'};});}
+}saveCaptures();var _retScr=window._returnScreen||'speak-screen';window._returnScreen=null;showSuccessOverlay(isHabit,()=>{showScreen(_retScr);if(_retScr==='thoughts-screen')renderCaptures();currentCapture={text:'',mood:null,tags:[],inputType:'voice'};});}
 function createParticles(){const c=['#5b9ec4','#8ab88a','#b8a9cc','#c4956b','#6aaa8a'];for(let i=0;i<12;i++){const p=document.createElement('div');p.className='particle';p.style.background=c[Math.floor(Math.random()*c.length)];p.style.left='50%';p.style.top='50%';const a=(Math.PI*2*i)/12,d=80+Math.random()*60;p.style.setProperty('--tx',Math.cos(a)*d+'px');p.style.setProperty('--ty',Math.sin(a)*d+'px');p.style.animation='particleFly .8s cubic-bezier(.25,.46,.45,.94) forwards';p.style.animationDelay=Math.random()*.2+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),1200);}}
 
 let thoughtsSelectMode=false,thoughtsSelected=new Set();
@@ -29,7 +29,7 @@ function enterThoughtsSelection(id){
     updateThoughtsBar();
 }
 
-function renderCaptures(){const list=document.getElementById('capture-list');let f=[...captures];if(currentFilter==='untagged')f=f.filter(c=>!c.tags||c.tags.length===0);else if(currentFilter!=='all')f=f.filter(c=>c.tags&&c.tags.includes(currentFilter));if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);const dr=document.getElementById('date-range-start').value;const dre=document.getElementById('date-range-end').value;if(dr){const ds=new Date(dr);ds.setHours(0,0,0,0);f=f.filter(c=>new Date(c.createdAt)>=ds);}if(dre){const de=new Date(dre);de.setHours(23,59,59,999);f=f.filter(c=>new Date(c.createdAt)<=de);}f.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));if(!f.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u2728</div><div class="empty-state-text">No thoughts yet.<br>Tap the circle below to begin.</div></div>';return;}
+function renderCaptures(){const list=document.getElementById('capture-list');let f=[...captures];if(currentFilter==='emotion')f=f.filter(c=>!c.tags||!c.tags.includes('habit'));else if(currentFilter!=='all')f=f.filter(c=>c.tags&&c.tags.includes(currentFilter));if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);const dr=document.getElementById('date-range-start').value;const dre=document.getElementById('date-range-end').value;if(dr){const ds=new Date(dr);ds.setHours(0,0,0,0);f=f.filter(c=>new Date(c.createdAt)>=ds);}if(dre){const de=new Date(dre);de.setHours(23,59,59,999);f=f.filter(c=>new Date(c.createdAt)<=de);}f.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));if(!f.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u2728</div><div class="empty-state-text">No thoughts yet.<br>Tap the circle below to begin.</div></div>';return;}
 let h='';f.forEach(c=>{const d=new Date(c.createdAt);const moods={1:'\ud83d\ude14',2:'\ud83d\ude15',3:'\ud83d\ude10',4:'\ud83d\ude0a',5:'\ud83d\ude04'};const me=c.mood?moods[c.mood]||'':'';const pv=c.text.substring(0,120);let tg='';if(c.tags&&c.tags.length)tg=c.tags.map(t=>'<span class="capture-tag">'+t+'</span>').join('');
 const inputIcon=c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>';
 const isSel=thoughtsSelected.has(c.id);
@@ -194,7 +194,7 @@ function thoughtsExitWrite(){
     thoughtsSpeakBtn.querySelector('svg').innerHTML='<path d="M12 21l-1.5-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 5.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.5 11.2L12 21" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="21" stroke="currentColor" stroke-width="1.5"/><path d="M4 9c1.5-.5 3 .5 3.5 1.5s0 2.5-1 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5.5 7c1-.5 2.5 0 3 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 13c-1 .5-1.5 2-.5 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
 }
 function thoughtsOpenWrite(){
-    currentMode='thought';window._habitDirectSave=false;
+    currentMode='thought';window._habitDirectSave=false;window._returnScreen='thoughts-screen';
     document.getElementById('write-textarea').value='';
     var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.textContent='What\u2019s on your mind?';
     const wo=document.getElementById('write-overlay');wo.classList.remove('habit-write-mode');
@@ -204,7 +204,7 @@ function thoughtsOpenWrite(){
     setTimeout(()=>document.getElementById('write-textarea').focus(),100);
 }
 function thoughtsSaveVoice(text){
-    if(text){currentCapture.text=cleanupTranscript(text);currentCapture.inputType='voice';currentCapture.lang=currentLang;currentMode='thought';showPostRecordFlow();}
+    if(text){currentCapture.text=cleanupTranscript(text);currentCapture.inputType='voice';currentCapture.lang=currentLang;currentMode='thought';window._returnScreen='thoughts-screen';showPostRecordFlow();}
 }
 function createThoughtsRec(){
     var SRApi=window.SpeechRecognition||window.webkitSpeechRecognition;

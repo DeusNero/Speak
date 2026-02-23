@@ -249,8 +249,8 @@ function updateTimer(){var elapsed=Math.floor((Date.now()-recordingStartTime)/10
 
 function showPostRecordFlow(){currentCapture.mood=null;currentCapture.tags=[];showScreen('post-record-screen');document.getElementById('mood-step').classList.add('active');document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));}
 document.querySelectorAll('.general-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');currentCapture.mood=parseInt(btn.dataset.mood);});});
-document.getElementById('mood-next').addEventListener('click',()=>{currentCapture.tags=['emotion'];saveCapture();});
-document.getElementById('mood-skip').addEventListener('click',()=>{currentCapture.mood=null;currentCapture.tags=['emotion'];saveCapture();});
+document.getElementById('mood-next').addEventListener('click',()=>{saveCapture();});
+document.getElementById('mood-skip').addEventListener('click',()=>{currentCapture.mood=null;saveCapture();});
 
 if('serviceWorker' in navigator){
 navigator.serviceWorker.register('./sw.js').then(reg=>{
