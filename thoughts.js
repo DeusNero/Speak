@@ -1,6 +1,7 @@
 function saveCapture(){
 const entry={id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:currentCapture.text,mood:currentCapture.mood,eventMood:currentCapture.eventMood||null,tags:currentCapture.tags,lang:currentCapture.lang||currentLang,inputType:currentCapture.inputType||'voice',createdAt:new Date().toISOString()};
 var isHabit=!!currentCapture.habitId;
+const postOverlay=document.getElementById('post-record-overlay');if(postOverlay)postOverlay.classList.remove('visible');
 if(currentCapture.habitId){
     const hab=habits.find(h=>h.id===currentCapture.habitId);
     if(hab){hab.entries.push(entry);saveHabits();}
@@ -13,6 +14,9 @@ function createParticles(){const c=['#5b9ec4','#8ab88a','#b8a9cc','#c4956b','#6a
 let thoughtsSelectMode=false,thoughtsSelected=new Set();
 const CHECKBOX_SVG='<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--bg-deep)" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const THOUGHT_TAG_LABELS={feel:'Feel',quotes:'Quotes',words:'Words'};
+const selectedThoughtFilters=new Set();
+const SMILEY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M8.5 10.5h.01"/><path d="M15.5 10.5h.01"/><path d="M8 15c1.1 1.2 2.4 1.8 4 1.8S14.9 16.2 16 15"/></svg>';
+const DATE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>';
 
 function updateThoughtsBar(){
     const n=thoughtsSelected.size;
@@ -43,8 +47,13 @@ function getThoughtTagLabel(tag){
 }
 
 function renderCaptures(){const list=document.getElementById('capture-list');let f=[...captures];
-if(currentFilter==='untagged')f=f.filter(c=>!getThoughtTagFromEntry(c));
-else if(currentFilter!=='all')f=f.filter(c=>getThoughtTagFromEntry(c)===currentFilter);
+if(selectedThoughtFilters.size){
+    f=f.filter(c=>{
+        const tag=getThoughtTagFromEntry(c);
+        if(!tag)return selectedThoughtFilters.has('untagged');
+        return selectedThoughtFilters.has(tag);
+    });
+}
 if(searchQuery&&searchQuery.trim()){const q=searchQuery.trim().toLowerCase();f=f.filter(c=>(c.text||'').toLowerCase().includes(q));}
 if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);const dr=document.getElementById('date-range-start').value;const dre=document.getElementById('date-range-end').value;if(dr){const ds=new Date(dr);ds.setHours(0,0,0,0);f=f.filter(c=>new Date(c.createdAt)>=ds);}if(dre){const de=new Date(dre);de.setHours(23,59,59,999);f=f.filter(c=>new Date(c.createdAt)<=de);}f.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));if(!f.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u2728</div><div class="empty-state-text">No thoughts yet.<br>Tap the circle below to begin.</div></div>';return;}
 let h='';f.forEach(c=>{const d=new Date(c.createdAt);const moods={1:'\ud83d\ude14',2:'\ud83d\ude15',3:'\ud83d\ude10',4:'\ud83d\ude0a',5:'\ud83d\ude04'};const me=c.mood?moods[c.mood]||'':'';const pv=c.text.substring(0,120);const thoughtTag=getThoughtTagFromEntry(c);
@@ -102,7 +111,7 @@ document.getElementById('thoughts-select-delete').addEventListener('click',()=>{
 });
 function getDateGroup(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);if(d.toDateString()===t.toDateString())return'Today';if(d.toDateString()===y.toDateString())return'Yesterday';return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 
-document.querySelectorAll('.filter-chip').forEach(chip=>{chip.addEventListener('click',()=>{document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));chip.classList.add('active');currentFilter=chip.dataset.filter;renderCaptures();});});
+document.querySelectorAll('.filter-chip').forEach(chip=>{chip.addEventListener('click',()=>{const key=chip.dataset.filter;if(selectedThoughtFilters.has(key)){selectedThoughtFilters.delete(key);chip.classList.remove('active');}else{selectedThoughtFilters.add(key);chip.classList.add('active');}renderCaptures();});});
 document.querySelectorAll('#thoughts-screen .view-toggle-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#thoughts-screen .view-toggle-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentView=btn.dataset.view;document.getElementById('capture-list').classList.toggle('list-view',currentView==='list');renderCaptures();});});
 document.getElementById('search-input').addEventListener('input',e=>{searchQuery=e.target.value;renderCaptures();});
 let dateFilterStart=null,dateFilterEnd=null;
@@ -120,6 +129,9 @@ if(dateFilterStart||dateFilterEnd){document.getElementById('date-picker-btn').cl
 else{document.getElementById('date-picker-btn').classList.remove('active');currentDateFilter=null;}
 document.getElementById('date-range-overlay').classList.remove('visible');renderCaptures();});
 const mfBtn=document.getElementById('mood-filter-btn'),mfOvl=document.getElementById('mood-filter-overlay');
+if(mfBtn&&!mfBtn.innerHTML.trim())mfBtn.innerHTML=SMILEY_SVG;
+const dpBtn=document.getElementById('date-picker-btn');
+if(dpBtn&&!dpBtn.innerHTML.trim())dpBtn.innerHTML=DATE_SVG;
 mfBtn.addEventListener('click',()=>{mfOvl.classList.add('visible');pushNav('mood-filter-overlay');});
 document.getElementById('mood-modal-close').addEventListener('click',()=>mfOvl.classList.remove('visible'));
 document.getElementById('mood-modal-close-x').addEventListener('click',()=>mfOvl.classList.remove('visible'));

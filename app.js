@@ -37,6 +37,16 @@ function syncThoughtTypeButtons(){
     document.querySelectorAll('.thought-type-btn').forEach(btn=>{
         btn.classList.toggle('selected',btn.dataset.tag===activeTag);
     });
+    updatePostRecordMoodVisibility();
+}
+function updatePostRecordMoodVisibility(){
+    const overlay=document.getElementById('post-record-overlay');
+    if(!overlay||!overlay.classList.contains('visible'))return;
+    const isQuote=getPrimaryThoughtTag(currentCapture.tags)==='quotes';
+    const moodLabel=document.getElementById('post-mood-label');
+    const moodRow=document.getElementById('general-mood-row');
+    if(moodLabel)moodLabel.style.display=isQuote?'none':'block';
+    if(moodRow)moodRow.style.display=isQuote?'none':'flex';
 }
 document.querySelectorAll('.thought-type-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
@@ -323,19 +333,25 @@ speakBtn.addEventListener('click',e=>{
 function updateTimer(){var elapsed=Math.floor((Date.now()-recordingStartTime)/1000);var m=Math.floor(elapsed/60),s=elapsed%60;timerEl.textContent=m+':'+String(s).padStart(2,'0');}
 
 function showPostRecordFlow(){
-currentCapture.mood=null;showScreen('post-record-screen');document.getElementById('mood-step').classList.add('active');document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));
+currentCapture.mood=null;
+const selectedType=getPrimaryThoughtTag(currentCapture.tags);
+if(selectedType==='quotes'){saveCapture();return;}
+document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));
 const showTypeForVoice=currentCapture.inputType==='voice';
 const postTypeLabel=document.getElementById('post-thought-type-label');
 const postTypeRow=document.getElementById('post-thought-type-selector');
 if(postTypeLabel)postTypeLabel.style.display=showTypeForVoice?'block':'none';
 if(postTypeRow)postTypeRow.style.display=showTypeForVoice?'flex':'none';
+const postOverlay=document.getElementById('post-record-overlay');
+if(postOverlay){postOverlay.classList.add('visible');pushNav('post-record-overlay');}
 if(showTypeForVoice)syncThoughtTypeButtons();
 }
 document.querySelectorAll('.general-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');currentCapture.mood=parseInt(btn.dataset.mood);});});
 document.getElementById('mood-next').addEventListener('click',()=>{
     if(currentCapture.inputType==='voice'){
-        const missingMood=currentCapture.mood==null;
-        const missingTag=!getPrimaryThoughtTag(currentCapture.tags);
+        const selectedTag=getPrimaryThoughtTag(currentCapture.tags);
+        const missingMood=currentCapture.mood==null&&selectedTag!=='quotes';
+        const missingTag=!selectedTag;
         if(missingMood||missingTag){
             const missingBits=[];
             if(missingTag)missingBits.push('tag');
@@ -416,7 +432,7 @@ window.addEventListener('popstate',e=>{
         if(typeof thoughtsSelectMode!=='undefined'&&thoughtsSelectMode){exitThoughtsSelection();history.pushState({},'');return;}
         if(typeof habitsSelectMode!=='undefined'&&habitsSelectMode){exitHabitsSelection();history.pushState({},'');return;}
         if(typeof habitEntriesSelectMode!=='undefined'&&habitEntriesSelectMode){exitHabitEntriesSelection();history.pushState({},'');return;}
-        const overlays=['write-overlay','date-range-overlay','confirm-overlay','no-tag-confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay','voice-title-overlay','quick-edit-overlay','api-key-overlay','export-overlay'];
+        const overlays=['write-overlay','post-record-overlay','date-range-overlay','confirm-overlay','no-tag-confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay','voice-title-overlay','quick-edit-overlay','api-key-overlay','export-overlay'];
         for(const oid of overlays){const oel=document.getElementById(oid);if(oel&&(oel.classList.contains('visible'))){oel.classList.remove('visible');return;}}
         const heDetailScreen=document.getElementById('habit-entry-detail-screen');
         if(heDetailScreen&&heDetailScreen.classList.contains('active')){if(typeof openHabitDetail==='function')openHabitDetail(currentHabitId);return;}

@@ -434,6 +434,8 @@ function habitsPgOpenWrite(){
     currentMode='habit';window._habitDirectSave=false;window._habitsPgDirectCreate=true;
     document.getElementById('write-textarea').value='';
     document.getElementById('write-title-input').value='';document.getElementById('write-title-input').style.display='none';
+    var typeRow=document.getElementById('write-thought-type-selector');
+    if(typeRow)typeRow.style.display='none';
     var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';
     const wo=document.getElementById('write-overlay');wo.classList.add('habit-write-mode');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
@@ -510,6 +512,8 @@ function habitExitWriteMode(){
 }
 function habitOpenWriteModal(){
     document.getElementById('write-textarea').value='';
+    var typeRow=document.getElementById('write-thought-type-selector');
+    if(typeRow)typeRow.style.display='none';
     var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';
     const writeTitle=document.querySelector('#write-overlay .modal-title');
     if(writeTitle)writeTitle.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';
