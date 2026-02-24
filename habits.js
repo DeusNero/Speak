@@ -364,6 +364,10 @@ document.getElementById('he-detail-edit').addEventListener('click',function(){
     var etInput=document.getElementById('edit-title-input');
     etInput.value=entry.title||'';etInput.style.display='block';
     document.getElementById('edit-text-input').value=entry.text;
+    var editTagLabel=document.getElementById('edit-tag-label');
+    var editTagRow=document.getElementById('edit-tag-row');
+    if(editTagLabel)editTagLabel.style.display='none';
+    if(editTagRow)editTagRow.style.display='none';
     document.querySelectorAll('#edit-mood-row .edit-mood-btn').forEach(function(b){b.classList.remove('selected');});
     document.querySelectorAll('#edit-tag-row .edit-tag-btn').forEach(function(b){b.classList.remove('selected');});
     window._heEditMode=true;

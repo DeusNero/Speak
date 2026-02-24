@@ -160,6 +160,9 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .tag-selector{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:32px}
 .tag-btn{padding:10px 20px;border-radius:var(--radius-full);border:1.5px solid var(--border-subtle);background:var(--bg-card);color:var(--text-secondary);font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;transition:all .25s ease}
 .tag-btn.selected{border-color:var(--tag-emotion);background:var(--tag-emotion-bg);color:var(--tag-emotion)}
+.tag-btn[data-tag="feel"].selected{border-color:var(--tag-emotion);background:var(--tag-emotion-bg);color:var(--tag-emotion)}
+.tag-btn[data-tag="quotes"].selected{border-color:var(--tag-task);background:var(--tag-task-bg);color:var(--tag-task)}
+.tag-btn[data-tag="words"].selected{border-color:var(--tag-poem);background:var(--tag-poem-bg);color:var(--tag-poem)}
 .tag-btn[data-tag="poem"].selected{border-color:var(--tag-poem);background:var(--tag-poem-bg);color:var(--tag-poem)}
 .tag-btn[data-tag="task"].selected{border-color:var(--tag-task);background:var(--tag-task-bg);color:var(--tag-task)}
 .action-btn{padding:14px 32px;border-radius:var(--radius-full);border:none;font-family:var(--font-body);font-size:15px;font-weight:500;cursor:pointer;transition:all .2s ease;min-width:160px}
@@ -186,9 +189,13 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .filter-bar{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding:0 4px 8px;scrollbar-width:none}.filter-bar::-webkit-scrollbar{display:none}
 .filter-chip{padding:7px 14px;border-radius:var(--radius-full);border:1px solid var(--border-subtle);background:var(--bg-card);color:var(--text-muted);font-family:var(--font-body);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .2s ease;flex-shrink:0}
 .filter-chip.active{border-color:var(--accent-primary);color:var(--accent-primary);background:var(--accent-primary-soft)}
-.filter-chip[data-filter="emotion"].active{border-color:var(--tag-emotion);color:var(--tag-emotion);background:var(--tag-emotion-bg)}
-.filter-chip[data-filter="poem"].active{border-color:var(--tag-poem);color:var(--tag-poem);background:var(--tag-poem-bg)}
-.filter-chip[data-filter="task"].active{border-color:var(--tag-task);color:var(--tag-task);background:var(--tag-task-bg)}
+.filter-chip[data-filter="emotion"].active,
+.filter-chip[data-filter="feel"].active{border-color:var(--tag-emotion);color:var(--tag-emotion);background:var(--tag-emotion-bg)}
+.filter-chip[data-filter="poem"].active,
+.filter-chip[data-filter="words"].active{border-color:var(--tag-poem);color:var(--tag-poem);background:var(--tag-poem-bg)}
+.filter-chip[data-filter="task"].active,
+.filter-chip[data-filter="quotes"].active{border-color:var(--tag-task);color:var(--tag-task);background:var(--tag-task-bg)}
+.filter-chip[data-filter="untagged"].active{border-color:var(--tag-untagged);color:var(--tag-untagged);background:var(--tag-untagged-bg)}
 .filter-icon-btn{width:34px;height:34px;border-radius:var(--radius-full);border:1px solid var(--border-subtle);background:var(--bg-card);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s ease;font-size:16px;padding:0}
 .filter-icon-btn.active{border-color:var(--accent-primary);color:var(--accent-primary);background:var(--accent-primary-soft)}
 .filter-icon-btn svg{width:16px;height:16px}
@@ -202,7 +209,10 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .capture-card-text{font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .capture-card-tags{display:flex;gap:6px;flex-wrap:wrap}
 .tag-pill{padding:3px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:500}
-.tag-pill.emotion{background:var(--tag-emotion-bg);color:var(--tag-emotion)}.tag-pill.poem{background:var(--tag-poem-bg);color:var(--tag-poem)}.tag-pill.habit{background:var(--tag-task-bg);color:var(--tag-task)}.tag-pill.untagged{background:var(--tag-untagged-bg);color:var(--tag-untagged)}
+.tag-pill.emotion,.tag-pill.feel{background:var(--tag-emotion-bg);color:var(--tag-emotion)}
+.tag-pill.poem,.tag-pill.words{background:var(--tag-poem-bg);color:var(--tag-poem)}
+.tag-pill.task,.tag-pill.quotes,.tag-pill.habit{background:var(--tag-task-bg);color:var(--tag-task)}
+.tag-pill.untagged{background:var(--tag-untagged-bg);color:var(--tag-untagged)}
 .capture-list.list-view .capture-card{padding:12px 16px}.capture-list.list-view .capture-card-text{-webkit-line-clamp:1;margin-bottom:6px}
 .date-group-label{font-family:var(--font-display);font-size:14px;color:var(--text-muted);padding:12px 4px 6px}
 .empty-state{display:flex;flex-direction:column;align-items:center;padding:60px 24px;text-align:center}.empty-state-icon{font-size:48px;margin-bottom:16px;opacity:.4}.empty-state-text{font-family:var(--font-display);font-size:16px;color:var(--text-muted);line-height:1.6;font-style:italic}
@@ -251,6 +261,10 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .edit-tag-row{display:flex;gap:8px;flex-wrap:wrap}
 .edit-tag-btn{padding:8px 16px;border-radius:var(--radius-full);border:1.5px solid var(--border-subtle);background:var(--bg-card);color:var(--text-secondary);font-family:var(--font-body);font-size:13px;cursor:pointer;transition:all .2s ease}
 .edit-tag-btn.selected{border-color:var(--tag-emotion);background:var(--tag-emotion-bg);color:var(--tag-emotion)}
+.edit-tag-btn[data-tag="feel"].selected{border-color:var(--tag-emotion);background:var(--tag-emotion-bg);color:var(--tag-emotion)}
+.edit-tag-btn[data-tag="quotes"].selected{border-color:var(--tag-task);background:var(--tag-task-bg);color:var(--tag-task)}
+.edit-tag-btn[data-tag="words"].selected{border-color:var(--tag-poem);background:var(--tag-poem-bg);color:var(--tag-poem)}
+.edit-tag-btn[data-tag="none"].selected{border-color:var(--tag-untagged);background:var(--tag-untagged-bg);color:var(--tag-untagged)}
 .edit-tag-btn[data-tag="poem"].selected{border-color:var(--tag-poem);background:var(--tag-poem-bg);color:var(--tag-poem)}
 .edit-tag-btn[data-tag="task"].selected{border-color:var(--tag-task);background:var(--tag-task-bg);color:var(--tag-task)}
 

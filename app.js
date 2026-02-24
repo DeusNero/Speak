@@ -2,8 +2,60 @@ let navHistory=[];
 function pushNav(screenId){navHistory.push(screenId);history.pushState({screen:screenId},'');}
 const MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
 let currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='feed',searchQuery='';
+const THOUGHT_TYPE_TAGS=['feel','quotes','words'];
+const THOUGHT_TYPE_ALIASES={feel:['feel','emotion'],quotes:['quotes','quote','task'],words:['words','word','poem']};
+let pendingNoTagSaveAction=null;
 let isRecording=false,recognition=null,recordingTimer=null,recordingStartTime=0;
 const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+function normalizeThoughtTag(tag){
+    if(!tag)return null;
+    const raw=String(tag).trim().toLowerCase();
+    for(const canonical of THOUGHT_TYPE_TAGS){
+        if(THOUGHT_TYPE_ALIASES[canonical].includes(raw))return canonical;
+    }
+    return null;
+}
+function getPrimaryThoughtTag(tags){
+    if(!Array.isArray(tags))return null;
+    for(const t of tags){
+        const normalized=normalizeThoughtTag(t);
+        if(normalized)return normalized;
+    }
+    return null;
+}
+function setThoughtTypeTag(tag){
+    const normalized=normalizeThoughtTag(tag);
+    const existing=Array.isArray(currentCapture.tags)?currentCapture.tags:[];
+    const filtered=existing.filter(t=>!normalizeThoughtTag(t));
+    currentCapture.tags=normalized?[normalized,...filtered]:filtered;
+}
+function syncThoughtTypeButtons(){
+    const activeTag=getPrimaryThoughtTag(currentCapture.tags);
+    document.querySelectorAll('.thought-type-btn').forEach(btn=>{
+        btn.classList.toggle('selected',btn.dataset.tag===activeTag);
+    });
+}
+document.querySelectorAll('.thought-type-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+        const selected=normalizeThoughtTag(btn.dataset.tag);
+        const active=getPrimaryThoughtTag(currentCapture.tags);
+        setThoughtTypeTag(active===selected?null:selected);
+        syncThoughtTypeButtons();
+    });
+});
+function openNoTagConfirm(onConfirm){
+    pendingNoTagSaveAction=onConfirm;
+    const overlay=document.getElementById('no-tag-confirm-overlay');
+    if(!overlay)return;
+    overlay.classList.add('visible');
+    pushNav('no-tag-confirm-overlay');
+}
+function closeNoTagConfirm(){
+    pendingNoTagSaveAction=null;
+    const overlay=document.getElementById('no-tag-confirm-overlay');
+    if(overlay)overlay.classList.remove('visible');
+}
 
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function formatDate(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1);let s;if(d.toDateString()===t.toDateString())s='Today';else if(d.toDateString()===y.toDateString())s='Yesterday';else s=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});return s+' \u00b7 '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
@@ -47,14 +99,14 @@ langBtns.forEach(btn=>{btn.addEventListener('click',()=>{langBtns.forEach(b=>b.c
 
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const speakBtn=document.getElementById('speak-btn'),timerEl=document.getElementById('speak-timer');
-if(!SR){speakBtn.addEventListener('click',()=>{const t=prompt('Speech recognition not available.\nType your thought:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());showPostRecordFlow();}});}
+if(!SR){speakBtn.addEventListener('click',()=>{const t=prompt('Speech recognition not available.\nType your thought:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.tags=[];showPostRecordFlow();}});}
 else{
 let fT='',iT='',restartTimeout=null;
 function createRecognition(){
 const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
 r.onstart=()=>{isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');if(!recordingTimer){recordingStartTime=Date.now();updateTimer();recordingTimer=setInterval(updateTimer,250);}};
 r.onresult=e=>{iT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fT+=e.results[i][0].transcript+' ';else iT+=e.results[i][0].transcript;}};
-r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');};
+r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';currentCapture.tags=[];showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');};
 r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
@@ -64,9 +116,9 @@ else{showPostRecordFlow();}}else{
 showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
 return r;}
 recognition=createRecognition();
-async function startRecording(){fT='';iT='';currentCapture.inputType='voice';if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
+async function startRecording(){fT='';iT='';currentCapture.inputType='voice';currentCapture.tags=[];if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
 try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop());recognition=createRecognition();recognition.lang=currentLang;recognition.start();}
-catch(e){console.warn('Mic permission error:',e);const t=prompt('Could not access microphone.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';showPostRecordFlow();}}}
+catch(e){console.warn('Mic permission error:',e);const t=prompt('Could not access microphone.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';currentCapture.tags=[];showPostRecordFlow();}}}
 
 /* Long-press to write mode */
 let longPressTimer=null,isLongPress=false,isWriteMode=false;
@@ -89,10 +141,15 @@ function openWriteModal(){
     window._habitDirectSave=false;
     var _wt=document.querySelector('#write-overlay .modal-title');
     if(_wt){if(currentMode==='habit'||window._habitDirectSave){_wt.innerHTML='Talk about your habits <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;"><path d="M12 22V12"/><path d="M12 12C12 8 8 6 4 7c0 4 2 7 8 5"/><path d="M12 12c0-4 4-6 8-5 0 4-2 7-8 5"/></svg>';}else{_wt.textContent='What\u2019s on your mind?';}}
-    const writeTitle=document.querySelector('#write-overlay .modal-title');
-    
+    const isThoughtWrite=currentMode!=='habit'&&!window._habitDirectSave&&!window._habitsPgDirectCreate;
+    if(isThoughtWrite)currentCapture.tags=[];
     document.getElementById('write-textarea').value='';
     document.getElementById('write-title-input').value='';document.getElementById('write-title-input').style.display='none';
+    const writeTypeRow=document.getElementById('write-thought-type-selector');
+    const writeTypeLabel=writeTypeRow?writeTypeRow.previousElementSibling:null;
+    if(writeTypeRow)writeTypeRow.style.display=isThoughtWrite?'flex':'none';
+    if(writeTypeLabel)writeTypeLabel.style.display=isThoughtWrite?'block':'none';
+    syncThoughtTypeButtons();
     syncWriteLangToggle();
     const wo=document.getElementById('write-overlay');wo.classList.toggle('habit-write-mode',currentMode==='habit');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
@@ -137,10 +194,11 @@ if(window._habitsPgDirectCreate){
     if(typeof exitWriteMode==='function')exitWriteMode();
     showSuccessOverlay(true,()=>{openHabitDetail(currentHabitId);});
 }else{
+    const finalizeTextCapture=()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();showPostRecordFlow();};
     currentCapture.text=t;currentCapture.inputType='text';currentCapture.lang=currentLang;
-    document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();
     if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
-    else{showPostRecordFlow();}
+    else if(!getPrimaryThoughtTag(currentCapture.tags)){openNoTagConfirm(finalizeTextCapture);}
+    else{finalizeTextCapture();}
 }}
 });
 document.getElementById('write-refine-btn').addEventListener('click',async()=>{
@@ -247,13 +305,33 @@ speakBtn.addEventListener('click',e=>{
 });}
 function updateTimer(){var elapsed=Math.floor((Date.now()-recordingStartTime)/1000);var m=Math.floor(elapsed/60),s=elapsed%60;timerEl.textContent=m+':'+String(s).padStart(2,'0');}
 
-function showPostRecordFlow(){currentCapture.mood=null;currentCapture.tags=[];showScreen('post-record-screen');document.getElementById('mood-step').classList.add('active');document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));}
+function showPostRecordFlow(){currentCapture.mood=null;showScreen('post-record-screen');document.getElementById('mood-step').classList.add('active');document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));syncThoughtTypeButtons();}
 document.querySelectorAll('.general-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');currentCapture.mood=parseInt(btn.dataset.mood);});});
 document.getElementById('mood-next').addEventListener('click',()=>{saveCapture();});
 document.getElementById('mood-skip').addEventListener('click',()=>{currentCapture.mood=null;saveCapture();});
+document.getElementById('no-tag-confirm-cancel').addEventListener('click',closeNoTagConfirm);
+document.getElementById('no-tag-confirm-close-x').addEventListener('click',closeNoTagConfirm);
+document.getElementById('no-tag-confirm-save').addEventListener('click',()=>{
+    const action=pendingNoTagSaveAction;
+    closeNoTagConfirm();
+    if(typeof action==='function')action();
+});
+
+(()=>{
+const verEl=document.getElementById('app-version-label');
+if(verEl){
+    const lm=document.lastModified?new Date(document.lastModified):new Date();
+    const mm=String(lm.getMonth()+1).padStart(2,'0');
+    const dd=String(lm.getDate()).padStart(2,'0');
+    const hh=String(lm.getHours()).padStart(2,'0');
+    const mi=String(lm.getMinutes()).padStart(2,'0');
+    verEl.textContent='build '+mm+'/'+dd+' '+hh+':'+mi;
+}
+})();
 
 if('serviceWorker' in navigator){
-navigator.serviceWorker.register('./sw.js').then(reg=>{
+const swTag=encodeURIComponent(document.lastModified||String(Date.now()));
+navigator.serviceWorker.register('./sw.js?t='+swTag,{updateViaCache:'none'}).then(reg=>{
 reg.update();
 console.log('SW registered, scope:',reg.scope);
 }).catch(e=>console.warn('SW registration failed:',e));
@@ -298,7 +376,7 @@ window.addEventListener('popstate',e=>{
         if(typeof thoughtsSelectMode!=='undefined'&&thoughtsSelectMode){exitThoughtsSelection();history.pushState({},'');return;}
         if(typeof habitsSelectMode!=='undefined'&&habitsSelectMode){exitHabitsSelection();history.pushState({},'');return;}
         if(typeof habitEntriesSelectMode!=='undefined'&&habitEntriesSelectMode){exitHabitEntriesSelection();history.pushState({},'');return;}
-        const overlays=['write-overlay','date-range-overlay','confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay','voice-title-overlay','quick-edit-overlay','api-key-overlay','export-overlay'];
+        const overlays=['write-overlay','date-range-overlay','confirm-overlay','no-tag-confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay','voice-title-overlay','quick-edit-overlay','api-key-overlay','export-overlay'];
         for(const oid of overlays){const oel=document.getElementById(oid);if(oel&&(oel.classList.contains('visible'))){oel.classList.remove('visible');return;}}
         const heDetailScreen=document.getElementById('habit-entry-detail-screen');
         if(heDetailScreen&&heDetailScreen.classList.contains('active')){if(typeof openHabitDetail==='function')openHabitDetail(currentHabitId);return;}
