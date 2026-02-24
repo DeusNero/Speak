@@ -146,7 +146,7 @@ function openWriteModal(){
     document.getElementById('write-textarea').value='';
     document.getElementById('write-title-input').value='';document.getElementById('write-title-input').style.display='none';
     const writeTypeRow=document.getElementById('write-thought-type-selector');
-    const writeTypeLabel=writeTypeRow?writeTypeRow.previousElementSibling:null;
+    const writeTypeLabel=document.getElementById('write-type-label');
     if(writeTypeRow)writeTypeRow.style.display=isThoughtWrite?'flex':'none';
     if(writeTypeLabel)writeTypeLabel.style.display=isThoughtWrite?'block':'none';
     syncThoughtTypeButtons();

@@ -276,13 +276,13 @@
         <button class="modal-close-x" id="write-close-x" style="top:12px;right:12px;z-index:5;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <div class="modal-title" style="margin-bottom:16px;text-align:center;">What’s on your mind?</div>
         <input type="text" id="write-title-input" autocomplete="off" data-form-type="other" readonly onfocus="this.removeAttribute('readonly')" placeholder="Title (optional)" style="display:none;width:100%;padding:10px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:14px;outline:none;box-sizing:border-box;margin-bottom:10px;">
-        <div class="write-textarea-wrap"><textarea id="write-textarea" autocomplete="off" data-form-type="other" readonly onfocus="this.removeAttribute('readonly')" style="width:100%;min-height:140px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px;color:var(--text-primary);font-family:var(--font-body);font-size:15px;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;" placeholder="Start writing..."></textarea></div>
-        <div class="step-sublabel" style="margin:10px 0 10px;text-align:left;">Thought type (optional)</div>
-        <div class="tag-selector thought-type-selector write-thought-type-selector" id="write-thought-type-selector" style="justify-content:flex-start;margin-bottom:8px;">
+        <div class="step-sublabel" id="write-type-label" style="margin:0 0 10px;text-align:left;">Thought type (optional)</div>
+        <div class="tag-selector thought-type-selector write-thought-type-selector" id="write-thought-type-selector" style="justify-content:flex-start;margin-bottom:10px;">
             <button class="tag-btn thought-type-btn" data-tag="feel">Feel</button>
             <button class="tag-btn thought-type-btn" data-tag="quotes">Quotes</button>
             <button class="tag-btn thought-type-btn" data-tag="words">Words</button>
         </div>
+        <div class="write-textarea-wrap"><textarea id="write-textarea" autocomplete="off" data-form-type="other" readonly onfocus="this.removeAttribute('readonly')" style="width:100%;min-height:140px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px;color:var(--text-primary);font-family:var(--font-body);font-size:15px;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;" placeholder="Start writing..."></textarea></div>
         <div id="write-refine-preview" style="display:none;margin-top:12px;padding:12px 14px;background:var(--bg-elevated);border:1px solid rgba(196,180,138,.25);border-radius:var(--radius-md);font-size:14px;line-height:1.6;color:var(--text-primary);max-height:140px;overflow-y:auto;"></div>
         <div id="write-refine-actions" style="display:none;gap:10px;justify-content:center;margin-top:10px;padding:0 8px;">
             <button class="action-btn secondary" id="write-refine-dismiss" style="min-width:0;padding:8px 0;flex:1;background:rgba(196,180,138,.15);border-color:rgba(196,180,138,.25);color:#c4b48a;font-size:12px;">Dismiss</button>
