@@ -516,6 +516,12 @@ function habitOpenWriteModal(){
     document.getElementById('write-overlay').classList.add('habit-write-mode');
     var titleInput=document.getElementById('write-title-input');
     titleInput.value='';titleInput.style.display='block';
+    /* Harden against Android autofill prompts in habit-entry title input */
+    titleInput.setAttribute('autocomplete','new-password');
+    titleInput.setAttribute('name','habit-title-'+Date.now());
+    titleInput.setAttribute('autocorrect','off');
+    titleInput.setAttribute('autocapitalize','off');
+    titleInput.setAttribute('spellcheck','false');
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
     document.getElementById('write-overlay').classList.add('visible');
