@@ -34,7 +34,7 @@
         <div class="post-record-step active" id="mood-step">
             <div class="step-label">How are you feeling right now?</div>
             <div class="mood-selector" id="general-mood-row"><button class="mood-btn general-mood-btn" data-mood="1">😢</button><button class="mood-btn general-mood-btn" data-mood="2">😕</button><button class="mood-btn general-mood-btn" data-mood="3">😐</button><button class="mood-btn general-mood-btn" data-mood="4">🙂</button><button class="mood-btn general-mood-btn" data-mood="5">😊</button></div>
-            <div class="step-sublabel" style="margin-bottom:14px;">Choose a thought type (optional)</div>
+            <div class="step-label" id="post-thought-type-label" style="font-size:18px;margin-bottom:14px;">Thought Type</div>
             <div class="tag-selector thought-type-selector" id="post-thought-type-selector">
                 <button class="tag-btn thought-type-btn" data-tag="feel">Feel</button>
                 <button class="tag-btn thought-type-btn" data-tag="quotes">Quotes</button>
@@ -225,8 +225,8 @@
     <div class="modal-overlay" id="confirm-overlay"><div class="modal-dialog" style="max-width:320px;padding:24px;"><button class="modal-close-x" id="confirm-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="modal-title">Delete this thought?</div><div class="modal-text">This action cannot be undone.</div><div class="modal-btns" style="display:flex;gap:10px;"><button class="action-btn secondary" id="confirm-cancel" style="min-width:0;flex:1;">Cancel</button><button class="action-btn danger" id="confirm-action" style="min-width:0;flex:1;">Delete</button></div></div></div>
     <div class="modal-overlay" id="no-tag-confirm-overlay"><div class="modal-dialog" style="max-width:340px;padding:24px;">
         <button class="modal-close-x" id="no-tag-confirm-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        <div class="modal-title">Save without a tag?</div>
-        <div class="modal-text">You can add or change the tag later from the Thoughts page.</div>
+        <div class="modal-title" id="no-tag-confirm-title">Save without a tag?</div>
+        <div class="modal-text" id="no-tag-confirm-text">You can add or change the tag later from the Thoughts page.</div>
         <div style="display:flex;gap:10px;">
             <button class="action-btn secondary" id="no-tag-confirm-cancel" style="min-width:0;flex:1;background:rgba(196,180,138,.15);border-color:rgba(196,180,138,.25);color:#c4b48a;">Go back</button>
             <button class="action-btn primary" id="no-tag-confirm-save" style="min-width:0;flex:1;background:linear-gradient(135deg,#d4c4a0 0%,#c4b48a 50%,#a89870 100%);color:var(--bg-deep);border:none;">Save anyway</button>
@@ -276,8 +276,7 @@
         <button class="modal-close-x" id="write-close-x" style="top:12px;right:12px;z-index:5;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <div class="modal-title" style="margin-bottom:16px;text-align:center;">What’s on your mind?</div>
         <input type="text" id="write-title-input" autocomplete="off" data-form-type="other" readonly onfocus="this.removeAttribute('readonly')" placeholder="Title (optional)" style="display:none;width:100%;padding:10px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:14px;outline:none;box-sizing:border-box;margin-bottom:10px;">
-        <div class="step-sublabel" id="write-type-label" style="margin:0 0 10px;text-align:left;">Thought type (optional)</div>
-        <div class="tag-selector thought-type-selector write-thought-type-selector" id="write-thought-type-selector" style="justify-content:flex-start;margin-bottom:10px;">
+        <div class="tag-selector thought-type-selector write-thought-type-selector" id="write-thought-type-selector" style="justify-content:center;margin-bottom:12px;">
             <button class="tag-btn thought-type-btn" data-tag="feel">Feel</button>
             <button class="tag-btn thought-type-btn" data-tag="quotes">Quotes</button>
             <button class="tag-btn thought-type-btn" data-tag="words">Words</button>

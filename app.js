@@ -5,6 +5,8 @@ let currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId
 const THOUGHT_TYPE_TAGS=['feel','quotes','words'];
 const THOUGHT_TYPE_ALIASES={feel:['feel','emotion'],quotes:['quotes','quote','task'],words:['words','word','poem']};
 let pendingNoTagSaveAction=null;
+const DEFAULT_NO_TAG_CONFIRM_TITLE='Save without a tag?';
+const DEFAULT_NO_TAG_CONFIRM_TEXT='You can add or change the tag later from the Thoughts page.';
 let isRecording=false,recognition=null,recordingTimer=null,recordingStartTime=0;
 const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -44,10 +46,16 @@ document.querySelectorAll('.thought-type-btn').forEach(btn=>{
         syncThoughtTypeButtons();
     });
 });
-function openNoTagConfirm(onConfirm){
+function openNoTagConfirm(onConfirm,copy){
     pendingNoTagSaveAction=onConfirm;
     const overlay=document.getElementById('no-tag-confirm-overlay');
     if(!overlay)return;
+    const titleEl=document.getElementById('no-tag-confirm-title');
+    const textEl=document.getElementById('no-tag-confirm-text');
+    const title=(copy&&copy.title)?copy.title:DEFAULT_NO_TAG_CONFIRM_TITLE;
+    const text=(copy&&copy.text)?copy.text:DEFAULT_NO_TAG_CONFIRM_TEXT;
+    if(titleEl)titleEl.textContent=title;
+    if(textEl)textEl.textContent=text;
     overlay.classList.add('visible');
     pushNav('no-tag-confirm-overlay');
 }
@@ -55,6 +63,10 @@ function closeNoTagConfirm(){
     pendingNoTagSaveAction=null;
     const overlay=document.getElementById('no-tag-confirm-overlay');
     if(overlay)overlay.classList.remove('visible');
+    const titleEl=document.getElementById('no-tag-confirm-title');
+    const textEl=document.getElementById('no-tag-confirm-text');
+    if(titleEl)titleEl.textContent=DEFAULT_NO_TAG_CONFIRM_TITLE;
+    if(textEl)textEl.textContent=DEFAULT_NO_TAG_CONFIRM_TEXT;
 }
 
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
@@ -146,9 +158,7 @@ function openWriteModal(){
     document.getElementById('write-textarea').value='';
     document.getElementById('write-title-input').value='';document.getElementById('write-title-input').style.display='none';
     const writeTypeRow=document.getElementById('write-thought-type-selector');
-    const writeTypeLabel=document.getElementById('write-type-label');
     if(writeTypeRow)writeTypeRow.style.display=isThoughtWrite?'flex':'none';
-    if(writeTypeLabel)writeTypeLabel.style.display=isThoughtWrite?'block':'none';
     syncThoughtTypeButtons();
     syncWriteLangToggle();
     const wo=document.getElementById('write-overlay');wo.classList.toggle('habit-write-mode',currentMode==='habit');
@@ -305,9 +315,32 @@ speakBtn.addEventListener('click',e=>{
 });}
 function updateTimer(){var elapsed=Math.floor((Date.now()-recordingStartTime)/1000);var m=Math.floor(elapsed/60),s=elapsed%60;timerEl.textContent=m+':'+String(s).padStart(2,'0');}
 
-function showPostRecordFlow(){currentCapture.mood=null;showScreen('post-record-screen');document.getElementById('mood-step').classList.add('active');document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));syncThoughtTypeButtons();}
+function showPostRecordFlow(){
+currentCapture.mood=null;showScreen('post-record-screen');document.getElementById('mood-step').classList.add('active');document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));
+const showTypeForVoice=currentCapture.inputType==='voice';
+const postTypeLabel=document.getElementById('post-thought-type-label');
+const postTypeRow=document.getElementById('post-thought-type-selector');
+if(postTypeLabel)postTypeLabel.style.display=showTypeForVoice?'block':'none';
+if(postTypeRow)postTypeRow.style.display=showTypeForVoice?'flex':'none';
+if(showTypeForVoice)syncThoughtTypeButtons();
+}
 document.querySelectorAll('.general-mood-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.general-mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');currentCapture.mood=parseInt(btn.dataset.mood);});});
-document.getElementById('mood-next').addEventListener('click',()=>{saveCapture();});
+document.getElementById('mood-next').addEventListener('click',()=>{
+    if(currentCapture.inputType==='voice'){
+        const missingMood=currentCapture.mood==null;
+        const missingTag=!getPrimaryThoughtTag(currentCapture.tags);
+        if(missingMood||missingTag){
+            const missingBits=[];
+            if(missingTag)missingBits.push('tag');
+            if(missingMood)missingBits.push('mood');
+            const joined=missingBits.length===2?missingBits[0]+' and '+missingBits[1]:missingBits[0];
+            const title='Save without '+joined+'?';
+            openNoTagConfirm(()=>saveCapture(),{title:title,text:title});
+            return;
+        }
+    }
+    saveCapture();
+});
 document.getElementById('mood-skip').addEventListener('click',()=>{currentCapture.mood=null;saveCapture();});
 document.getElementById('no-tag-confirm-cancel').addEventListener('click',closeNoTagConfirm);
 document.getElementById('no-tag-confirm-close-x').addEventListener('click',closeNoTagConfirm);

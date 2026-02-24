@@ -212,9 +212,7 @@ function thoughtsOpenWrite(){
     var _wt=document.querySelector('#write-overlay .modal-title');if(_wt)_wt.textContent='What\u2019s on your mind?';
     const wo=document.getElementById('write-overlay');wo.classList.remove('habit-write-mode');
     const writeTypeRow=document.getElementById('write-thought-type-selector');
-    const writeTypeLabel=document.getElementById('write-type-label');
     if(writeTypeRow)writeTypeRow.style.display='flex';
-    if(writeTypeLabel)writeTypeLabel.style.display='block';
     syncThoughtTypeButtons();
     document.getElementById('write-refine-preview').style.display='none';document.getElementById('write-refine-status').style.display='none';document.getElementById('write-refine-actions').style.display='none';
     if(typeof syncWriteLangToggle==='function')syncWriteLangToggle();
