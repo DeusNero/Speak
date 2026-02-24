@@ -206,7 +206,14 @@ if(window._habitsPgDirectCreate){
 }else{
     const finalizeTextCapture=()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();showPostRecordFlow();};
     currentCapture.text=t;currentCapture.inputType='text';currentCapture.lang=currentLang;
-    if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
+    if(currentMode==='habit'){
+        document.getElementById('write-overlay').classList.remove('visible');
+        if(typeof exitWriteMode==='function')exitWriteMode();
+        currentCapture.tags=['habit'];
+        showHabitPicker();
+        document.getElementById('habit-picker-overlay').classList.add('visible');
+        pushNav('habit-picker-overlay');
+    }
     else if(!getPrimaryThoughtTag(currentCapture.tags)){openNoTagConfirm(finalizeTextCapture);}
     else{finalizeTextCapture();}
 }}

@@ -314,6 +314,7 @@ document.getElementById('add-habit-save').addEventListener('click',()=>{
     habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name,entries:[],favourite:false,createdAt:new Date().toISOString()});
     saveHabits();renderHabits();
     document.getElementById('add-habit-overlay').classList.remove('visible');
+    showSuccessOverlay(true,null,'Saved');
 });
 
 /* Delete Habit */
@@ -631,11 +632,12 @@ function _bindPickerAddNew(){
     if(!btn)return;
     btn.addEventListener('click',()=>{
         document.getElementById('habit-picker-overlay').classList.remove('visible');
-        document.getElementById('habit-name-input').value='';
-        document.getElementById('add-habit-overlay').classList.add('visible');
-        pushNav('add-habit-overlay');
-        window._pickerAddHabit=true;
-        setTimeout(()=>document.getElementById('habit-name-input').focus(),100);
+        const name=(currentCapture&&currentCapture.text?currentCapture.text:'').trim();
+        if(!name){showToast('Please type a habit name first.');return;}
+        habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name:name,entries:[],favourite:false,createdAt:new Date().toISOString()});
+        saveHabits();renderHabits();
+        currentCapture={text:'',mood:null,tags:[],inputType:'voice'};
+        showSuccessOverlay(true,()=>{showScreen('habits-screen');},'Saved');
     });
 }
 
