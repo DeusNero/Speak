@@ -90,6 +90,24 @@ function showSuccessOverlay(green,onDone,label){
     if(typeof createParticles==='function')createParticles();
     setTimeout(()=>{o.classList.remove('visible','green');if(onDone)onDone();},1100);
 }
+function showHabitMilestoneOverlay(label,onDone){
+    showSuccessOverlay(true,onDone,label);
+    if(typeof createParticles==='function'){
+        setTimeout(()=>{createParticles();createParticles();},120);
+    }
+}
+function getHabitMilestoneLabelBeforeLog(habit){
+    if(!habit)return null;
+    const entries=Array.isArray(habit.entries)?habit.entries:[];
+    if(entries.length===0)return 'Good job on getting started!';
+    const lastEntry=entries
+        .map(e=>new Date(e.createdAt))
+        .sort((a,b)=>b-a)[0];
+    if(!lastEntry||Number.isNaN(lastEntry.getTime()))return null;
+    const daysSince=Math.floor((Date.now()-lastEntry.getTime())/86400000);
+    if(daysSince>=2)return 'Good job on picking up the habit again!';
+    return null;
+}
 const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
 
 function showToast(text){
@@ -109,7 +127,7 @@ function showScreen(id){
     if(typeof thoughtsSelectMode!=='undefined'&&thoughtsSelectMode)exitThoughtsSelection();
     if(typeof habitsSelectMode!=='undefined'&&habitsSelectMode)exitHabitsSelection();
     if(typeof habitEntriesSelectMode!=='undefined'&&habitEntriesSelectMode)exitHabitEntriesSelection();
-    screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen'){_overdueBannerDismissed=false;renderHabits();}if(id==='settings-screen')updateSettingsUI();
+    screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen'){renderHabits();}if(id==='speak-screen'&&typeof updateOverdueNotifications==='function')updateOverdueNotifications();if(id==='settings-screen')updateSettingsUI();
 }
 tabItems.forEach(tab=>{tab.addEventListener('click',()=>{if(!tab.classList.contains('disabled'))showScreen(tab.dataset.screen);});});
 
@@ -202,17 +220,20 @@ if(window._habitsPgDirectCreate){
 }else if(window._habitDirectSave){
     window._habitDirectSave=false;
     const hab=habits.find(h=>h.id===currentHabitId);
+    const milestoneLabel=getHabitMilestoneLabelBeforeLog(hab);
     if(hab){
         var entry={id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:t,inputType:'text',lang:currentLang,createdAt:new Date().toISOString()};
         var titleVal=document.getElementById('write-title-input').value.trim();
         if(titleVal)entry.title=titleVal;
         hab.entries.push(entry);
         saveHabits();
+        if(typeof updateOverdueNotifications==='function')updateOverdueNotifications();
     }
     document.getElementById('write-title-input').value='';document.getElementById('write-title-input').style.display='none';
     document.getElementById('write-overlay').classList.remove('visible');
     if(typeof exitWriteMode==='function')exitWriteMode();
-    showSuccessOverlay(true,()=>{openHabitDetail(currentHabitId);});
+    if(milestoneLabel)showHabitMilestoneOverlay(milestoneLabel,()=>{openHabitDetail(currentHabitId);});
+    else showSuccessOverlay(true,()=>{openHabitDetail(currentHabitId);});
 }else{
     const finalizeTextCapture=()=>{document.getElementById('write-overlay').classList.remove('visible');exitWriteMode();showPostRecordFlow();};
     currentCapture.text=t;currentCapture.inputType='text';currentCapture.lang=currentLang;

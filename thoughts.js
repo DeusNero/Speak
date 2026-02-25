@@ -1,14 +1,19 @@
 function saveCapture(){
 const entry={id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:currentCapture.text,mood:currentCapture.mood,eventMood:currentCapture.eventMood||null,tags:currentCapture.tags,lang:currentCapture.lang||currentLang,inputType:currentCapture.inputType||'voice',createdAt:new Date().toISOString()};
 var isHabit=!!currentCapture.habitId;
+let milestoneLabel=null;
 const postOverlay=document.getElementById('post-record-overlay');if(postOverlay)postOverlay.classList.remove('visible');
 if(currentCapture.habitId){
     const hab=habits.find(h=>h.id===currentCapture.habitId);
-    if(hab){hab.entries.push(entry);saveHabits();}
+    milestoneLabel=(typeof getHabitMilestoneLabelBeforeLog==='function')?getHabitMilestoneLabelBeforeLog(hab):null;
+    if(hab){hab.entries.push(entry);saveHabits();if(typeof updateOverdueNotifications==='function')updateOverdueNotifications();}
     currentCapture.habitId=null;
 }else{
     captures.unshift(entry);
-}saveCaptures();var _retScr=window._returnScreen||'speak-screen';window._returnScreen=null;showSuccessOverlay(isHabit,()=>{showScreen(_retScr);if(_retScr==='thoughts-screen')renderCaptures();currentCapture={text:'',mood:null,tags:[],inputType:'voice'};});}
+}saveCaptures();var _retScr=window._returnScreen||'speak-screen';window._returnScreen=null;
+const _done=()=>{showScreen(_retScr);if(_retScr==='thoughts-screen')renderCaptures();currentCapture={text:'',mood:null,tags:[],inputType:'voice'};};
+if(isHabit&&milestoneLabel&&typeof showHabitMilestoneOverlay==='function'){showHabitMilestoneOverlay(milestoneLabel,_done);}
+else{showSuccessOverlay(isHabit,_done);}}
 function createParticles(){const c=['#5b9ec4','#8ab88a','#b8a9cc','#c4956b','#6aaa8a'];for(let i=0;i<12;i++){const p=document.createElement('div');p.className='particle';p.style.background=c[Math.floor(Math.random()*c.length)];p.style.left='50%';p.style.top='50%';const a=(Math.PI*2*i)/12,d=80+Math.random()*60;p.style.setProperty('--tx',Math.cos(a)*d+'px');p.style.setProperty('--ty',Math.sin(a)*d+'px');p.style.animation='particleFly .8s cubic-bezier(.25,.46,.45,.94) forwards';p.style.animationDelay=Math.random()*.2+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),1200);}}
 
 let thoughtsSelectMode=false,thoughtsSelected=new Set();

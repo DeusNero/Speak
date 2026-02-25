@@ -89,6 +89,8 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .speak-screen::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(20,24,28,.7) 0%,rgba(20,24,28,.55) 35%,rgba(20,24,28,.5) 60%,rgba(20,24,28,.8) 100%);pointer-events:none}
 .speak-greeting{font-family:var(--font-display);font-size:24px;font-weight:400;font-style:italic;color:var(--text-primary);margin-bottom:6px;opacity:0;animation:softAppear .8s ease .2s forwards;position:relative;z-index:2;text-shadow:0 2px 12px rgba(0,0,0,.5)}
 .speak-subtitle{font-size:14px;color:var(--text-primary);margin-bottom:60px;opacity:0;animation:softAppear .8s ease .4s forwards;position:relative;z-index:2;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.speak-overdue-banner{position:relative;z-index:2;max-width:340px;margin:-42px 0 28px;padding:10px 12px;border-radius:var(--radius-md);background:rgba(106,138,90,.14);border:1px solid rgba(106,138,90,.3);font-size:12px;line-height:1.45;color:var(--text-secondary);text-align:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.speak-overdue-banner strong{color:var(--accent-moss);font-weight:600}
 
 /* Language toggle (glassmorphism) */
 .lang-toggle{position:absolute;top:20px;right:20px;display:flex;background:var(--glass-bg-light);backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);border-radius:var(--radius-full);padding:3px;border:1px solid var(--glass-border);z-index:10}

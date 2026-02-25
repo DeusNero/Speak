@@ -95,35 +95,83 @@ function getStreakMsg(habit){
     return{streak,inactivity,daysSince:daysSinceLast};
 }
 
-let _overdueBannerDismissed=false;
+const OVERDUE_DISMISS_KEY='speak_overdue_banner_dismissed_day';
+function _todayKey(){return new Date().toISOString().slice(0,10);}
+function _isHabitUnstarted(habit){return !habit||!Array.isArray(habit.entries)||habit.entries.length===0;}
+function _getHabitDaysSinceLast(habit){
+    if(_isHabitUnstarted(habit))return -1;
+    const lastMs=Math.max(...habit.entries.map(e=>new Date(e.createdAt).getTime()).filter(ms=>!Number.isNaN(ms)));
+    if(!Number.isFinite(lastMs))return -1;
+    return Math.floor((Date.now()-lastMs)/86400000);
+}
+function _isDismissedToday(){
+    try{return localStorage.getItem(OVERDUE_DISMISS_KEY)===_todayKey();}catch(e){return false;}
+}
+function _dismissUntilTomorrow(){
+    try{localStorage.setItem(OVERDUE_DISMISS_KEY,_todayKey());}catch(e){}
+}
 
 function updateOverdueNotifications(){
-    const overdue=habits.filter(h=>h.entries&&h.entries.length>0&&getStreakMsg(h).daysSince>=2);
+    const unstarted=habits.filter(h=>_isHabitUnstarted(h));
+    const overdue=habits.filter(h=>!_isHabitUnstarted(h)&&_getHabitDaysSinceLast(h)>=2);
+    const overdueMain=habits.filter(h=>!_isHabitUnstarted(h)&&_getHabitDaysSinceLast(h)>=5);
+    const hasReminder=(overdue.length>0||unstarted.length>0);
 
     /* Tab badge */
     const tab=document.querySelector('[data-screen="habits-screen"]');
     if(tab){
         const existing=tab.querySelector('.overdue-dot');
-        if(overdue.length>0&&!existing){
+        if(hasReminder&&!existing){
             const dot=document.createElement('span');
             dot.className='overdue-dot reminder-dot';
             dot.style.cssText='width:8px;height:8px;background:var(--accent-moss);border-radius:50%;position:absolute;top:4px;right:10px;';
             tab.style.position='relative';
             tab.appendChild(dot);
-        }else if(overdue.length===0&&existing){
+        }else if(!hasReminder&&existing){
             existing.remove();
         }
     }
 
     /* Banner */
     const banner=document.getElementById('habits-overdue-banner');
-    if(!banner)return;
-    if(overdue.length===0||_overdueBannerDismissed){banner.style.display='none';return;}
-    const names=overdue.map(h=>'<strong>'+escapeHtml(h.name)+'</strong>').join(', ');
-    const days=overdue.length===1?getStreakMsg(overdue[0]).daysSince+' days':overdue.length+' habits';
-    banner.style.display='block';
-    banner.innerHTML='<div class="overdue-banner"><div class="overdue-banner-text">💤 Not logged in a while: '+names+' ('+days+')</div><button class="overdue-banner-dismiss" id="overdue-dismiss" title="Dismiss"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
-    document.getElementById('overdue-dismiss').addEventListener('click',()=>{_overdueBannerDismissed=true;banner.style.display='none';});
+    if(banner){
+        if(!hasReminder||_isDismissedToday()){banner.style.display='none';}
+        else{
+            let text='';
+            if(overdue.length>0){
+                const names=overdue.map(h=>'<strong>'+escapeHtml(h.name)+'</strong>').join(', ');
+                if(overdue.length===1){
+                    const days=_getHabitDaysSinceLast(overdue[0]);
+                    text='💤 Not logged in '+days+' days: '+names;
+                }else{
+                    const maxDays=Math.max(...overdue.map(h=>_getHabitDaysSinceLast(h)));
+                    text='💤 Not logged in up to '+maxDays+' days: '+names;
+                }
+            }else if(unstarted.length>0){
+                text='💤 Try to log your first habit: <strong>'+escapeHtml(unstarted[0].name)+'</strong>. Starting is the hardest part.';
+            }
+            banner.style.display='block';
+            banner.innerHTML='<div class="overdue-banner"><div class="overdue-banner-text">'+text+'</div><button class="overdue-banner-dismiss" id="overdue-dismiss" title="Dismiss"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
+            const dismissBtn=document.getElementById('overdue-dismiss');
+            if(dismissBtn)dismissBtn.addEventListener('click',()=>{_dismissUntilTomorrow();banner.style.display='none';});
+        }
+    }
+
+    /* Main Speak screen reminder (5+ days) */
+    const speakBanner=document.getElementById('speak-overdue-banner');
+    if(speakBanner){
+        if(overdueMain.length===0){speakBanner.style.display='none';}
+        else{
+            if(overdueMain.length===1){
+                const days=_getHabitDaysSinceLast(overdueMain[0]);
+                speakBanner.innerHTML='💤 Reminder: <strong>'+escapeHtml(overdueMain[0].name)+'</strong> not logged in '+days+' days.';
+            }else{
+                const maxDays=Math.max(...overdueMain.map(h=>_getHabitDaysSinceLast(h)));
+                speakBanner.innerHTML='💤 Reminder: '+overdueMain.length+' habits not logged in up to '+maxDays+' days.';
+            }
+            speakBanner.style.display='block';
+        }
+    }
 }
 
 function renderHabits(){
@@ -543,16 +591,19 @@ function habitSaveVoiceEntry(text){
 }
 function _commitVoiceEntry(title){
     var hab=habits.find(h=>h.id===currentHabitId);
+    var milestoneLabel=(typeof getHabitMilestoneLabelBeforeLog==='function')?getHabitMilestoneLabelBeforeLog(hab):null;
     if(hab&&_pendingVoiceText){
         var entry={id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),text:_pendingVoiceText,inputType:'voice',lang:currentLang,createdAt:new Date().toISOString()};
         if(title)entry.title=title;
         hab.entries.push(entry);
         saveHabits();
+        if(typeof updateOverdueNotifications==='function')updateOverdueNotifications();
     }
     _pendingVoiceText=null;
     document.getElementById('voice-title-overlay').classList.remove('visible');
     var _hid=currentHabitId;
-    showSuccessOverlay(true,()=>{openHabitDetail(_hid);});
+    if(milestoneLabel&&typeof showHabitMilestoneOverlay==='function')showHabitMilestoneOverlay(milestoneLabel,()=>{openHabitDetail(_hid);});
+    else showSuccessOverlay(true,()=>{openHabitDetail(_hid);});
 }
 document.getElementById('voice-title-save').addEventListener('click',()=>{_commitVoiceEntry(document.getElementById('voice-title-input').value.trim());});
 document.getElementById('voice-title-skip').addEventListener('click',()=>{_commitVoiceEntry(null);});
