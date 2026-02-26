@@ -24,7 +24,7 @@ async function refineText(raw,lang){
     if(!settings.geminiApiKey){console.warn('No API key');return{text:localRefine(raw),source:'local'};}
     try{
         const prompt='You are a precise text editor. The following is raw voice input or quickly typed text. Auto-detect the language and correct it accordingly.\n\nRules:\n1. Detect the primary language (German, English, or mixed) and apply that language\'s grammar rules\n2. Fix all grammar errors (case, articles, verb conjugation, subject-verb agreement, tense)\n3. Add correct punctuation and capitalization\n4. For German: capitalize all nouns, fix umlaut errors (ue→ü, oe→ö, ae→ä, ss→ß where appropriate), join compound words correctly\n5. For English: fix homophones (their/there, your/you\'re, to/too/two), contractions\n6. IMPORTANT: If English words are used within German text (e.g. Meeting, Feedback, Team, cool, nice), keep them as-is — this is intentional code-switching, not an error\n7. Turn fragments, run-ons, or shorthand into clean complete sentences\n8. Fix speech recognition errors and misheard words\n9. Keep the personal tone and original meaning — improve correctness, not formality\n\nRespond with ONLY the corrected text, no explanations.\n\nOriginal text:\n'+raw;
-        const models=['gemini-2.0-flash-lite','gemini-2.0-flash','gemini-1.5-flash-latest'];
+        const models=['gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.0-flash','gemini-2.0-flash-lite'];
         let last404=false;
         for(const model of models){
             const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+settings.geminiApiKey,{
