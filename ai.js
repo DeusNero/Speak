@@ -24,13 +24,23 @@ async function refineText(raw,lang){
     if(!settings.geminiApiKey){console.warn('No API key');return{text:localRefine(raw),source:'local'};}
     try{
         const prompt='You are a precise text editor. The following is raw voice input or quickly typed text. Auto-detect the language and correct it accordingly.\n\nRules:\n1. Detect the primary language (German, English, or mixed) and apply that language\'s grammar rules\n2. Fix all grammar errors (case, articles, verb conjugation, subject-verb agreement, tense)\n3. Add correct punctuation and capitalization\n4. For German: capitalize all nouns, fix umlaut errors (ue→ü, oe→ö, ae→ä, ss→ß where appropriate), join compound words correctly\n5. For English: fix homophones (their/there, your/you\'re, to/too/two), contractions\n6. IMPORTANT: If English words are used within German text (e.g. Meeting, Feedback, Team, cool, nice), keep them as-is — this is intentional code-switching, not an error\n7. Turn fragments, run-ons, or shorthand into clean complete sentences\n8. Fix speech recognition errors and misheard words\n9. Keep the personal tone and original meaning — improve correctness, not formality\n\nRespond with ONLY the corrected text, no explanations.\n\nOriginal text:\n'+raw;
-        const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+settings.geminiApiKey,{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3}})
-        });
-        if(!r.ok){
-            const errBody=await r.text();console.error('Gemini API error:',r.status,errBody);
+        const models=['gemini-2.0-flash-lite','gemini-2.0-flash','gemini-1.5-flash-latest'];
+        let last404=false;
+        for(const model of models){
+            const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+settings.geminiApiKey,{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3}})
+            });
+            if(r.ok){
+                const d=await r.json();
+                console.log('Gemini response ('+model+'):',JSON.stringify(d).substring(0,500));
+                const txt=d.candidates?.[0]?.content?.parts?.[0]?.text;
+                if(txt)return{text:txt.trim(),source:'gemini',model:model};
+                return{text:localRefine(raw),source:'local',error:'Empty API response'};
+            }
+            const errBody=await r.text();console.error('Gemini API error ('+model+'):',r.status,errBody);
+            if(r.status===404){last404=true;continue;}
             let errMsg='API error: '+r.status;
             if(r.status===429)errMsg='Too many requests — wait a moment and try again';
             else if(r.status===400)errMsg='Invalid request — check your API key';
@@ -38,11 +48,8 @@ async function refineText(raw,lang){
             else if(r.status===500||r.status===503)errMsg='Gemini is temporarily unavailable — try again shortly';
             return{text:localRefine(raw),source:'local',error:errMsg};
         }
-        const d=await r.json();
-        console.log('Gemini response:',JSON.stringify(d).substring(0,500));
-        const txt=d.candidates?.[0]?.content?.parts?.[0]?.text;
-        if(txt)return{text:txt.trim(),source:'gemini'};
-        return{text:localRefine(raw),source:'local',error:'Empty API response'};
+        if(last404)return{text:localRefine(raw),source:'local',error:'No compatible Gemini model found for this API key/project (404).'};
+        return{text:localRefine(raw),source:'local',error:'Gemini request failed.'};
     }catch(e){console.error('Gemini failed:',e);return{text:localRefine(raw),source:'local',error:e.message};}
 }
 function localRefine(t){return cleanupTranscript(t);}
