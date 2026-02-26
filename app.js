@@ -139,26 +139,40 @@ langBtns.forEach(btn=>{btn.addEventListener('click',()=>{langBtns.forEach(b=>b.c
 
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const speakBtn=document.getElementById('speak-btn'),timerEl=document.getElementById('speak-timer');
-if(!SR){speakBtn.addEventListener('click',()=>{const t=prompt('Speech recognition not available.\nType your thought:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.tags=[];showPostRecordFlow();}});}
+if(!SR){speakBtn.addEventListener('click',()=>{const t=prompt('Speech recognition not available.\nType your thought:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim(),currentLang);currentCapture.tags=[];showPostRecordFlow();}});}
 else{
-let fT='',iT='',restartTimeout=null;
+let fT='',iT='',restartTimeout=null,_gmr=null,_isTranscribing=false;
 function createRecognition(){
 const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang;
 r.onstart=()=>{isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');if(!recordingTimer){recordingStartTime=Date.now();updateTimer();recordingTimer=setInterval(updateTimer,250);}};
 r.onresult=e=>{iT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fT+=e.results[i][0].transcript+' ';else iT+=e.results[i][0].transcript;}};
-r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';currentCapture.tags=[];showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');};
-r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
+r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim(),currentLang);currentCapture.inputType='text';currentCapture.tags=[];showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');};
+r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t,currentLang);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
-showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t);
+showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t,currentLang);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
 showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
 return r;}
 recognition=createRecognition();
-async function startRecording(){fT='';iT='';currentCapture.inputType='voice';currentCapture.tags=[];if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
+async function startRecording(){currentCapture.inputType='voice';currentCapture.tags=[];
+if(useGeminiTranscription()){const mime=getAudioMimeType();let chunks=[];let stream;
+try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
+catch(e){console.warn('Mic error:',e);const t=prompt('Could not access microphone.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim(),currentLang);currentCapture.inputType='text';currentCapture.tags=[];showPostRecordFlow();}return;}
+_gmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
+_gmr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+_gmr.onstop=async function(){stream.getTracks().forEach(t=>t.stop());isRecording=false;_isTranscribing=true;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';timerEl.classList.remove('visible');clearInterval(recordingTimer);recordingTimer=null;
+const blob=new Blob(chunks,{type:_gmr.mimeType||mime||'audio/webm'});
+const transcript=await transcribeAudio(blob,currentLang);
+_isTranscribing=false;speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');
+if(transcript&&transcript.trim()){currentCapture.text=cleanupTranscript(transcript,currentLang);if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}else{showPostRecordFlow();}}
+else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');recordingStartTime=Date.now();updateTimer();recordingTimer=setInterval(updateTimer,250);_gmr.start();
+}else{
+fT='';iT='';if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
 try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop());recognition=createRecognition();recognition.lang=currentLang;recognition.start();}
-catch(e){console.warn('Mic permission error:',e);const t=prompt('Could not access microphone.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim());currentCapture.inputType='text';currentCapture.tags=[];showPostRecordFlow();}}}
+catch(e){console.warn('Mic permission error:',e);const t=prompt('Could not access microphone.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim(),currentLang);currentCapture.inputType='text';currentCapture.tags=[];showPostRecordFlow();}}}}
 
 /* Long-press to write mode */
 let longPressTimer=null,isLongPress=false,isWriteMode=false;
@@ -326,11 +340,11 @@ speakBtn.addEventListener('touchend',e=>{
     try{navigator.vibrate(0);}catch(ex){}
     isLongPress=false;
     if(isWriteMode){openWriteModal();exitWriteMode();return;}
-    if(doubleTapCooldown)return;
+    if(doubleTapCooldown||_isTranscribing)return;
     /* Delay action to allow double-tap detection */
     if(isRecording){
         /* Stop immediately - no need to wait */
-        isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(ex){}
+        if(_gmr&&_gmr.state==='recording'){try{_gmr.stop();}catch(ex){}}else{isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(ex){}}
     }else{
         /* Delay start by 300ms to see if double-tap comes */
         
@@ -348,7 +362,8 @@ speakBtn.addEventListener('mouseleave',()=>{clearTimeout(longPressTimer);lpRing.
 speakBtn.addEventListener('click',e=>{
     if(doubleTapCooldown||window._touchHandled){window._touchHandled=false;return;}
     if(isWriteMode){openWriteModal();exitWriteMode();return;}
-    if(isRecording){isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(ex){}}
+    if(_isTranscribing)return;
+    if(isRecording){if(_gmr&&_gmr.state==='recording'){try{_gmr.stop();}catch(ex){}}else{isRecording=false;if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}try{recognition.stop();}catch(ex){}}}
     else{startRecording();}
 });}
 function updateTimer(){var elapsed=Math.floor((Date.now()-recordingStartTime)/1000);var m=Math.floor(elapsed/60),s=elapsed%60;timerEl.textContent=m+':'+String(s).padStart(2,'0');}

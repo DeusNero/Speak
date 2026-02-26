@@ -452,7 +452,7 @@ const habitsPgBtn=document.getElementById('habits-speak-btn');
 const habitsPgLpRing=document.getElementById('habits-lp-ring');
 const habitsPgTimerEl=document.getElementById('habits-speak-timer');
 let habitsPgLpTimer=null,habitsPgIsLP=false,habitsPgIsWrite=false,habitsPgIsRec=false;
-let habitsPgRec=null,habitsPgFT='',habitsPgIT='';
+let habitsPgRec=null,habitsPgFT='',habitsPgIT='',_habitsPgGmr=null,_habitsPgIsTranscribing=false;
 let habitsPgRecStart=0,habitsPgRecInterval=null;
 function habitsPgUpdateTimer(){var elapsed=Math.floor((Date.now()-habitsPgRecStart)/1000);var m=Math.floor(elapsed/60),s=elapsed%60;habitsPgTimerEl.textContent=m+':'+String(s).padStart(2,'0');}
 function habitsPgStartTimer(){habitsPgRecStart=Date.now();habitsPgUpdateTimer();habitsPgTimerEl.classList.add('visible');habitsPgRecInterval=setInterval(habitsPgUpdateTimer,250);}
@@ -493,7 +493,7 @@ function habitsPgOpenWrite(){
 }
 function habitsPgSaveVoice(text){
     if(!text)return;
-    var name=cleanupTranscript(text).trim();
+    var name=cleanupTranscript(text,currentLang).trim();
     if(!name)return;
     habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name:name,entries:[],favourite:false,createdAt:new Date().toISOString()});
     saveHabits();renderHabits();
@@ -513,19 +513,36 @@ function createHabitsPgRec(){
     if(t){habitsPgSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
     return r;
 }
-function habitsPgStartRec(){habitsPgFT='';habitsPgIT='';
-    navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){stream.getTracks().forEach(function(t){t.stop();});habitsPgRec=createHabitsPgRec();if(!habitsPgRec){habitsPgOpenWrite();return;}habitsPgRec.lang=currentLang;habitsPgRec.start();}).catch(function(){habitsPgOpenWrite();});
+function habitsPgStartRec(){
+    if(useGeminiTranscription()){const mime=getAudioMimeType();let chunks=[];
+        navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+            _habitsPgGmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
+            _habitsPgGmr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
+            _habitsPgGmr.onstop=async function(){stream.getTracks().forEach(function(t){t.stop();});habitsPgIsRec=false;_habitsPgIsTranscribing=true;habitsPgBtn.classList.remove('recording','recording-green');habitsPgBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';habitsPgStopTimer();
+                const blob=new Blob(chunks,{type:_habitsPgGmr.mimeType||mime||'audio/webm'});
+                const transcript=await transcribeAudio(blob,currentLang);
+                _habitsPgIsTranscribing=false;habitsPgBtn.querySelector('.speak-btn-label').textContent='Speak';
+                if(transcript&&transcript.trim()){habitsPgSaveVoice(transcript);}
+                else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+            habitsPgIsRec=true;habitsPgBtn.classList.add('recording','recording-green');habitsPgBtn.querySelector('.speak-btn-label').textContent='Stop';habitsPgStartTimer();
+            _habitsPgGmr.start();
+        }).catch(function(){habitsPgOpenWrite();});
+    }else{
+        habitsPgFT='';habitsPgIT='';
+        navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){stream.getTracks().forEach(function(t){t.stop();});habitsPgRec=createHabitsPgRec();if(!habitsPgRec){habitsPgOpenWrite();return;}habitsPgRec.lang=currentLang;habitsPgRec.start();}).catch(function(){habitsPgOpenWrite();});
+    }
 }
-habitsPgBtn.addEventListener('touchstart',e=>{if(habitsPgIsRec)return;habitsPgIsLP=false;habitsPgLpRing.classList.add('active');try{navigator.vibrate([1,750,300]);}catch(ex){}habitsPgLpTimer=setTimeout(()=>{habitsPgEnterWrite();},800);},{passive:true});
-habitsPgBtn.addEventListener('touchend',e=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');window._habitsPgTouchHandled=true;if(habitsPgIsLP&&habitsPgIsWrite){habitsPgIsLP=false;habitsPgOpenWrite();habitsPgExitWrite();return;}try{navigator.vibrate(0);}catch(ex){}habitsPgIsLP=false;if(habitsPgIsWrite){habitsPgOpenWrite();habitsPgExitWrite();return;}if(habitsPgIsRec){habitsPgIsRec=false;try{habitsPgRec.stop();}catch(ex){}}else if(SR){habitsPgStartRec();}else{habitsPgOpenWrite();}},{passive:true});
+habitsPgBtn.addEventListener('touchstart',e=>{if(habitsPgIsRec||_habitsPgIsTranscribing)return;habitsPgIsLP=false;habitsPgLpRing.classList.add('active');try{navigator.vibrate([1,750,300]);}catch(ex){}habitsPgLpTimer=setTimeout(()=>{habitsPgEnterWrite();},800);},{passive:true});
+habitsPgBtn.addEventListener('touchend',e=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');window._habitsPgTouchHandled=true;if(habitsPgIsLP&&habitsPgIsWrite){habitsPgIsLP=false;habitsPgOpenWrite();habitsPgExitWrite();return;}try{navigator.vibrate(0);}catch(ex){}habitsPgIsLP=false;if(_habitsPgIsTranscribing)return;if(habitsPgIsWrite){habitsPgOpenWrite();habitsPgExitWrite();return;}if(habitsPgIsRec){if(_habitsPgGmr&&_habitsPgGmr.state==='recording'){try{_habitsPgGmr.stop();}catch(ex){}}else{habitsPgIsRec=false;try{habitsPgRec.stop();}catch(ex){}}}else if(SR||useGeminiTranscription()){habitsPgStartRec();}else{habitsPgOpenWrite();}},{passive:true});
 habitsPgBtn.addEventListener('touchmove',()=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');habitsPgIsLP=false;try{navigator.vibrate(0);}catch(ex){}},{passive:true});
 habitsPgBtn.addEventListener('mousedown',e=>{if(habitsPgIsRec||e.button!==0)return;habitsPgIsLP=false;habitsPgLpRing.classList.add('active');habitsPgLpTimer=setTimeout(()=>{habitsPgEnterWrite();},800);});
 habitsPgBtn.addEventListener('mouseup',e=>{clearTimeout(habitsPgLpTimer);habitsPgLpRing.classList.remove('active');if(habitsPgIsLP&&habitsPgIsWrite){habitsPgIsLP=false;habitsPgOpenWrite();habitsPgExitWrite();return;}habitsPgIsLP=false;});
 habitsPgBtn.addEventListener('click',e=>{
     if(window._habitsPgTouchHandled){window._habitsPgTouchHandled=false;return;}
+    if(_habitsPgIsTranscribing)return;
     if(habitsPgIsWrite){habitsPgOpenWrite();habitsPgExitWrite();return;}
-    if(habitsPgIsRec){habitsPgIsRec=false;try{habitsPgRec.stop();}catch(ex){}return;}
-    if(SR){habitsPgStartRec();}else{habitsPgOpenWrite();}
+    if(habitsPgIsRec){if(_habitsPgGmr&&_habitsPgGmr.state==='recording'){try{_habitsPgGmr.stop();}catch(ex){}}else{habitsPgIsRec=false;try{habitsPgRec.stop();}catch(ex){}};return;}
+    if(SR||useGeminiTranscription()){habitsPgStartRec();}else{habitsPgOpenWrite();}
 });
 
 /* Habit Detail Speak Button - full speak/write with long-press */
@@ -609,7 +626,7 @@ document.getElementById('voice-title-save').addEventListener('click',()=>{_commi
 document.getElementById('voice-title-skip').addEventListener('click',()=>{_commitVoiceEntry(null);});
 
 /* Habit voice recording */
-let habitRecognition=null,habitFT='',habitIT='';
+let habitRecognition=null,habitFT='',habitIT='',_habitGmr=null,_habitIsTranscribing=false;
 function createHabitRecognition(){
     var SRApi=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SRApi)return null;
@@ -624,21 +641,38 @@ function createHabitRecognition(){
     if(t){habitSaveVoiceEntry(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
     return r;
 }
-function habitStartRecording(){habitFT='';habitIT='';
-    navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){stream.getTracks().forEach(function(t){t.stop();});habitRecognition=createHabitRecognition();if(!habitRecognition){habitOpenWriteModal();return;}habitRecognition.lang=currentLang;habitRecognition.start();}).catch(function(){habitOpenWriteModal();});
+function habitStartRecording(){
+    if(useGeminiTranscription()){const mime=getAudioMimeType();let chunks=[];
+        navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+            _habitGmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
+            _habitGmr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
+            _habitGmr.onstop=async function(){stream.getTracks().forEach(function(t){t.stop();});habitIsRecording=false;_habitIsTranscribing=true;habitBtn.classList.remove('recording','recording-green');habitBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';habitStopTimer();
+                const blob=new Blob(chunks,{type:_habitGmr.mimeType||mime||'audio/webm'});
+                const transcript=await transcribeAudio(blob,currentLang);
+                _habitIsTranscribing=false;habitBtn.querySelector('.speak-btn-label').textContent='Habit';
+                if(transcript&&transcript.trim()){habitSaveVoiceEntry(transcript);}
+                else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+            habitIsRecording=true;habitBtn.classList.add('recording','recording-green');habitBtn.querySelector('.speak-btn-label').textContent='Stop';habitStartTimer();
+            _habitGmr.start();
+        }).catch(function(){habitOpenWriteModal();});
+    }else{
+        habitFT='';habitIT='';
+        navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){stream.getTracks().forEach(function(t){t.stop();});habitRecognition=createHabitRecognition();if(!habitRecognition){habitOpenWriteModal();return;}habitRecognition.lang=currentLang;habitRecognition.start();}).catch(function(){habitOpenWriteModal();});
+    }
 }
 
 /* Long press + tap handlers */
-habitBtn.addEventListener('touchstart',e=>{if(habitIsRecording)return;habitIsLongPress=false;habitLpRing.classList.add('active');try{navigator.vibrate([1,750,300]);}catch(ex){}habitLongPressTimer=setTimeout(()=>{habitEnterWriteMode();},800);},{passive:true});
-habitBtn.addEventListener('touchend',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');window._habitTouchHandled=true;if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;habitOpenWriteModal();habitExitWriteMode();return;}try{navigator.vibrate(0);}catch(ex){}habitIsLongPress=false;if(habitIsWriteMode){habitOpenWriteModal();habitExitWriteMode();return;}if(habitIsRecording){habitIsRecording=false;try{habitRecognition.stop();}catch(ex){}}else if(SR){habitStartRecording();}else{habitOpenWriteModal();}},{passive:true});
+habitBtn.addEventListener('touchstart',e=>{if(habitIsRecording||_habitIsTranscribing)return;habitIsLongPress=false;habitLpRing.classList.add('active');try{navigator.vibrate([1,750,300]);}catch(ex){}habitLongPressTimer=setTimeout(()=>{habitEnterWriteMode();},800);},{passive:true});
+habitBtn.addEventListener('touchend',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');window._habitTouchHandled=true;if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;habitOpenWriteModal();habitExitWriteMode();return;}try{navigator.vibrate(0);}catch(ex){}habitIsLongPress=false;if(_habitIsTranscribing)return;if(habitIsWriteMode){habitOpenWriteModal();habitExitWriteMode();return;}if(habitIsRecording){if(_habitGmr&&_habitGmr.state==='recording'){try{_habitGmr.stop();}catch(ex){}}else{habitIsRecording=false;try{habitRecognition.stop();}catch(ex){}}}else if(SR||useGeminiTranscription()){habitStartRecording();}else{habitOpenWriteModal();}},{passive:true});
 habitBtn.addEventListener('touchmove',()=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');habitIsLongPress=false;try{navigator.vibrate(0);}catch(ex){}},{passive:true});
 habitBtn.addEventListener('mousedown',e=>{if(habitIsRecording||e.button!==0)return;habitIsLongPress=false;habitLpRing.classList.add('active');habitLongPressTimer=setTimeout(()=>{habitEnterWriteMode();},800);});
 habitBtn.addEventListener('mouseup',e=>{clearTimeout(habitLongPressTimer);habitLpRing.classList.remove('active');if(habitIsLongPress&&habitIsWriteMode){habitIsLongPress=false;habitOpenWriteModal();habitExitWriteMode();return;}habitIsLongPress=false;});
 habitBtn.addEventListener('click',e=>{
     if(window._habitTouchHandled){window._habitTouchHandled=false;return;}
+    if(_habitIsTranscribing)return;
     if(habitIsWriteMode){habitOpenWriteModal();habitExitWriteMode();return;}
-    if(habitIsRecording){habitIsRecording=false;try{habitRecognition.stop();}catch(ex){}return;}
-    if(SR){habitStartRecording();}else{habitOpenWriteModal();}
+    if(habitIsRecording){if(_habitGmr&&_habitGmr.state==='recording'){try{_habitGmr.stop();}catch(ex){}}else{habitIsRecording=false;try{habitRecognition.stop();}catch(ex){}};return;}
+    if(SR||useGeminiTranscription()){habitStartRecording();}else{habitOpenWriteModal();}
 });
 
 

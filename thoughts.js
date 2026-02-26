@@ -196,7 +196,7 @@ const thoughtsSpeakBtn=document.getElementById('thoughts-speak-btn');
 const thoughtsLpRing=document.getElementById('thoughts-lp-ring');
 const thoughtsTimerEl=document.getElementById('thoughts-speak-timer');
 let thoughtsLpTimer=null,thoughtsIsLP=false,thoughtsIsWrite=false,thoughtsIsRec=false;
-let thoughtsRec=null,thoughtsFT='',thoughtsIT='';
+let thoughtsRec=null,thoughtsFT='',thoughtsIT='',_thoughtsGmr=null,_thoughtsIsTranscribing=false;
 let thoughtsRecStart=0,thoughtsRecInterval=null;
 function thoughtsUpdateTimer(){var elapsed=Math.floor((Date.now()-thoughtsRecStart)/1000);var m=Math.floor(elapsed/60),s=elapsed%60;thoughtsTimerEl.textContent=m+':'+String(s).padStart(2,'0');}
 function thoughtsStartTimer(){thoughtsRecStart=Date.now();thoughtsUpdateTimer();thoughtsTimerEl.classList.add('visible');thoughtsRecInterval=setInterval(thoughtsUpdateTimer,250);}
@@ -237,7 +237,7 @@ function thoughtsOpenWrite(){
     setTimeout(()=>document.getElementById('write-textarea').focus(),100);
 }
 function thoughtsSaveVoice(text){
-    if(text){currentCapture.text=cleanupTranscript(text);currentCapture.inputType='voice';currentCapture.tags=[];currentCapture.lang=currentLang;currentMode='thought';window._returnScreen='thoughts-screen';showPostRecordFlow();}
+    if(text){currentCapture.text=cleanupTranscript(text,currentLang);currentCapture.inputType='voice';currentCapture.tags=[];currentCapture.lang=currentLang;currentMode='thought';window._returnScreen='thoughts-screen';showPostRecordFlow();}
 }
 function createThoughtsRec(){
     var SRApi=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -253,19 +253,36 @@ function createThoughtsRec(){
     if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
     return r;
 }
-function thoughtsStartRec(){thoughtsFT='';thoughtsIT='';
-    navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){stream.getTracks().forEach(function(t){t.stop();});thoughtsRec=createThoughtsRec();if(!thoughtsRec){thoughtsOpenWrite();return;}thoughtsRec.lang=currentLang;thoughtsRec.start();}).catch(function(){thoughtsOpenWrite();});
+function thoughtsStartRec(){
+    if(useGeminiTranscription()){const mime=getAudioMimeType();let chunks=[];
+        navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+            _thoughtsGmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
+            _thoughtsGmr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
+            _thoughtsGmr.onstop=async function(){stream.getTracks().forEach(function(t){t.stop();});thoughtsIsRec=false;_thoughtsIsTranscribing=true;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';thoughtsStopTimer();
+                const blob=new Blob(chunks,{type:_thoughtsGmr.mimeType||mime||'audio/webm'});
+                const transcript=await transcribeAudio(blob,currentLang);
+                _thoughtsIsTranscribing=false;thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';
+                if(transcript&&transcript.trim()){thoughtsSaveVoice(transcript);}
+                else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+            thoughtsIsRec=true;thoughtsSpeakBtn.classList.add('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Stop';thoughtsStartTimer();
+            _thoughtsGmr.start();
+        }).catch(function(){thoughtsOpenWrite();});
+    }else{
+        thoughtsFT='';thoughtsIT='';
+        navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){stream.getTracks().forEach(function(t){t.stop();});thoughtsRec=createThoughtsRec();if(!thoughtsRec){thoughtsOpenWrite();return;}thoughtsRec.lang=currentLang;thoughtsRec.start();}).catch(function(){thoughtsOpenWrite();});
+    }
 }
-thoughtsSpeakBtn.addEventListener('touchstart',e=>{if(thoughtsIsRec)return;thoughtsIsLP=false;thoughtsLpRing.classList.add('active');try{navigator.vibrate([1,750,300]);}catch(ex){}thoughtsLpTimer=setTimeout(()=>{thoughtsEnterWrite();},800);},{passive:true});
-thoughtsSpeakBtn.addEventListener('touchend',e=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');window._thoughtsTouchHandled=true;if(thoughtsIsLP&&thoughtsIsWrite){thoughtsIsLP=false;thoughtsOpenWrite();thoughtsExitWrite();return;}try{navigator.vibrate(0);}catch(ex){}thoughtsIsLP=false;if(thoughtsIsWrite){thoughtsOpenWrite();thoughtsExitWrite();return;}if(thoughtsIsRec){thoughtsIsRec=false;try{thoughtsRec.stop();}catch(ex){}}else if(SR){thoughtsStartRec();}else{thoughtsOpenWrite();}},{passive:true});
+thoughtsSpeakBtn.addEventListener('touchstart',e=>{if(thoughtsIsRec||_thoughtsIsTranscribing)return;thoughtsIsLP=false;thoughtsLpRing.classList.add('active');try{navigator.vibrate([1,750,300]);}catch(ex){}thoughtsLpTimer=setTimeout(()=>{thoughtsEnterWrite();},800);},{passive:true});
+thoughtsSpeakBtn.addEventListener('touchend',e=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');window._thoughtsTouchHandled=true;if(thoughtsIsLP&&thoughtsIsWrite){thoughtsIsLP=false;thoughtsOpenWrite();thoughtsExitWrite();return;}try{navigator.vibrate(0);}catch(ex){}thoughtsIsLP=false;if(_thoughtsIsTranscribing)return;if(thoughtsIsWrite){thoughtsOpenWrite();thoughtsExitWrite();return;}if(thoughtsIsRec){if(_thoughtsGmr&&_thoughtsGmr.state==='recording'){try{_thoughtsGmr.stop();}catch(ex){}}else{thoughtsIsRec=false;try{thoughtsRec.stop();}catch(ex){}}}else if(SR||useGeminiTranscription()){thoughtsStartRec();}else{thoughtsOpenWrite();}},{passive:true});
 thoughtsSpeakBtn.addEventListener('touchmove',()=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');thoughtsIsLP=false;try{navigator.vibrate(0);}catch(ex){}},{passive:true});
 thoughtsSpeakBtn.addEventListener('mousedown',e=>{if(thoughtsIsRec||e.button!==0)return;thoughtsIsLP=false;thoughtsLpRing.classList.add('active');thoughtsLpTimer=setTimeout(()=>{thoughtsEnterWrite();},800);});
 thoughtsSpeakBtn.addEventListener('mouseup',e=>{clearTimeout(thoughtsLpTimer);thoughtsLpRing.classList.remove('active');if(thoughtsIsLP&&thoughtsIsWrite){thoughtsIsLP=false;thoughtsOpenWrite();thoughtsExitWrite();return;}thoughtsIsLP=false;});
 thoughtsSpeakBtn.addEventListener('click',e=>{
     if(window._thoughtsTouchHandled){window._thoughtsTouchHandled=false;return;}
+    if(_thoughtsIsTranscribing)return;
     if(thoughtsIsWrite){thoughtsOpenWrite();thoughtsExitWrite();return;}
-    if(thoughtsIsRec){thoughtsIsRec=false;try{thoughtsRec.stop();}catch(ex){}return;}
-    if(SR){thoughtsStartRec();}else{thoughtsOpenWrite();}
+    if(thoughtsIsRec){if(_thoughtsGmr&&_thoughtsGmr.state==='recording'){try{_thoughtsGmr.stop();}catch(ex){}}else{thoughtsIsRec=false;try{thoughtsRec.stop();}catch(ex){}};return;}
+    if(SR||useGeminiTranscription()){thoughtsStartRec();}else{thoughtsOpenWrite();}
 });
 
 let _isRefining=false;
