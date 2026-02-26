@@ -20,7 +20,7 @@ let thoughtsSelectMode=false,thoughtsSelected=new Set();
 const CHECKBOX_SVG='<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--bg-deep)" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const THOUGHT_TAG_LABELS={feel:'Feel',quotes:'Quotes',words:'Words'};
 const selectedThoughtFilters=new Set();
-const SMILEY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M8.5 10.5h.01"/><path d="M15.5 10.5h.01"/><path d="M8 15c1.1 1.2 2.4 1.8 4 1.8S14.9 16.2 16 15"/></svg>';
+const SMILEY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M8 14c1.2 1.4 2.5 2 4 2s2.8-.6 4-2"/></svg>';
 const DATE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>';
 
 function updateThoughtsBar(){
@@ -301,7 +301,7 @@ if(window._heRefineTarget){
 }
 const c=captures.find(x=>x.id===currentDetailId);if(!c)return;const rEl=document.getElementById('refined-text');if(rEl){c.text=rEl.textContent;saveCaptures();}document.getElementById('refine-overlay').classList.remove('visible');openDetail(currentDetailId);});
 
-function updateSettingsUI(){document.getElementById('total-captures').textContent=captures.length;document.getElementById('last-backup').textContent=settings.lastBackup?'Last: '+new Date(settings.lastBackup).toLocaleDateString():'Never backed up';document.querySelectorAll('#settings-lang-toggle .settings-lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===settings.defaultLang));document.getElementById('api-key-status').textContent=settings.geminiApiKey?'Configured \u2713':'Not configured';}
+function updateSettingsUI(){document.getElementById('total-captures').textContent=captures.length;document.getElementById('last-backup').textContent=settings.lastBackup?'Last: '+new Date(settings.lastBackup).toLocaleDateString():'Never backed up';document.querySelectorAll('#settings-lang-toggle .settings-lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===settings.defaultLang));document.getElementById('api-key-status').textContent=settings.geminiApiKey?'Configured \u2713':'Not configured';var vEl=document.getElementById('settings-version-label');if(vEl&&window.__buildLabel)vEl.textContent=window.__buildLabel;var wn=document.getElementById('settings-whats-new-text');if(wn&&window.__latestBuildNotes)wn.textContent=window.__latestBuildNotes;}
 document.getElementById('export-btn').addEventListener('click',e=>{
     e.stopPropagation();
     document.getElementById('export-thought-count').textContent=captures.length;

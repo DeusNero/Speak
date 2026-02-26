@@ -7,6 +7,11 @@ const THOUGHT_TYPE_ALIASES={feel:['feel','emotion'],quotes:['quotes','quote','ta
 let pendingNoTagSaveAction=null;
 const DEFAULT_NO_TAG_CONFIRM_TITLE='Save without a tag?';
 const DEFAULT_NO_TAG_CONFIRM_TEXT='You can add or change the tag later from the Thoughts page.';
+const LATEST_BUILD_NOTES=[
+    '- Added settings build details dropdown with latest changes summary.',
+    '- Synced settings version label to the same build timestamp shown on the main page.',
+    '- Improved Gemini refine reliability by trying multiple compatible model endpoints automatically.'
+].join('\n');
 let isRecording=false,recognition=null,recordingTimer=null,recordingStartTime=0;
 const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -84,10 +89,10 @@ function formatDate(d){const t=new Date(),y=new Date(t);y.setDate(y.getDate()-1)
 
 function showSuccessOverlay(green,onDone,label){
     const o=document.getElementById('success-overlay');
-    var txt=o.querySelector('.success-text');if(txt)txt.textContent=label||'Saved';
+    var txt=o.querySelector('.success-text');if(txt)txt.textContent=label||'Good job';
     o.classList.toggle('green',!!green);
     o.classList.add('visible');
-    if(typeof createParticles==='function')createParticles();
+    if(typeof createParticles==='function'){createParticles();setTimeout(()=>createParticles(),120);}
     setTimeout(()=>{o.classList.remove('visible','green');if(onDone)onDone();},1100);
 }
 function showHabitMilestoneOverlay(label,onDone){
@@ -105,7 +110,7 @@ function getHabitMilestoneLabelBeforeLog(habit){
         .sort((a,b)=>b-a)[0];
     if(!lastEntry||Number.isNaN(lastEntry.getTime()))return null;
     const daysSince=Math.floor((Date.now()-lastEntry.getTime())/86400000);
-    if(daysSince>=2)return 'Good job on picking up the habit again!';
+    if(daysSince>=3)return 'Good job on picking up the habit again!';
     return null;
 }
 const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
@@ -411,14 +416,33 @@ document.getElementById('no-tag-confirm-save').addEventListener('click',()=>{
 
 (()=>{
 const verEl=document.getElementById('app-version-label');
+const settingsVerEl=document.getElementById('settings-version-label');
+const whatsNewEl=document.getElementById('settings-whats-new-text');
 if(verEl){
     const lm=document.lastModified?new Date(document.lastModified):new Date();
     const mm=String(lm.getMonth()+1).padStart(2,'0');
     const dd=String(lm.getDate()).padStart(2,'0');
     const hh=String(lm.getHours()).padStart(2,'0');
     const mi=String(lm.getMinutes()).padStart(2,'0');
-    verEl.textContent='build '+mm+'/'+dd+' '+hh+':'+mi;
+    const buildLabel='build '+mm+'/'+dd+' '+hh+':'+mi;
+    window.__buildLabel=buildLabel;
+    window.__latestBuildNotes=LATEST_BUILD_NOTES;
+    verEl.textContent=buildLabel;
+    if(settingsVerEl)settingsVerEl.textContent=buildLabel;
+    if(whatsNewEl)whatsNewEl.textContent=LATEST_BUILD_NOTES;
 }
+})();
+
+(()=>{
+const toggle=document.getElementById('settings-whats-new-toggle');
+const content=document.getElementById('settings-whats-new-content');
+const item=document.getElementById('settings-whats-new-item');
+if(!toggle||!content||!item)return;
+toggle.addEventListener('click',()=>{
+    const isOpen=item.classList.toggle('open');
+    content.style.display=isOpen?'block':'none';
+    toggle.setAttribute('aria-expanded',isOpen?'true':'false');
+});
 })();
 
 if('serviceWorker' in navigator){

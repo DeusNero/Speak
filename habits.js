@@ -61,7 +61,12 @@ function enterHabitEntriesSelection(id){
 
 
 function getStreakMsg(habit){
-    if(!habit.entries||habit.entries.length===0)return{streak:'',inactivity:'',daysSince:-1};
+    if(!habit.entries||habit.entries.length===0){
+        const createdAt=habit&&habit.createdAt?new Date(habit.createdAt):null;
+        const daysSinceCreated=(createdAt&&!Number.isNaN(createdAt.getTime()))?Math.floor((Date.now()-createdAt.getTime())/(1000*60*60*24)):-1;
+        const inactivity=daysSinceCreated>=2?'\ud83d\udca4 '+daysSinceCreated+' days':'';
+        return{streak:'',inactivity,daysSince:daysSinceCreated};
+    }
     const now=new Date(),entries=habit.entries.map(e=>new Date(e.createdAt));
     entries.sort((a,b)=>b-a);
     const lastEntry=entries[0];
@@ -84,7 +89,7 @@ function getStreakMsg(habit){
         if(diff===1)consecutiveDays++;else break;
     }
     
-    if(consecutiveDays>=7)streak='7 days in a row! \ud83d\udd25';
+    if(consecutiveDays>=7)streak='7 days in a row! \ud83d\udd25\ud83d\udd25\ud83d\udd25';
     else if(consecutiveDays>=5)streak=consecutiveDays+' days in a row \ud83d\udd25';
     else if(consecutiveDays>=3)streak=consecutiveDays+' days in a row — keep going!';
     else if(recentEntries>=5)streak=recentEntries+' times in the last 7 days \ud83d\udd25';
@@ -95,27 +100,93 @@ function getStreakMsg(habit){
     return{streak,inactivity,daysSince:daysSinceLast};
 }
 
-const OVERDUE_DISMISS_KEY='speak_overdue_banner_dismissed_day';
-function _todayKey(){return new Date().toISOString().slice(0,10);}
+const REMINDER_ROTATE_MS=4*60*60*1000;
+const OVERDUE_ROTATE_KEY='speak_overdue_rotation_state';
+const MAIN_OVERDUE_ROTATE_KEY='speak_main_overdue_rotation_state';
 function _isHabitUnstarted(habit){return !habit||!Array.isArray(habit.entries)||habit.entries.length===0;}
 function _getHabitDaysSinceLast(habit){
-    if(_isHabitUnstarted(habit))return -1;
+    if(_isHabitUnstarted(habit)){
+        const createdAt=habit&&habit.createdAt?new Date(habit.createdAt):null;
+        if(!createdAt||Number.isNaN(createdAt.getTime()))return -1;
+        return Math.floor((Date.now()-createdAt.getTime())/86400000);
+    }
     const lastMs=Math.max(...habit.entries.map(e=>new Date(e.createdAt).getTime()).filter(ms=>!Number.isNaN(ms)));
     if(!Number.isFinite(lastMs))return -1;
     return Math.floor((Date.now()-lastMs)/86400000);
 }
-function _isDismissedToday(){
-    try{return localStorage.getItem(OVERDUE_DISMISS_KEY)===_todayKey();}catch(e){return false;}
+function _readRotationState(key){
+    try{
+        const raw=localStorage.getItem(key);
+        if(!raw)return{idx:0,lastHabitId:null,nextAt:0,hiddenUntil:0};
+        const parsed=JSON.parse(raw);
+        return{
+            idx:Number.isInteger(parsed.idx)?parsed.idx:0,
+            lastHabitId:parsed.lastHabitId||null,
+            nextAt:typeof parsed.nextAt==='number'?parsed.nextAt:0,
+            hiddenUntil:typeof parsed.hiddenUntil==='number'?parsed.hiddenUntil:0
+        };
+    }catch(e){return{idx:0,lastHabitId:null,nextAt:0,hiddenUntil:0};}
 }
-function _dismissUntilTomorrow(){
-    try{localStorage.setItem(OVERDUE_DISMISS_KEY,_todayKey());}catch(e){}
+function _writeRotationState(key,state){
+    try{localStorage.setItem(key,JSON.stringify(state));}catch(e){}
+}
+function _sortReminderHabits(list){
+    return [...list].sort((a,b)=>{
+        const at=a&&a.createdAt?new Date(a.createdAt).getTime():0;
+        const bt=b&&b.createdAt?new Date(b.createdAt).getTime():0;
+        if(at!==bt)return at-bt;
+        return String(a.id||'').localeCompare(String(b.id||''));
+    });
+}
+function _pickRotatingHabit(list,key){
+    if(!list.length)return{habit:null,hidden:false};
+    const sorted=_sortReminderHabits(list);
+    const now=Date.now();
+    const state=_readRotationState(key);
+    let idx=state.idx%sorted.length;
+    if(state.lastHabitId){
+        const existingIdx=sorted.findIndex(h=>h.id===state.lastHabitId);
+        if(existingIdx>=0)idx=existingIdx;
+    }
+    if(state.hiddenUntil&&now<state.hiddenUntil)return{habit:null,hidden:true};
+    let nextAt=state.nextAt||0;
+    if(nextAt<=0)nextAt=now+REMINDER_ROTATE_MS;
+    if(now>=nextAt){
+        const steps=Math.floor((now-nextAt)/REMINDER_ROTATE_MS)+1;
+        idx=(idx+steps)%sorted.length;
+        nextAt=nextAt+(steps*REMINDER_ROTATE_MS);
+    }
+    const habit=sorted[idx];
+    _writeRotationState(key,{idx,lastHabitId:habit.id,nextAt,hiddenUntil:state.hiddenUntil||0});
+    return{habit,hidden:false};
+}
+function _dismissAndRotate(list,key){
+    if(!list.length)return;
+    const sorted=_sortReminderHabits(list);
+    const now=Date.now();
+    const state=_readRotationState(key);
+    let idx=0;
+    if(state.lastHabitId){
+        const existingIdx=sorted.findIndex(h=>h.id===state.lastHabitId);
+        if(existingIdx>=0)idx=existingIdx;
+    }else if(Number.isInteger(state.idx)&&state.idx>=0){
+        idx=state.idx%sorted.length;
+    }
+    idx=(idx+1)%sorted.length;
+    _writeRotationState(key,{
+        idx,
+        lastHabitId:sorted[idx].id,
+        hiddenUntil:now+REMINDER_ROTATE_MS,
+        nextAt:now+(2*REMINDER_ROTATE_MS)
+    });
 }
 
 function updateOverdueNotifications(){
-    const unstarted=habits.filter(h=>_isHabitUnstarted(h));
-    const overdue=habits.filter(h=>!_isHabitUnstarted(h)&&_getHabitDaysSinceLast(h)>=2);
-    const overdueMain=habits.filter(h=>!_isHabitUnstarted(h)&&_getHabitDaysSinceLast(h)>=5);
-    const hasReminder=(overdue.length>0||unstarted.length>0);
+    const overdue=habits.filter(h=>_getHabitDaysSinceLast(h)>=2);
+    const overdueMain=habits.filter(h=>_getHabitDaysSinceLast(h)>=5);
+    const hasReminder=(overdue.length>0);
+    const overduePick=_pickRotatingHabit(overdue,OVERDUE_ROTATE_KEY);
+    const overdueMainPick=_pickRotatingHabit(overdueMain,MAIN_OVERDUE_ROTATE_KEY);
 
     /* Tab badge */
     const tab=document.querySelector('[data-screen="habits-screen"]');
@@ -135,40 +206,30 @@ function updateOverdueNotifications(){
     /* Banner */
     const banner=document.getElementById('habits-overdue-banner');
     if(banner){
-        if(!hasReminder||_isDismissedToday()){banner.style.display='none';}
+        if(!hasReminder||overduePick.hidden||!overduePick.habit){banner.style.display='none';}
         else{
-            let text='';
-            if(overdue.length>0){
-                const names=overdue.map(h=>'<strong>'+escapeHtml(h.name)+'</strong>').join(', ');
-                if(overdue.length===1){
-                    const days=_getHabitDaysSinceLast(overdue[0]);
-                    text='💤 Not logged in '+days+' days: '+names;
-                }else{
-                    const maxDays=Math.max(...overdue.map(h=>_getHabitDaysSinceLast(h)));
-                    text='💤 Not logged in up to '+maxDays+' days: '+names;
-                }
-            }else if(unstarted.length>0){
-                text='💤 Try to log your first habit: <strong>'+escapeHtml(unstarted[0].name)+'</strong>. Starting is the hardest part.';
-            }
+            const days=_getHabitDaysSinceLast(overduePick.habit);
+            const text='💤 Not logged in '+days+' days: <strong>'+escapeHtml(overduePick.habit.name)+'</strong>';
             banner.style.display='block';
             banner.innerHTML='<div class="overdue-banner"><div class="overdue-banner-text">'+text+'</div><button class="overdue-banner-dismiss" id="overdue-dismiss" title="Dismiss"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
             const dismissBtn=document.getElementById('overdue-dismiss');
-            if(dismissBtn)dismissBtn.addEventListener('click',()=>{_dismissUntilTomorrow();banner.style.display='none';});
+            if(dismissBtn)dismissBtn.addEventListener('click',()=>{
+                _dismissAndRotate(overdue,OVERDUE_ROTATE_KEY);
+                _dismissAndRotate(overdueMain,MAIN_OVERDUE_ROTATE_KEY);
+                banner.style.display='none';
+                const speakBannerHide=document.getElementById('speak-overdue-banner');
+                if(speakBannerHide)speakBannerHide.style.display='none';
+            });
         }
     }
 
     /* Main Speak screen reminder (5+ days) */
     const speakBanner=document.getElementById('speak-overdue-banner');
     if(speakBanner){
-        if(overdueMain.length===0){speakBanner.style.display='none';}
+        if(overdueMain.length===0||overdueMainPick.hidden||!overdueMainPick.habit){speakBanner.style.display='none';}
         else{
-            if(overdueMain.length===1){
-                const days=_getHabitDaysSinceLast(overdueMain[0]);
-                speakBanner.innerHTML='💤 Reminder: <strong>'+escapeHtml(overdueMain[0].name)+'</strong> not logged in '+days+' days.';
-            }else{
-                const maxDays=Math.max(...overdueMain.map(h=>_getHabitDaysSinceLast(h)));
-                speakBanner.innerHTML='💤 Reminder: '+overdueMain.length+' habits not logged in up to '+maxDays+' days.';
-            }
+            const days=_getHabitDaysSinceLast(overdueMainPick.habit);
+            speakBanner.innerHTML='💤 Reminder: <strong>'+escapeHtml(overdueMainPick.habit.name)+'</strong> not logged in '+days+' days.';
             speakBanner.style.display='block';
         }
     }
@@ -362,7 +423,7 @@ document.getElementById('add-habit-save').addEventListener('click',()=>{
     habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name,entries:[],favourite:false,createdAt:new Date().toISOString()});
     saveHabits();renderHabits();
     document.getElementById('add-habit-overlay').classList.remove('visible');
-    showSuccessOverlay(true,null,'Saved');
+    showSuccessOverlay(true);
 });
 
 /* Delete Habit */
@@ -732,7 +793,7 @@ function _bindPickerAddNew(){
         habits.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,5),name:name,entries:[],favourite:false,createdAt:new Date().toISOString()});
         saveHabits();renderHabits();
         currentCapture={text:'',mood:null,tags:[],inputType:'voice'};
-        showSuccessOverlay(true,()=>{showScreen('habits-screen');},'Saved');
+        showSuccessOverlay(true,()=>{showScreen('habits-screen');});
     });
 }
 
