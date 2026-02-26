@@ -1,3 +1,4 @@
+function normalizeSharpS(t){return (t||'').replace(/ß/g,'ss');}
 function cleanupTranscript(r,lang){if(!r||!r.trim())return r;let t=r.trim();
 /* Capitalize first letter */
 t=t.charAt(0).toUpperCase()+t.slice(1);
@@ -11,12 +12,12 @@ if(!/[.!?]$/.test(t))t+='.';
 t=t.replace(/\s{2,}/g,' ');
 /* Clean up double punctuation */
 t=t.replace(/([.!?]){2,}/g,'$1');
-return t;}
+return normalizeSharpS(t);}
 
 async function refineText(raw,lang){
     if(!settings.geminiApiKey){console.warn('No API key');return{text:localRefine(raw,lang),source:'local'};}
     try{
-        const prompt='You are a precise text editor. The following is raw voice input or quickly typed text. Auto-detect the language and correct it accordingly.\n\nRules:\n1. Detect the primary language (German, English, or mixed) and apply that language\'s grammar rules\n2. Fix all grammar errors (case, articles, verb conjugation, subject-verb agreement, tense)\n3. Add correct punctuation and capitalization\n4. For German: capitalize all nouns, fix umlaut errors (ue→ü, oe→ö, ae→ä, ss→ß where appropriate), join compound words correctly\n5. For English: fix homophones (their/there, your/you\'re, to/too/two), contractions\n6. IMPORTANT: If English words are used within German text (e.g. Meeting, Feedback, Team, cool, nice), keep them as-is — this is intentional code-switching, not an error\n7. Turn fragments, run-ons, or shorthand into clean complete sentences\n8. Fix speech recognition errors and misheard words\n9. Keep the personal tone and original meaning — improve correctness, not formality\n\nRespond with ONLY the corrected text, no explanations.\n\nOriginal text:\n'+raw;
+        const prompt='You are a precise text editor. The following is raw voice input or quickly typed text. Auto-detect the language and correct it accordingly.\n\nRules:\n1. Detect the primary language (German, English, or mixed) and apply that language\'s grammar rules\n2. Fix all grammar errors (case, articles, verb conjugation, subject-verb agreement, tense)\n3. Add correct punctuation and capitalization\n4. For German: capitalize all nouns, fix umlaut errors (ue→ü, oe→ö, ae→ä), and join compound words correctly\n5. For English: fix homophones (their/there, your/you\'re, to/too/two), contractions\n6. IMPORTANT: If English words are used within German text (e.g. Meeting, Feedback, Team, cool, nice), keep them as-is — this is intentional code-switching, not an error\n7. Turn fragments, run-ons, or shorthand into clean complete sentences\n8. Fix speech recognition errors and misheard words\n9. Keep the personal tone and original meaning — improve correctness, not formality\n10. Never use the character ß; always use ss instead\n\nRespond with ONLY the corrected text, no explanations.\n\nOriginal text:\n'+raw;
         const models=['gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.0-flash','gemini-2.0-flash-lite'];
         let last404=false;
         for(const model of models){
@@ -29,7 +30,7 @@ async function refineText(raw,lang){
                 const d=await r.json();
                 console.log('Gemini response ('+model+'):',JSON.stringify(d).substring(0,500));
                 const txt=d.candidates?.[0]?.content?.parts?.[0]?.text;
-                if(txt)return{text:txt.trim(),source:'gemini',model:model};
+                if(txt)return{text:normalizeSharpS(txt.trim()),source:'gemini',model:model};
                 return{text:localRefine(raw,lang),source:'local',error:'Empty API response'};
             }
             const errBody=await r.text();console.error('Gemini API error ('+model+'):',r.status,errBody);
@@ -65,7 +66,7 @@ async function transcribeAudio(blob,lang){
         const models=['gemini-2.5-flash','gemini-2.5-flash-lite'];
         for(const model of models){
             const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+settings.geminiApiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:mime,data:b64}},{text:prompt}]}],generationConfig:{temperature:0}})});
-            if(r.ok){const d=await r.json();const txt=d.candidates?.[0]?.content?.parts?.[0]?.text;if(txt)return txt.trim();}
+            if(r.ok){const d=await r.json();const txt=d.candidates?.[0]?.content?.parts?.[0]?.text;if(txt)return normalizeSharpS(txt.trim());}
             const err=await r.text();console.error('Gemini transcribe ('+model+'):',r.status,err);
             if(r.status===404)continue;
             return null;
