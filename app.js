@@ -1,7 +1,7 @@
 let navHistory=[];
 function pushNav(screenId){navHistory.push(screenId);history.pushState({screen:screenId},'');}
 const MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
-let currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='feed',searchQuery='';
+let currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='list',searchQuery='';
 const THOUGHT_TYPE_TAGS=['feel','quotes','words'];
 const THOUGHT_TYPE_ALIASES={feel:['feel','emotion'],quotes:['quotes','quote','task'],words:['words','word','poem']};
 let pendingNoTagSaveAction=null;
@@ -114,6 +114,7 @@ function getHabitMilestoneLabelBeforeLog(habit){
     return null;
 }
 const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
+const SWIPE_SCREENS=['speak-screen','thoughts-screen','habits-screen','settings-screen'];
 
 function showToast(text){
     const existing=document.querySelector('.toast-msg');if(existing)existing.remove();
@@ -127,14 +128,46 @@ function showToast(text){
     document.body.appendChild(toast);
     setTimeout(()=>{toast.style.animation='toastOut .3s ease forwards';setTimeout(()=>toast.remove(),300);},3000);
 }
-function showScreen(id){
-    /* Exit any active selection mode when navigating away */
+function showScreen(id,slideDir){
     if(typeof thoughtsSelectMode!=='undefined'&&thoughtsSelectMode)exitThoughtsSelection();
     if(typeof habitsSelectMode!=='undefined'&&habitsSelectMode)exitHabitsSelection();
     if(typeof habitEntriesSelectMode!=='undefined'&&habitEntriesSelectMode)exitHabitEntriesSelection();
-    screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen'){renderHabits();}if(id==='speak-screen'&&typeof updateOverdueNotifications==='function')updateOverdueNotifications();if(id==='settings-screen')updateSettingsUI();
+    screens.forEach(s=>{s.classList.remove('active','slide-left','slide-right');});
+    const target=document.getElementById(id);
+    if(slideDir)target.classList.add(slideDir==='left'?'slide-left':'slide-right');
+    target.classList.add('active');
+    pushNav(id);tabItems.forEach(t=>t.classList.toggle('active',t.dataset.screen===id));if(id==='thoughts-screen')renderCaptures();if(id==='habits-screen'){renderHabits();}if(id==='speak-screen'&&typeof updateOverdueNotifications==='function')updateOverdueNotifications();if(id==='settings-screen')updateSettingsUI();
 }
 tabItems.forEach(tab=>{tab.addEventListener('click',()=>{if(!tab.classList.contains('disabled'))showScreen(tab.dataset.screen);});});
+
+/* Horizontal swipe navigation between main tabs */
+(function(){
+    let _swX=0,_swY=0,_swT=0,_swCurX=0;
+    function _anyOverlayOpen(){
+        const ids=['write-overlay','post-record-overlay','date-range-overlay','confirm-overlay','no-tag-confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay','voice-title-overlay','quick-edit-overlay','api-key-overlay','export-overlay','auth-overlay'];
+        for(const id of ids){const el=document.getElementById(id);if(el&&el.classList.contains('visible'))return true;}
+        const sab=document.querySelectorAll('.select-action-bar.visible');if(sab.length)return true;
+        return false;
+    }
+    function _activeSwipeScreen(){
+        const active=document.querySelector('.screen.active');
+        return active?SWIPE_SCREENS.indexOf(active.id):-1;
+    }
+    document.addEventListener('touchstart',function(e){
+        _swX=e.touches[0].clientX;_swY=e.touches[0].clientY;_swT=Date.now();_swCurX=_swX;
+    },{passive:true});
+    document.addEventListener('touchmove',function(e){_swCurX=e.touches[0].clientX;},{passive:true});
+    document.addEventListener('touchend',function(e){
+        const dx=_swCurX-_swX;const dy=e.changedTouches[0].clientY-_swY;const dt=Date.now()-_swT;
+        if(dt>500||Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy))return;
+        if(_anyOverlayOpen())return;
+        if(typeof isRecording!=='undefined'&&isRecording)return;
+        const idx=_activeSwipeScreen();
+        if(idx<0)return;
+        if(dx<0&&idx<SWIPE_SCREENS.length-1)showScreen(SWIPE_SCREENS[idx+1],'left');
+        else if(dx>0&&idx>0)showScreen(SWIPE_SCREENS[idx-1],'right');
+    },{passive:true});
+})();
 
 (function(){const h=new Date().getHours(),el=document.getElementById('greeting-text');if(h<6)el.textContent='Late night reflection';else if(h<12)el.textContent='Morning reflection';else if(h<17)el.textContent='Afternoon reflection';else if(h<21)el.textContent='Reflect and relax';else el.textContent='Calm reflection';})();
 
@@ -167,10 +200,10 @@ try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
 catch(e){console.warn('Mic error:',e);const t=prompt('Could not access microphone.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim(),currentLang);currentCapture.inputType='text';currentCapture.tags=[];showPostRecordFlow();}return;}
 _gmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
 _gmr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
-_gmr.onstop=async function(){stream.getTracks().forEach(t=>t.stop());isRecording=false;_isTranscribing=true;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';timerEl.classList.remove('visible');clearInterval(recordingTimer);recordingTimer=null;
+_gmr.onstop=async function(){stream.getTracks().forEach(t=>t.stop());isRecording=false;_isTranscribing=true;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';lpRing.classList.add('transcribing');timerEl.classList.remove('visible');clearInterval(recordingTimer);recordingTimer=null;
 const blob=new Blob(chunks,{type:_gmr.mimeType||mime||'audio/webm'});
 const transcript=await transcribeAudio(blob,currentLang);
-_isTranscribing=false;speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');
+_isTranscribing=false;lpRing.classList.remove('transcribing');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');
 if(transcript&&transcript.trim()){currentCapture.text=cleanupTranscript(transcript,currentLang);if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}else{showPostRecordFlow();}}
 else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
 isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');recordingStartTime=Date.now();updateTimer();recordingTimer=setInterval(updateTimer,250);_gmr.start();

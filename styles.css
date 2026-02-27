@@ -44,7 +44,9 @@
 html{height:100dvh;overflow:hidden}
 body{font-family:var(--font-body);background:var(--bg-deep);color:var(--text-primary);height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 .app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;position:relative;overflow:hidden}
-.screen{display:none;flex:1;flex-direction:column;padding-bottom:80px;animation:fadeIn .3s ease;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.screen.active{display:flex}
+.screen{display:none;flex:1;flex-direction:column;padding-bottom:80px;animation:fadeIn .3s ease;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.screen.active{display:flex}.screen.slide-left{animation:slideLeft .25s ease}.screen.slide-right{animation:slideRight .25s ease}
+@keyframes slideLeft{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
 
 @keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(20px)}}
@@ -67,6 +69,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .speak-btn.write-mode .speak-btn-label{-webkit-user-select:none;user-select:none;pointer-events:none;font-size:14px}
 .long-press-progress{position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent-warm);pointer-events:none;opacity:0;z-index:3}
 .long-press-progress.active{opacity:1;animation:longPressRing .8s linear forwards}
+.long-press-progress.transcribing{opacity:1;animation:longPressRing 1s linear infinite}
 @keyframes longPressRing{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 @keyframes longPressPop{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
 .speak-btn.lp-pop{animation:longPressPop .3s ease-out !important;transition:none !important}

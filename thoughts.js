@@ -258,10 +258,10 @@ function thoughtsStartRec(){
         navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
             _thoughtsGmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
             _thoughtsGmr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
-            _thoughtsGmr.onstop=async function(){stream.getTracks().forEach(function(t){t.stop();});thoughtsIsRec=false;_thoughtsIsTranscribing=true;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';thoughtsStopTimer();
+            _thoughtsGmr.onstop=async function(){stream.getTracks().forEach(function(t){t.stop();});thoughtsIsRec=false;_thoughtsIsTranscribing=true;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';thoughtsLpRing.classList.add('transcribing');thoughtsStopTimer();
                 const blob=new Blob(chunks,{type:_thoughtsGmr.mimeType||mime||'audio/webm'});
                 const transcript=await transcribeAudio(blob,currentLang);
-                _thoughtsIsTranscribing=false;thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';
+                _thoughtsIsTranscribing=false;thoughtsLpRing.classList.remove('transcribing');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';
                 if(transcript&&transcript.trim()){thoughtsSaveVoice(transcript);}
                 else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
             thoughtsIsRec=true;thoughtsSpeakBtn.classList.add('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Stop';thoughtsStartTimer();
