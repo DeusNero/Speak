@@ -1,5 +1,5 @@
 /* ============ HABITS SYSTEM ============ */
-var habitsView='feed';
+var habitsView='list';
 document.querySelectorAll('#habits-screen .habit-view-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#habits-screen .habit-view-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');habitsView=btn.dataset.view;document.getElementById('habits-list').classList.toggle('list-view',habitsView==='list');renderHabits();});});
 var _quickEditCb=null;
 function openQuickEdit(title,value,onSave){
