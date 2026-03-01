@@ -467,7 +467,7 @@ document.getElementById('no-tag-confirm-save').addEventListener('click',()=>{
 const verEl=document.getElementById('app-version-label');
 const settingsVerEl=document.getElementById('settings-version-label');
 const whatsNewEl=document.getElementById('settings-whats-new-text');
-if(verEl){
+if(verEl||settingsVerEl||whatsNewEl){
     const lm=document.lastModified?new Date(document.lastModified):new Date();
     const mm=String(lm.getMonth()+1).padStart(2,'0');
     const dd=String(lm.getDate()).padStart(2,'0');
@@ -476,7 +476,7 @@ if(verEl){
     const buildLabel='build '+mm+'/'+dd+' '+hh+':'+mi;
     window.__buildLabel=buildLabel;
     window.__latestBuildNotes=LATEST_BUILD_NOTES;
-    verEl.textContent=buildLabel;
+    if(verEl)verEl.textContent=buildLabel;
     if(settingsVerEl)settingsVerEl.textContent=buildLabel;
     if(whatsNewEl)whatsNewEl.textContent=LATEST_BUILD_NOTES;
 }
