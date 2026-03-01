@@ -585,7 +585,7 @@ function habitsPgStartRec(){
                 const transcript=await transcribeAudio(blob,currentLang);
                 _habitsPgIsTranscribing=false;habitsPgLpRing.classList.remove('transcribing');habitsPgBtn.querySelector('.speak-btn-label').textContent='Speak';
                 if(transcript&&transcript.trim()){habitsPgSaveVoice(transcript);}
-                else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+                else{if(typeof oqSave==='function')oqSave(blob,blob.type,currentLang,'habit-new',null);showToast('Saved offline \u2014 will transcribe when back online.');}};
             habitsPgIsRec=true;habitsPgBtn.classList.add('recording','recording-green');habitsPgBtn.querySelector('.speak-btn-label').textContent='Stop';habitsPgStartTimer();
             _habitsPgGmr.start();
         }).catch(function(){habitsPgOpenWrite();});
@@ -714,7 +714,7 @@ function habitStartRecording(){
                 const transcript=await transcribeAudio(blob,currentLang);
                 _habitIsTranscribing=false;habitLpRing.classList.remove('transcribing');habitBtn.querySelector('.speak-btn-label').textContent='Habit';
                 if(transcript&&transcript.trim()){habitSaveVoiceEntry(transcript);}
-                else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+                else{if(typeof oqSave==='function')oqSave(blob,blob.type,currentLang,'habit-entry',{habitId:currentHabitId});showToast('Saved offline \u2014 will transcribe when back online.');}};
             habitIsRecording=true;habitBtn.classList.add('recording','recording-green');habitBtn.querySelector('.speak-btn-label').textContent='Stop';habitStartTimer();
             _habitGmr.start();
         }).catch(function(){habitOpenWriteModal();});

@@ -264,7 +264,7 @@ function thoughtsStartRec(){
                 const transcript=await transcribeAudio(blob,currentLang);
                 _thoughtsIsTranscribing=false;thoughtsLpRing.classList.remove('transcribing');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';
                 if(transcript&&transcript.trim()){thoughtsSaveVoice(transcript);}
-                else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+                else{if(typeof oqSave==='function')oqSave(blob,blob.type,currentLang,'thought',null);showToast('Saved offline \u2014 will transcribe when back online.');}};
             thoughtsIsRec=true;thoughtsSpeakBtn.classList.add('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Stop';thoughtsStartTimer();
             _thoughtsGmr.start();
         }).catch(function(){thoughtsOpenWrite();});

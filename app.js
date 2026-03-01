@@ -221,7 +221,7 @@ const blob=new Blob(chunks,{type:_gmr.mimeType||mime||'audio/webm'});
 const transcript=await transcribeAudio(blob,currentLang);
 _isTranscribing=false;lpRing.classList.remove('transcribing');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');
 if(transcript&&transcript.trim()){currentCapture.text=cleanupTranscript(transcript,currentLang);if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}else{showPostRecordFlow();}}
-else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+else{if(typeof oqSave==='function')oqSave(blob,blob.type,currentLang,currentMode==='habit'?'habit-new':'thought',null);showToast('Saved offline \u2014 will transcribe when back online.');}};
 isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');recordingStartTime=Date.now();updateTimer();recordingTimer=setInterval(updateTimer,250);_gmr.start();
 }else{
 fT='';iT='';if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
@@ -558,3 +558,45 @@ window.addEventListener('popstate',e=>{
 });
 
 if(typeof sbInit==='function')sbInit();
+
+/* Offline queue processing — retry queued recordings when online */
+var _oqProcessing=false;
+async function oqProcessAll(){
+    if(_oqProcessing||typeof oqGetAll!=='function'||typeof transcribeAudio!=='function')return;
+    if(!navigator.onLine)return;
+    _oqProcessing=true;
+    try{
+        var items=await oqGetAll();
+        if(!items.length){_oqProcessing=false;return;}
+        var processed=0;
+        for(var i=0;i<items.length;i++){
+            var item=items[i];
+            var transcript=await transcribeAudio(item.blob,item.lang);
+            if(!transcript||!transcript.trim())continue;
+            transcript=cleanupTranscript(transcript,item.lang);
+            if(item.mode==='thought'){
+                var id='c_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+                captures.unshift({id:id,text:transcript,mood:null,tags:[],lang:item.lang,inputType:'voice',aiRefined:null,createdAt:item.createdAt||new Date().toISOString()});
+                saveCaptures();
+            }else if(item.mode==='habit-entry'&&item.meta&&item.meta.habitId){
+                var habit=habits.find(function(h){return h.id===item.meta.habitId;});
+                if(habit){
+                    var eid='he_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+                    habit.entries.push({id:eid,text:transcript,title:null,inputType:'voice',lang:item.lang,createdAt:item.createdAt||new Date().toISOString()});
+                    saveHabits();
+                }
+            }
+            await oqDelete(item.id);
+            processed++;
+        }
+        if(processed>0){
+            if(typeof renderCaptures==='function')renderCaptures();
+            if(typeof renderHabits==='function')renderHabits();
+            if(typeof sbFullUpload==='function')sbFullUpload();
+            showToast(processed+' offline recording'+(processed>1?'s':'')+' transcribed');
+        }
+    }catch(e){console.error('oqProcessAll error:',e);}
+    _oqProcessing=false;
+}
+if(navigator.onLine&&typeof oqCount==='function')oqCount().then(function(n){if(n>0)oqProcessAll();});
+window.addEventListener('online',function(){oqProcessAll();});
