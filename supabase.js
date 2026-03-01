@@ -237,3 +237,34 @@ async function sbDeleteHabitEntries(ids){
     if(!sb||!_sbUser||!ids.length)return;
     await sb.from('habit_entries').delete().in('id',ids).eq('user_id',_sbUser.id);
 }
+
+(function(){
+    var pwBtn=document.getElementById('change-pw-btn');
+    var pwOverlay=document.getElementById('change-pw-overlay');
+    var pwCloseX=document.getElementById('change-pw-close-x');
+    var pwCancel=document.getElementById('change-pw-cancel');
+    var pwSave=document.getElementById('change-pw-save');
+    function closePwModal(){if(pwOverlay)pwOverlay.classList.remove('visible');document.getElementById('change-pw-current').value='';document.getElementById('change-pw-new').value='';document.getElementById('change-pw-error').style.display='none';}
+    if(pwBtn)pwBtn.addEventListener('click',function(){if(pwOverlay){pwOverlay.classList.add('visible');if(typeof pushNav==='function')pushNav('change-pw-overlay');}});
+    if(pwCloseX)pwCloseX.addEventListener('click',closePwModal);
+    if(pwCancel)pwCancel.addEventListener('click',closePwModal);
+    if(pwSave)pwSave.addEventListener('click',async function(){
+        if(!sb||!_sbUser)return;
+        var errEl=document.getElementById('change-pw-error');
+        var currentPw=document.getElementById('change-pw-current').value;
+        var newPw=document.getElementById('change-pw-new').value;
+        errEl.style.display='none';
+        if(!currentPw||!newPw){errEl.textContent='Please fill in both fields.';errEl.style.display='block';return;}
+        if(newPw.length<6){errEl.textContent='New password must be at least 6 characters.';errEl.style.display='block';return;}
+        pwSave.textContent='Changing...';pwSave.disabled=true;
+        var{error:signInErr}=await sb.auth.signInWithPassword({email:_sbUser.email,password:currentPw});
+        if(signInErr){errEl.textContent='Current password is incorrect.';errEl.style.display='block';pwSave.textContent='Change';pwSave.disabled=false;return;}
+        var{error:updateErr}=await sb.auth.updateUser({password:newPw});
+        if(updateErr){errEl.textContent=updateErr.message;errEl.style.display='block';pwSave.textContent='Change';pwSave.disabled=false;return;}
+        if(typeof encDeriveKey==='function')await encDeriveKey(newPw,_sbUser.id);
+        await sbFullUpload();
+        closePwModal();
+        pwSave.textContent='Change';pwSave.disabled=false;
+        if(typeof showToast==='function')showToast('Password changed and data re-encrypted');
+    });
+})();
