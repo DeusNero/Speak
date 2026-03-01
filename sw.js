@@ -2,7 +2,23 @@ const CACHE_NAME='speak-runtime';
 
 self.addEventListener('install',(e)=>{
     e.waitUntil(
-        caches.open(CACHE_NAME).then(cache=>cache.addAll(['./','./index.html']))
+        caches.open(CACHE_NAME).then(cache=>cache.addAll([
+            './',
+            './index.html',
+            './styles.css',
+            './storage.js',
+            './offline-queue.js',
+            './crypto.js',
+            './supabase.js',
+            './ai.js',
+            './app.js',
+            './thoughts.js',
+            './habits.js',
+            './insights.js',
+            './manifest.json',
+            './icon-192.png',
+            './icon-512.png'
+        ]))
     );
     self.skipWaiting();
 });

@@ -1,11 +1,22 @@
 # Todo
 
-## Critical
-- [ ] Move Speak to its own domain OR add cloud backup — currently shares deusnero.github.io with Schwubbi, which means uninstalling one PWA can wipe data for both apps
-- [ ] Add automatic cloud backup (e.g. Supabase) so data doesn't live only in localStorage
+## Completed
+- [x] Move hosting from GitHub Pages to Vercel
+- [x] Set up `dev` branch for preview deployments
+- [x] Data encryption (AES-GCM) — client-side encryption of all user content in Supabase
+- [x] Auth warning + forgot password flow with data loss warning
+- [x] Password change in Settings (re-derives key, re-encrypts all data)
+- [x] Shared Gemini API key via Supabase `app_config` table
+- [x] Offline recording queue — save audio to IndexedDB on transcription failure, auto-retry on reconnect
+- [x] New app icon (zen garden sand ripples)
+- [x] iOS Safari audio support (audio/mp4 for Gemini transcription)
+- [x] iOS PWA meta tags (apple-touch-icon, status-bar-style)
+- [x] Fix cross-file variable scoping (storage.js let → var)
+- [x] Move build label to Settings only
+- [x] Codebase docs cleanup (README, glossary, lessons)
 
-## Infrastructure
-- [ ] Move hosting from GitHub Pages to Vercel — gives custom domain, automatic deploys on git push, no more manual service worker version bumping, better PWA headers. Steps: connect GitHub repo to Vercel, point custom domain (e.g. speakapp.io), done. Data stays in Supabase, nothing else changes.
-
-## Setup
-- [ ] Create `Speak-dev` staging app — second GitHub repo (`DeusNero/Speak-dev`), GitHub Pages enabled, install as separate PWA on phone for testing before pushing to production. Reason: testing always happens on mobile, so we need a safe place to push and verify new features without risking breaking the real app and its data.
+## Open
+- [ ] Auth/onboarding rethink — proper welcome screen, sign-in/sign-up split, Google sign-in
+- [ ] Full iOS/Safari compatibility audit — hands-on testing of all features on an iPhone
+- [ ] Connect custom domain to Vercel (when ready to buy one)
+- [ ] Disable GitHub Pages (optional — can keep as backup)
