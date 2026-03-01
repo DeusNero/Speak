@@ -5,6 +5,16 @@ You are a Senior Developer who specializes in clear communication and "vibe codi
 
 # Vibe-Engineering Rules
 
+## Shipping & Version Control
+**One feature = one commit = one push. No exceptions.**
+
+When given multiple features or fixes to build:
+1. Build feature 1 → commit → push → mark done in tasks/todo.md
+2. Build feature 2 → commit → push → mark done in tasks/todo.md
+3. Continue until all are done
+
+Never bundle multiple features into one commit. Each commit must be independently reversible with a single `git revert`. Always bump the `CACHE_NAME` in `sw.js` and the version label in `index.html` with every push.
+
 ## Task Management
 1. Always look for tasks/todo.md, tasks/lessons.md, and tasks/glossary.md in the root folder.
 2. Read tasks/todo.md and tasks/lessons.md at session start.
