@@ -352,9 +352,11 @@
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Sign in to sync your data</div>
         <input type="email" id="auth-email" autocomplete="off" data-form-type="other" readonly onfocus="this.removeAttribute('readonly')" placeholder="Email" style="width:100%;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;outline:none;box-sizing:border-box;margin-bottom:10px;">
         <input type="password" id="auth-password" autocomplete="off" data-form-type="other" readonly onfocus="this.removeAttribute('readonly')" placeholder="Password" style="width:100%;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:15px;outline:none;box-sizing:border-box;margin-bottom:16px;">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;line-height:1.5;opacity:.7;">Your password encrypts your data so no one else can see it. If you forget it, your data cannot be recovered.</div>
         <div id="auth-error" style="display:none;font-size:12px;color:#e07a5f;margin-bottom:12px;"></div>
         <button class="action-btn primary" id="auth-login-btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#7da87a 0%,#5e8a5a 50%,#4a7248 100%);color:var(--bg-deep);border:none;font-size:15px;font-weight:600;border-radius:var(--radius-md);cursor:pointer;">Sign in</button>
         <button id="auth-signup-btn" style="background:none;border:none;color:var(--text-muted);font-size:12px;margin-top:12px;cursor:pointer;font-family:var(--font-body);">No account? <span style="color:#7da87a;">Create one</span></button>
+        <button id="auth-forgot-btn" style="background:none;border:none;color:var(--text-muted);font-size:11px;margin-top:8px;cursor:pointer;font-family:var(--font-body);opacity:.6;">Forgot password?</button>
     </div></div>
 
     <script src="storage.js"></script>

@@ -61,6 +61,16 @@ async function sbInit(){
         document.getElementById('auth-overlay').classList.remove('visible');
         sbFullUpload();
     });
+    var forgotBtn=document.getElementById('auth-forgot-btn');
+    if(forgotBtn)forgotBtn.addEventListener('click',async()=>{
+        var email=document.getElementById('auth-email').value.trim();
+        if(!email){var errEl=document.getElementById('auth-error');errEl.textContent='Enter your email first, then tap Forgot password.';errEl.style.display='block';return;}
+        var confirmed=confirm('WARNING: Resetting your password will make all your existing encrypted data permanently unrecoverable. You will start fresh.\n\nSend password reset email to '+email+'?');
+        if(!confirmed)return;
+        var{error}=await sb.auth.resetPasswordForEmail(email);
+        if(error){var errEl=document.getElementById('auth-error');errEl.textContent=error.message;errEl.style.display='block';return;}
+        alert('Password reset email sent to '+email+'. Check your inbox.');
+    });
 })();
 
 async function sbRestoreIfNeeded(){
