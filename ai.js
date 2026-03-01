@@ -52,9 +52,10 @@ function getAudioMimeType(){
     if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))return 'audio/webm;codecs=opus';
     if(MediaRecorder.isTypeSupported('audio/webm'))return 'audio/webm';
     if(MediaRecorder.isTypeSupported('audio/ogg;codecs=opus'))return 'audio/ogg;codecs=opus';
+    if(MediaRecorder.isTypeSupported('audio/mp4'))return 'audio/mp4';
     return '';}
 function useGeminiTranscription(){
-    return !!(settings.geminiApiKey&&(MediaRecorder.isTypeSupported('audio/webm')||MediaRecorder.isTypeSupported('audio/ogg')));}
+    return !!(settings.geminiApiKey&&(MediaRecorder.isTypeSupported('audio/webm')||MediaRecorder.isTypeSupported('audio/ogg')||MediaRecorder.isTypeSupported('audio/mp4')));}
 function blobToBase64(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onloadend=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(blob);});}
 async function transcribeAudio(blob,lang){
     if(!settings.geminiApiKey)return null;
