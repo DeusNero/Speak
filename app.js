@@ -1,4 +1,4 @@
-let navHistory=[];
+var navHistory=[];
 function pushNav(screenId){navHistory.push(screenId);history.pushState({screen:screenId},'');}
 
 /* Audio focus — pause background music for the full recording duration */
@@ -16,20 +16,20 @@ function releaseAudioFocus(){
     try{if(navigator.audioSession){navigator.audioSession.type='default';}}catch(e){}
     try{if(window._audioFocusCtx){window._audioFocusCtx.close();window._audioFocusCtx=null;}}catch(e){}
 }
-const MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
-let currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='list',searchQuery='';
-const THOUGHT_TYPE_TAGS=['feel','quotes','words'];
-const THOUGHT_TYPE_ALIASES={feel:['feel','emotion'],quotes:['quotes','quote','task'],words:['words','word','poem']};
-let pendingNoTagSaveAction=null;
-const DEFAULT_NO_TAG_CONFIRM_TITLE='Save without a tag?';
-const DEFAULT_NO_TAG_CONFIRM_TEXT='You can add or change the tag later from the Thoughts page.';
+var MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
+var currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='list',searchQuery='';
+var THOUGHT_TYPE_TAGS=['feel','quotes','words'];
+var THOUGHT_TYPE_ALIASES={feel:['feel','emotion'],quotes:['quotes','quote','task'],words:['words','word','poem']};
+var pendingNoTagSaveAction=null;
+var DEFAULT_NO_TAG_CONFIRM_TITLE='Save without a tag?';
+var DEFAULT_NO_TAG_CONFIRM_TEXT='You can add or change the tag later from the Thoughts page.';
 const LATEST_BUILD_NOTES=[
     '- Added settings build details dropdown with latest changes summary.',
     '- Synced settings version label to the same build timestamp shown on the main page.',
     '- Improved Gemini refine reliability by trying multiple compatible model endpoints automatically.'
 ].join('\n');
-let isRecording=false,recognition=null,recordingTimer=null,recordingStartTime=0;
-const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+var isRecording=false,recognition=null,recordingTimer=null,recordingStartTime=0;
+var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 function normalizeThoughtTag(tag){
     if(!tag)return null;
@@ -129,8 +129,8 @@ function getHabitMilestoneLabelBeforeLog(habit){
     if(daysSince>=3)return 'Good job on picking up the habit again!';
     return null;
 }
-const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
-const SWIPE_SCREENS=['speak-screen','thoughts-screen','habits-screen','settings-screen'];
+var screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
+var SWIPE_SCREENS=['speak-screen','thoughts-screen','habits-screen','settings-screen'];
 
 function showToast(text){
     const existing=document.querySelector('.toast-msg');if(existing)existing.remove();
@@ -187,7 +187,7 @@ tabItems.forEach(tab=>{tab.addEventListener('click',()=>{if(!tab.classList.conta
 
 (function(){const h=new Date().getHours(),el=document.getElementById('greeting-text');if(h<6)el.textContent='Late night reflection';else if(h<12)el.textContent='Morning reflection';else if(h<17)el.textContent='Afternoon reflection';else if(h<21)el.textContent='Reflect and relax';else el.textContent='Calm reflection';})();
 
-const langBtns=document.querySelectorAll('.speak-screen .lang-btn');let currentLang=settings.defaultLang;
+var langBtns=document.querySelectorAll('.speak-screen .lang-btn');var currentLang=settings.defaultLang;
 langBtns.forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));
 langBtns.forEach(btn=>{btn.addEventListener('click',()=>{langBtns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentLang=btn.dataset.lang;if(isRecording&&recognition){recognition.lang=currentLang;recognition.stop();setTimeout(()=>recognition.start(),200);}});});
 
@@ -507,7 +507,7 @@ navigator.serviceWorker.addEventListener('controllerchange',()=>{console.log('SW
 
 
 /* Mode toggle: Thought vs Habit */
-let currentMode='thought',lastTapTime=0,doubleTapCooldown=false;
+var currentMode='thought',lastTapTime=0,doubleTapCooldown=false;
 document.querySelectorAll('.mode-toggle-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
         currentMode=btn.dataset.mode;
