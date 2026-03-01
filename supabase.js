@@ -80,7 +80,11 @@ async function sbRestoreIfNeeded(){
     if(localThoughts.length===0&&localHabits.length===0){
         await sbRestoreFromCloud();
     }else{
-        sbFullUpload();
+        await sbFullUpload();
+        if(_encKey&&!localStorage.getItem('speak_enc_migrated')){
+            localStorage.setItem('speak_enc_migrated','1');
+            if(typeof showToast==='function')showToast('Data encrypted successfully');
+        }
     }
 }
 
