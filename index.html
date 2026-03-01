@@ -231,9 +231,6 @@
 
     <!-- OVERLAYS -->
     <div class="success-overlay" id="success-overlay"><div class="success-content"><div class="success-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 12 10 16 18 8"/></svg></div><div class="success-text">Good job</div></div></div>
-    <!-- PENDING RETRY MODAL -->
-    <div class="modal-overlay" id="pending-retry-overlay"><div class="modal-dialog" style="max-width:320px;padding:24px;"><button class="modal-close-x" id="pending-retry-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="modal-title">Retry transcription?</div><div class="modal-text">Internet connection required. The recording is saved on your device.</div><div class="modal-btns" style="display:flex;gap:10px;margin-top:20px;"><button class="action-btn secondary" id="pending-retry-cancel" style="min-width:0;flex:1;">Cancel</button><button class="action-btn warm" id="pending-retry-btn" style="min-width:0;flex:1;">Retry now</button></div></div></div>
-
     <div class="modal-overlay" id="confirm-overlay"><div class="modal-dialog" style="max-width:320px;padding:24px;"><button class="modal-close-x" id="confirm-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="modal-title">Delete this thought?</div><div class="modal-text">This action cannot be undone.</div><div class="modal-btns" style="display:flex;gap:10px;"><button class="action-btn secondary" id="confirm-cancel" style="min-width:0;flex:1;">Cancel</button><button class="action-btn danger" id="confirm-action" style="min-width:0;flex:1;">Delete</button></div></div></div>
     <div class="modal-overlay" id="no-tag-confirm-overlay"><div class="modal-dialog" style="max-width:340px;padding:24px;">
         <button class="modal-close-x" id="no-tag-confirm-close-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
@@ -361,7 +358,6 @@
     </div></div>
 
     <script src="storage.js"></script>
-    <script src="offline-queue.js"></script>
     <script src="supabase.js"></script>
     <script src="ai.js"></script>
     <script src="app.js"></script>

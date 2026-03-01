@@ -48,6 +48,13 @@ Speak is currently a PWA but will move to Vercel hosting and eventually to nativ
 2. Before implementing a Web API, flag if it behaves differently or is unsupported on iOS Safari.
 3. Prefer cross-platform Web APIs. When an Android-only or iOS-only solution is unavoidable, note it explicitly in the code and in the response.
 
+## Troubleshooting & Debugging
+When the app is broken and the user can't interact with it:
+1. **First attempt**: Analyze the code, identify the likely cause, push a fix, and tell the user how to test.
+2. **If the user reports it's still broken**: Immediately inject a visible error reporter — a global `window.onerror` and `unhandledrejection` handler that renders the error message, file name, and line number in a red bar directly on screen. Push it, ask the user what the red bar says, and fix what it reveals. No more guessing.
+3. **Remove the error reporter** once the bug is fixed.
+4. Maximum two rounds of guessing. If two fixes don't work, diagnostics go in automatically.
+
 ## Safety
 1. NEVER run scripts that affect other apps on the same domain (deusnero.github.io). Service workers, caches, and localStorage are shared across all apps on the same domain.
 2. NEVER skip the Plan → Go step, even for "quick fixes." No exceptions.

@@ -1,4 +1,4 @@
-var navHistory=[];
+let navHistory=[];
 function pushNav(screenId){navHistory.push(screenId);history.pushState({screen:screenId},'');}
 
 /* Audio focus — pause background music for the full recording duration */
@@ -16,20 +16,20 @@ function releaseAudioFocus(){
     try{if(navigator.audioSession){navigator.audioSession.type='default';}}catch(e){}
     try{if(window._audioFocusCtx){window._audioFocusCtx.close();window._audioFocusCtx=null;}}catch(e){}
 }
-var MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
-var currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='list',searchQuery='';
-var THOUGHT_TYPE_TAGS=['feel','quotes','words'];
-var THOUGHT_TYPE_ALIASES={feel:['feel','emotion'],quotes:['quotes','quote','task'],words:['words','word','poem']};
-var pendingNoTagSaveAction=null;
-var DEFAULT_NO_TAG_CONFIRM_TITLE='Save without a tag?';
-var DEFAULT_NO_TAG_CONFIRM_TEXT='You can add or change the tag later from the Thoughts page.';
+const MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
+let currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='list',searchQuery='';
+const THOUGHT_TYPE_TAGS=['feel','quotes','words'];
+const THOUGHT_TYPE_ALIASES={feel:['feel','emotion'],quotes:['quotes','quote','task'],words:['words','word','poem']};
+let pendingNoTagSaveAction=null;
+const DEFAULT_NO_TAG_CONFIRM_TITLE='Save without a tag?';
+const DEFAULT_NO_TAG_CONFIRM_TEXT='You can add or change the tag later from the Thoughts page.';
 const LATEST_BUILD_NOTES=[
     '- Added settings build details dropdown with latest changes summary.',
     '- Synced settings version label to the same build timestamp shown on the main page.',
     '- Improved Gemini refine reliability by trying multiple compatible model endpoints automatically.'
 ].join('\n');
-var isRecording=false,recognition=null,recordingTimer=null,recordingStartTime=0;
-var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+let isRecording=false,recognition=null,recordingTimer=null,recordingStartTime=0;
+const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 function normalizeThoughtTag(tag){
     if(!tag)return null;
@@ -129,8 +129,8 @@ function getHabitMilestoneLabelBeforeLog(habit){
     if(daysSince>=3)return 'Good job on picking up the habit again!';
     return null;
 }
-var screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
-var SWIPE_SCREENS=['speak-screen','thoughts-screen','habits-screen','settings-screen'];
+const screens=document.querySelectorAll('.screen'),tabItems=document.querySelectorAll('.tab-item');
+const SWIPE_SCREENS=['speak-screen','thoughts-screen','habits-screen','settings-screen'];
 
 function showToast(text){
     const existing=document.querySelector('.toast-msg');if(existing)existing.remove();
@@ -187,7 +187,7 @@ tabItems.forEach(tab=>{tab.addEventListener('click',()=>{if(!tab.classList.conta
 
 (function(){const h=new Date().getHours(),el=document.getElementById('greeting-text');if(h<6)el.textContent='Late night reflection';else if(h<12)el.textContent='Morning reflection';else if(h<17)el.textContent='Afternoon reflection';else if(h<21)el.textContent='Reflect and relax';else el.textContent='Calm reflection';})();
 
-var langBtns=document.querySelectorAll('.speak-screen .lang-btn');var currentLang=settings.defaultLang;
+const langBtns=document.querySelectorAll('.speak-screen .lang-btn');let currentLang=settings.defaultLang;
 langBtns.forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));
 langBtns.forEach(btn=>{btn.addEventListener('click',()=>{langBtns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentLang=btn.dataset.lang;if(isRecording&&recognition){recognition.lang=currentLang;recognition.stop();setTimeout(()=>recognition.start(),200);}});});
 
@@ -218,12 +218,10 @@ _gmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
 _gmr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
 _gmr.onstop=async function(){releaseAudioFocus();stream.getTracks().forEach(t=>t.stop());isRecording=false;_isTranscribing=true;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';lpRing.classList.add('transcribing');timerEl.classList.remove('visible');clearInterval(recordingTimer);recordingTimer=null;
 const blob=new Blob(chunks,{type:_gmr.mimeType||mime||'audio/webm'});
-const _pid=Date.now().toString(36)+Math.random().toString(36).substr(2,5);
-if(typeof oqSave==='function')await oqSave({id:_pid,blob,mimeType:_gmr.mimeType||mime||'audio/webm',lang:currentLang,habitId:currentCapture.habitId||null,habitsPgDirectCreate:!!window._habitsPgDirectCreate,createdAt:new Date().toISOString()});
 const transcript=await transcribeAudio(blob,currentLang);
 _isTranscribing=false;lpRing.classList.remove('transcribing');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');
-if(transcript&&transcript.trim()){if(typeof oqRemove==='function')await oqRemove(_pid);currentCapture.text=cleanupTranscript(transcript,currentLang);if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}else{showPostRecordFlow();}}
-else{if(typeof oqRefreshPending==='function')oqRefreshPending();showScreen('thoughts-screen');showToast('No internet \u2014 recording saved. Will transcribe when connected.');}}};
+if(transcript&&transcript.trim()){currentCapture.text=cleanupTranscript(transcript,currentLang);if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}else{showPostRecordFlow();}}
+else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
 isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');recordingStartTime=Date.now();updateTimer();recordingTimer=setInterval(updateTimer,250);_gmr.start();
 }else{
 fT='';iT='';if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
@@ -507,7 +505,7 @@ navigator.serviceWorker.addEventListener('controllerchange',()=>{console.log('SW
 
 
 /* Mode toggle: Thought vs Habit */
-var currentMode='thought',lastTapTime=0,doubleTapCooldown=false;
+let currentMode='thought',lastTapTime=0,doubleTapCooldown=false;
 document.querySelectorAll('.mode-toggle-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
         currentMode=btn.dataset.mode;
@@ -543,7 +541,7 @@ window.addEventListener('popstate',e=>{
         if(typeof thoughtsSelectMode!=='undefined'&&thoughtsSelectMode){exitThoughtsSelection();history.pushState({},'');return;}
         if(typeof habitsSelectMode!=='undefined'&&habitsSelectMode){exitHabitsSelection();history.pushState({},'');return;}
         if(typeof habitEntriesSelectMode!=='undefined'&&habitEntriesSelectMode){exitHabitEntriesSelection();history.pushState({},'');return;}
-        const overlays=['write-overlay','post-record-overlay','date-range-overlay','confirm-overlay','no-tag-confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay','voice-title-overlay','quick-edit-overlay','api-key-overlay','export-overlay','pending-retry-overlay'];
+        const overlays=['write-overlay','post-record-overlay','date-range-overlay','confirm-overlay','no-tag-confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay','voice-title-overlay','quick-edit-overlay','api-key-overlay','export-overlay'];
         for(const oid of overlays){const oel=document.getElementById(oid);if(oel&&(oel.classList.contains('visible'))){oel.classList.remove('visible');return;}}
         const heDetailScreen=document.getElementById('habit-entry-detail-screen');
         if(heDetailScreen&&heDetailScreen.classList.contains('active')){if(typeof openHabitDetail==='function')openHabitDetail(currentHabitId);return;}
