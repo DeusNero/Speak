@@ -75,6 +75,7 @@ async function sbInit(){
 
 async function sbRestoreIfNeeded(){
     if(!sb||!_sbUser)return;
+    await sbLoadSharedConfig();
     var localThoughts=JSON.parse(localStorage.getItem('speak_captures')||'[]');
     var localHabits=JSON.parse(localStorage.getItem('speak_habits')||'[]');
     if(localThoughts.length===0&&localHabits.length===0){
@@ -86,6 +87,21 @@ async function sbRestoreIfNeeded(){
             if(typeof showToast==='function')showToast('Data encrypted successfully');
         }
     }
+}
+
+async function sbLoadSharedConfig(){
+    if(!sb||!_sbUser)return;
+    try{
+        var{data,error}=await sb.from('app_config').select('value').eq('key','gemini_api_key').single();
+        if(error||!data)return;
+        var s=JSON.parse(localStorage.getItem('speak_settings')||'{}');
+        if(!s.geminiApiKey){
+            s.geminiApiKey=data.value;
+            localStorage.setItem('speak_settings',JSON.stringify(s));
+            if(typeof settings!=='undefined')settings.geminiApiKey=data.value;
+            if(typeof updateSettingsUI==='function')updateSettingsUI();
+        }
+    }catch(e){console.warn('Failed to load shared config',e);}
 }
 
 async function sbRestoreFromCloud(){
