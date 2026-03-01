@@ -60,8 +60,12 @@ if(selectedThoughtFilters.size){
     });
 }
 if(searchQuery&&searchQuery.trim()){const q=searchQuery.trim().toLowerCase();f=f.filter(c=>(c.text||'').toLowerCase().includes(q));}
-if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);const dr=document.getElementById('date-range-start').value;const dre=document.getElementById('date-range-end').value;if(dr){const ds=new Date(dr);ds.setHours(0,0,0,0);f=f.filter(c=>new Date(c.createdAt)>=ds);}if(dre){const de=new Date(dre);de.setHours(23,59,59,999);f=f.filter(c=>new Date(c.createdAt)<=de);}f.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));if(!f.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u2728</div><div class="empty-state-text">No thoughts yet.<br>Tap the circle below to begin.</div></div>';return;}
-let h='';f.forEach(c=>{const d=new Date(c.createdAt);const moods={1:'\ud83d\ude14',2:'\ud83d\ude15',3:'\ud83d\ude10',4:'\ud83d\ude0a',5:'\ud83d\ude04'};const me=c.mood?moods[c.mood]||'':'';const pv=c.text.substring(0,120);const thoughtTag=getThoughtTagFromEntry(c);
+if(currentMoodFilter>0)f=f.filter(c=>c.mood===currentMoodFilter);const dr=document.getElementById('date-range-start').value;const dre=document.getElementById('date-range-end').value;if(dr){const ds=new Date(dr);ds.setHours(0,0,0,0);f=f.filter(c=>new Date(c.createdAt)>=ds);}if(dre){const de=new Date(dre);de.setHours(23,59,59,999);f=f.filter(c=>new Date(c.createdAt)<=de);}f.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+/* Pending offline recordings — shown at top */
+var _pending=window._pendingItems||[];
+var ph='';_pending.forEach(p=>{const pd=new Date(p.createdAt);ph+='<div class="capture-card pending-card" data-pending-id="'+p.id+'">';ph+='<div class="capture-card-header"><div style="flex:1;min-width:0;"><div class="capture-card-date">'+formatDate(pd)+'</div></div>';ph+='<svg class="pending-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;flex-shrink:0;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></div>';ph+='<div class="capture-card-text" style="color:var(--text-muted);font-style:italic;">Transcribing when internet connection is established</div>';ph+='</div>';});
+if(!f.length&&!_pending.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\u2728</div><div class="empty-state-text">No thoughts yet.<br>Tap the circle below to begin.</div></div>';if(ph)list.innerHTML=ph;return;}
+let h=ph;f.forEach(c=>{const d=new Date(c.createdAt);const moods={1:'\ud83d\ude14',2:'\ud83d\ude15',3:'\ud83d\ude10',4:'\ud83d\ude0a',5:'\ud83d\ude04'};const me=c.mood?moods[c.mood]||'':'';const pv=c.text.substring(0,120);const thoughtTag=getThoughtTagFromEntry(c);
 const inputIcon=c.inputType==='text'?'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>':'<svg style="display:inline;vertical-align:middle;width:12px;height:12px;margin-left:6px" viewBox="0 0 24 24" fill="none" stroke="#c4b48a" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>';
 const isSel=thoughtsSelected.has(c.id);
 h+='<div class="capture-card'+(isSel?' selected':'')+'" data-id="'+c.id+'">';
@@ -102,7 +106,24 @@ list.querySelectorAll('.card-delete-btn').forEach(btn=>{
     btn.addEventListener('click',e=>{e.stopPropagation();openDeleteFromCard(btn.dataset.id);});
 });
 list.classList.toggle('selecting',thoughtsSelectMode);
+/* Pending card click → retry modal */
+list.querySelectorAll('.pending-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+        window._pendingRetryId=card.dataset.pendingId;
+        document.getElementById('pending-retry-overlay').classList.add('visible');
+        pushNav('pending-retry-overlay');
+    });
+});
 }
+
+/* Pending retry modal handlers */
+document.getElementById('pending-retry-close-x').addEventListener('click',()=>document.getElementById('pending-retry-overlay').classList.remove('visible'));
+document.getElementById('pending-retry-cancel').addEventListener('click',()=>document.getElementById('pending-retry-overlay').classList.remove('visible'));
+document.getElementById('pending-retry-btn').addEventListener('click',async()=>{
+    document.getElementById('pending-retry-overlay').classList.remove('visible');
+    if(!navigator.onLine){showToast('No internet connection. Will retry automatically.');return;}
+    await oqRetryAll();
+});
 
 document.getElementById('thoughts-select-cancel').addEventListener('click',exitThoughtsSelection);
 document.getElementById('thoughts-select-delete').addEventListener('click',()=>{

@@ -582,10 +582,12 @@ function habitsPgStartRec(){
             _habitsPgGmr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
             _habitsPgGmr.onstop=async function(){releaseAudioFocus();stream.getTracks().forEach(function(t){t.stop();});habitsPgIsRec=false;_habitsPgIsTranscribing=true;habitsPgBtn.classList.remove('recording','recording-green');habitsPgBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';habitsPgLpRing.classList.add('transcribing');habitsPgStopTimer();
                 const blob=new Blob(chunks,{type:_habitsPgGmr.mimeType||mime||'audio/webm'});
+                const _pid=Date.now().toString(36)+Math.random().toString(36).substr(2,5);
+                if(typeof oqSave==='function')await oqSave({id:_pid,blob,mimeType:_habitsPgGmr.mimeType||mime||'audio/webm',lang:currentLang,habitId:null,habitsPgDirectCreate:true,createdAt:new Date().toISOString()});
                 const transcript=await transcribeAudio(blob,currentLang);
                 _habitsPgIsTranscribing=false;habitsPgLpRing.classList.remove('transcribing');habitsPgBtn.querySelector('.speak-btn-label').textContent='Speak';
-                if(transcript&&transcript.trim()){habitsPgSaveVoice(transcript);}
-                else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+                if(transcript&&transcript.trim()){if(typeof oqRemove==='function')await oqRemove(_pid);habitsPgSaveVoice(transcript);}
+                else{if(typeof oqRefreshPending==='function')oqRefreshPending();showToast('No internet \u2014 recording saved. Will transcribe when connected.');}};
             habitsPgIsRec=true;habitsPgBtn.classList.add('recording','recording-green');habitsPgBtn.querySelector('.speak-btn-label').textContent='Stop';habitsPgStartTimer();
             _habitsPgGmr.start();
         }).catch(function(){habitsPgOpenWrite();});
@@ -711,10 +713,12 @@ function habitStartRecording(){
             _habitGmr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
             _habitGmr.onstop=async function(){releaseAudioFocus();stream.getTracks().forEach(function(t){t.stop();});habitIsRecording=false;_habitIsTranscribing=true;habitBtn.classList.remove('recording','recording-green');habitBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';habitLpRing.classList.add('transcribing');habitStopTimer();
                 const blob=new Blob(chunks,{type:_habitGmr.mimeType||mime||'audio/webm'});
+                const _pid=Date.now().toString(36)+Math.random().toString(36).substr(2,5);
+                if(typeof oqSave==='function')await oqSave({id:_pid,blob,mimeType:_habitGmr.mimeType||mime||'audio/webm',lang:currentLang,habitId:currentHabitId||null,habitsPgDirectCreate:false,createdAt:new Date().toISOString()});
                 const transcript=await transcribeAudio(blob,currentLang);
                 _habitIsTranscribing=false;habitLpRing.classList.remove('transcribing');habitBtn.querySelector('.speak-btn-label').textContent='Habit';
-                if(transcript&&transcript.trim()){habitSaveVoiceEntry(transcript);}
-                else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+                if(transcript&&transcript.trim()){if(typeof oqRemove==='function')await oqRemove(_pid);habitSaveVoiceEntry(transcript);}
+                else{if(typeof oqRefreshPending==='function')oqRefreshPending();showToast('No internet \u2014 recording saved. Will transcribe when connected.');}};
             habitIsRecording=true;habitBtn.classList.add('recording','recording-green');habitBtn.querySelector('.speak-btn-label').textContent='Stop';habitStartTimer();
             _habitGmr.start();
         }).catch(function(){habitOpenWriteModal();});

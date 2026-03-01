@@ -313,6 +313,12 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .select-checkbox svg{display:none;}
 .capture-card.selected .select-checkbox svg{display:block;}
 
+/* ---- OFFLINE PENDING CARDS ---- */
+@keyframes oqSpin{to{transform:rotate(360deg)}}
+.pending-spinner{animation:oqSpin 1.2s linear infinite;color:var(--text-muted);}
+.pending-card{border-color:rgba(196,180,138,.2);opacity:.85;cursor:pointer;}
+.pending-card:active{opacity:.65;}
+
 /* ---- OVERDUE BANNER ---- */
 .overdue-banner{background:rgba(106,138,90,.12);border:1px solid rgba(106,138,90,.25);border-radius:var(--radius-md);padding:12px 14px;margin-bottom:12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
 .overdue-banner-text{font-size:13px;color:var(--text-secondary);line-height:1.5;flex:1;}

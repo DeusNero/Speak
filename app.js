@@ -218,10 +218,12 @@ _gmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
 _gmr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
 _gmr.onstop=async function(){releaseAudioFocus();stream.getTracks().forEach(t=>t.stop());isRecording=false;_isTranscribing=true;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';lpRing.classList.add('transcribing');timerEl.classList.remove('visible');clearInterval(recordingTimer);recordingTimer=null;
 const blob=new Blob(chunks,{type:_gmr.mimeType||mime||'audio/webm'});
+const _pid=Date.now().toString(36)+Math.random().toString(36).substr(2,5);
+if(typeof oqSave==='function')await oqSave({id:_pid,blob,mimeType:_gmr.mimeType||mime||'audio/webm',lang:currentLang,habitId:currentCapture.habitId||null,habitsPgDirectCreate:!!window._habitsPgDirectCreate,createdAt:new Date().toISOString()});
 const transcript=await transcribeAudio(blob,currentLang);
 _isTranscribing=false;lpRing.classList.remove('transcribing');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');
-if(transcript&&transcript.trim()){currentCapture.text=cleanupTranscript(transcript,currentLang);if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}else{showPostRecordFlow();}}
-else{showToast('Could not transcribe audio. Try again or tap and hold to type.');}};
+if(transcript&&transcript.trim()){if(typeof oqRemove==='function')await oqRemove(_pid);currentCapture.text=cleanupTranscript(transcript,currentLang);if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}else{showPostRecordFlow();}}
+else{if(typeof oqRefreshPending==='function')oqRefreshPending();showScreen('thoughts-screen');showToast('No internet \u2014 recording saved. Will transcribe when connected.');}}};
 isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');recordingStartTime=Date.now();updateTimer();recordingTimer=setInterval(updateTimer,250);_gmr.start();
 }else{
 fT='';iT='';if(restartTimeout){clearTimeout(restartTimeout);restartTimeout=null;}
@@ -541,7 +543,7 @@ window.addEventListener('popstate',e=>{
         if(typeof thoughtsSelectMode!=='undefined'&&thoughtsSelectMode){exitThoughtsSelection();history.pushState({},'');return;}
         if(typeof habitsSelectMode!=='undefined'&&habitsSelectMode){exitHabitsSelection();history.pushState({},'');return;}
         if(typeof habitEntriesSelectMode!=='undefined'&&habitEntriesSelectMode){exitHabitEntriesSelection();history.pushState({},'');return;}
-        const overlays=['write-overlay','post-record-overlay','date-range-overlay','confirm-overlay','no-tag-confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay','voice-title-overlay','quick-edit-overlay','api-key-overlay','export-overlay'];
+        const overlays=['write-overlay','post-record-overlay','date-range-overlay','confirm-overlay','no-tag-confirm-overlay','mood-filter-overlay','refine-overlay','edit-modal','success-overlay','add-habit-overlay','habit-picker-overlay','delete-habit-overlay','entry-delete-overlay','voice-title-overlay','quick-edit-overlay','api-key-overlay','export-overlay','pending-retry-overlay'];
         for(const oid of overlays){const oel=document.getElementById(oid);if(oel&&(oel.classList.contains('visible'))){oel.classList.remove('visible');return;}}
         const heDetailScreen=document.getElementById('habit-entry-detail-screen');
         if(heDetailScreen&&heDetailScreen.classList.contains('active')){if(typeof openHabitDetail==='function')openHabitDetail(currentHabitId);return;}
