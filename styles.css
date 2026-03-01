@@ -177,7 +177,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .btn-group{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;margin-top:8px}
 
 /* ---- SUCCESS ---- */
-.success-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:200;background:rgba(26,30,34,.85);backdrop-filter:blur(8px)}.success-overlay.visible{display:flex}
+.success-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:200;background:rgba(26,30,34,.85);backdrop-filter:blur(8px);pointer-events:none}.success-overlay.visible{display:flex;pointer-events:auto}
 .success-content{display:flex;flex-direction:column;align-items:center;animation:successPop .5s cubic-bezier(.34,1.56,.64,1)}
 @keyframes successPop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
 .success-check{width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 45% 40%,#c8b890,#98885a);display:flex;align-items:center;justify-content:center;margin-bottom:16px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
@@ -236,7 +236,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .detail-action-btn svg{width:15px;height:15px}
 
 /* ---- MODALS ---- */
-.modal-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:200;background:rgba(26,30,34,.85);backdrop-filter:blur(8px);padding:24px}.modal-overlay.visible{display:flex}
+.modal-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:200;background:rgba(26,30,34,.85);backdrop-filter:blur(8px);padding:24px;pointer-events:none}.modal-overlay.visible{display:flex;pointer-events:auto}
 #no-tag-confirm-overlay{z-index:230}
 .modal-dialog{background:var(--bg-card);border-radius:var(--radius-lg);padding:24px;max-width:320px;width:100%;text-align:center;position:relative;border:1px solid var(--glass-border);box-sizing:border-box;overflow:hidden}
 .modal-title{font-family:var(--font-display);font-size:18px;margin-bottom:8px}.modal-text{font-size:14px;color:var(--text-secondary);line-height:1.5;margin-bottom:20px}
@@ -244,7 +244,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .modal-close-x{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;border:none;background:var(--bg-elevated);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center}.modal-close-x svg{width:14px;height:14px}
 
 /* ---- REFINE ---- */
-.refine-overlay{position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:150;display:none;flex-direction:column;background:var(--bg-deep)}.refine-overlay.visible{display:flex}
+.refine-overlay{position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:150;display:none;flex-direction:column;background:var(--bg-deep);pointer-events:none}.refine-overlay.visible{display:flex;pointer-events:auto}
 .refine-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border-subtle)}
 .refine-header-title{font-family:var(--font-display);font-size:16px}.refine-dismiss{border:none;background:none;color:var(--text-muted);font-family:var(--font-body);font-size:14px;cursor:pointer}
 .refine-body{flex:1;padding:20px;overflow-y:auto}
@@ -255,7 +255,7 @@ textarea#write-textarea::-webkit-resizer{display:none}
 .refine-actions{display:flex;gap:10px;padding:0 20px 20px}.refine-actions .action-btn{flex:1}
 
 /* ---- EDIT ---- */
-.edit-modal{position:fixed;inset:0;z-index:150;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}.edit-modal.visible{display:flex}
+.edit-modal{position:fixed;inset:0;z-index:150;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);pointer-events:none}.edit-modal.visible{display:flex;pointer-events:auto}
 .edit-modal-inner{position:relative;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);width:90%;max-width:400px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.4)}
 .edit-modal-header{display:flex;justify-content:space-between;align-items:center;padding:14px 56px 14px 18px;border-bottom:1px solid var(--border-subtle)}
 .edit-modal-cancel{border:none;background:none;color:var(--text-muted);font-family:var(--font-body);font-size:14px;cursor:pointer}

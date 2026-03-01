@@ -1,11 +1,13 @@
 const SUPABASE_URL='https://yhhclegajyezejacendp.supabase.co';
 const SUPABASE_KEY='sb_publishable_y8pAGrTaRrvvYmNZadIe2w_ayd7PFIg';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+var sb=null;
+try{sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}catch(e){console.warn('Supabase client init failed — app will work offline only.',e);}
 
 var _sbUser=null;
 var _syncInProgress=false;
 
 async function sbInit(){
+    if(!sb){console.warn('Supabase not available — skipping auth');return;}
     try{
         const{data,error}=await sb.auth.getSession();
         if(error){console.error('Auth init error:',error);document.getElementById('auth-overlay').classList.add('visible');return;}
@@ -22,39 +24,44 @@ async function sbInit(){
     }
 }
 
-document.getElementById('auth-login-btn').addEventListener('click',async()=>{
-    var email=document.getElementById('auth-email').value.trim();
-    var pass=document.getElementById('auth-password').value;
-    var errEl=document.getElementById('auth-error');
-    errEl.style.display='none';
-    if(!email||!pass){errEl.textContent='Please enter email and password.';errEl.style.display='block';return;}
-    var btn=document.getElementById('auth-login-btn');
-    btn.textContent='Signing in...';btn.disabled=true;
-    const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
-    if(error){errEl.textContent=error.message;errEl.style.display='block';btn.textContent='Sign in';btn.disabled=false;return;}
-    _sbUser=data.user;
-    document.getElementById('auth-overlay').classList.remove('visible');
-    sbRestoreIfNeeded();
-});
-
-document.getElementById('auth-signup-btn').addEventListener('click',async()=>{
-    var email=document.getElementById('auth-email').value.trim();
-    var pass=document.getElementById('auth-password').value;
-    var errEl=document.getElementById('auth-error');
-    errEl.style.display='none';
-    if(!email||!pass){errEl.textContent='Please enter email and password.';errEl.style.display='block';return;}
-    if(pass.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';return;}
-    var btn=document.getElementById('auth-signup-btn');
-    btn.textContent='Creating account...';btn.disabled=true;
-    const{data,error}=await sb.auth.signUp({email,password:pass});
-    if(error){errEl.textContent=error.message;errEl.style.display='block';btn.textContent='No account? Create one';btn.disabled=false;return;}
-    _sbUser=data.user;
-    document.getElementById('auth-overlay').classList.remove('visible');
-    sbFullUpload();
-});
+(function(){
+    var loginBtn=document.getElementById('auth-login-btn');
+    var signupBtn=document.getElementById('auth-signup-btn');
+    if(loginBtn)loginBtn.addEventListener('click',async()=>{
+        if(!sb)return;
+        var email=document.getElementById('auth-email').value.trim();
+        var pass=document.getElementById('auth-password').value;
+        var errEl=document.getElementById('auth-error');
+        errEl.style.display='none';
+        if(!email||!pass){errEl.textContent='Please enter email and password.';errEl.style.display='block';return;}
+        var btn=document.getElementById('auth-login-btn');
+        btn.textContent='Signing in...';btn.disabled=true;
+        const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+        if(error){errEl.textContent=error.message;errEl.style.display='block';btn.textContent='Sign in';btn.disabled=false;return;}
+        _sbUser=data.user;
+        document.getElementById('auth-overlay').classList.remove('visible');
+        sbRestoreIfNeeded();
+    });
+    if(signupBtn)signupBtn.addEventListener('click',async()=>{
+        if(!sb)return;
+        var email=document.getElementById('auth-email').value.trim();
+        var pass=document.getElementById('auth-password').value;
+        var errEl=document.getElementById('auth-error');
+        errEl.style.display='none';
+        if(!email||!pass){errEl.textContent='Please enter email and password.';errEl.style.display='block';return;}
+        if(pass.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';return;}
+        var btn=document.getElementById('auth-signup-btn');
+        btn.textContent='Creating account...';btn.disabled=true;
+        const{data,error}=await sb.auth.signUp({email,password:pass});
+        if(error){errEl.textContent=error.message;errEl.style.display='block';btn.textContent='No account? Create one';btn.disabled=false;return;}
+        _sbUser=data.user;
+        document.getElementById('auth-overlay').classList.remove('visible');
+        sbFullUpload();
+    });
+})();
 
 async function sbRestoreIfNeeded(){
-    if(!_sbUser)return;
+    if(!sb||!_sbUser)return;
     var localThoughts=JSON.parse(localStorage.getItem('speak_captures')||'[]');
     var localHabits=JSON.parse(localStorage.getItem('speak_habits')||'[]');
     if(localThoughts.length===0&&localHabits.length===0){
@@ -65,7 +72,7 @@ async function sbRestoreIfNeeded(){
 }
 
 async function sbRestoreFromCloud(){
-    if(!_sbUser)return;
+    if(!sb||!_sbUser)return;
     try{
         const{data:cloudThoughts}=await sb.from('thoughts').select('*').eq('user_id',_sbUser.id).order('created_at',{ascending:false});
         if(cloudThoughts&&cloudThoughts.length>0){
@@ -92,7 +99,7 @@ async function sbRestoreFromCloud(){
 }
 
 async function sbFullUpload(){
-    if(!_sbUser||_syncInProgress)return;
+    if(!sb||!_sbUser||_syncInProgress)return;
     _syncInProgress=true;
     try{
         await sbSyncThoughts();
@@ -104,7 +111,7 @@ async function sbFullUpload(){
 }
 
 async function sbSyncThoughts(){
-    if(!_sbUser)return;
+    if(!sb||!_sbUser)return;
     var local=JSON.parse(localStorage.getItem('speak_captures')||'[]');
     if(!local.length)return;
     var rows=local.map(c=>({
@@ -125,7 +132,7 @@ async function sbSyncThoughts(){
 }
 
 async function sbSyncHabits(){
-    if(!_sbUser)return;
+    if(!sb||!_sbUser)return;
     var local=JSON.parse(localStorage.getItem('speak_habits')||'[]');
     if(!local.length)return;
     var habitRows=local.map(h=>({
@@ -162,32 +169,32 @@ async function sbSyncHabits(){
 }
 
 async function sbDeleteThought(id){
-    if(!_sbUser)return;
+    if(!sb||!_sbUser)return;
     await sb.from('thoughts').delete().eq('id',id).eq('user_id',_sbUser.id);
 }
 
 async function sbDeleteThoughts(ids){
-    if(!_sbUser||!ids.length)return;
+    if(!sb||!_sbUser||!ids.length)return;
     await sb.from('thoughts').delete().in('id',ids).eq('user_id',_sbUser.id);
 }
 
 async function sbDeleteHabit(id){
-    if(!_sbUser)return;
+    if(!sb||!_sbUser)return;
     await sb.from('habit_entries').delete().eq('habit_id',id).eq('user_id',_sbUser.id);
     await sb.from('habits').delete().eq('id',id).eq('user_id',_sbUser.id);
 }
 
 async function sbDeleteHabits(ids){
-    if(!_sbUser||!ids.length)return;
+    if(!sb||!_sbUser||!ids.length)return;
     for(var i=0;i<ids.length;i++){await sbDeleteHabit(ids[i]);}
 }
 
 async function sbDeleteHabitEntry(entryId){
-    if(!_sbUser)return;
+    if(!sb||!_sbUser)return;
     await sb.from('habit_entries').delete().eq('id',entryId).eq('user_id',_sbUser.id);
 }
 
 async function sbDeleteHabitEntries(ids){
-    if(!_sbUser||!ids.length)return;
+    if(!sb||!_sbUser||!ids.length)return;
     await sb.from('habit_entries').delete().in('id',ids).eq('user_id',_sbUser.id);
 }
