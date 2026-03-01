@@ -42,6 +42,12 @@ Never bundle multiple features into one commit. Each commit must be independentl
    Example: "Run `npm install` — this downloads all the project's dependencies (external code libraries your app needs to work) into a folder called node_modules."
 2. If a command could change or delete something, warn me before I run it.
 
+## Platform Compatibility
+Speak is currently a PWA but will move to Vercel hosting and eventually to native app stores (likely via Capacitor wrapping the existing code). Always build with this in mind:
+1. Consider both Android and iOS/Safari compatibility for every feature.
+2. Before implementing a Web API, flag if it behaves differently or is unsupported on iOS Safari.
+3. Prefer cross-platform Web APIs. When an Android-only or iOS-only solution is unavoidable, note it explicitly in the code and in the response.
+
 ## Safety
 1. NEVER run scripts that affect other apps on the same domain (deusnero.github.io). Service workers, caches, and localStorage are shared across all apps on the same domain.
 2. NEVER skip the Plan → Go step, even for "quick fixes." No exceptions.
