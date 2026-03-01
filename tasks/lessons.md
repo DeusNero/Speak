@@ -1,7 +1,7 @@
 # Lessons Learned
 
 ## Process
-- **Bump the service worker cache version on every push** — without this, phones may keep running the old cached version even after new code is deployed. Increment `CACHE_NAME` in `sw.js` with every commit.
+- **Service worker caching on Vercel** — Vercel serves `sw.js` with `no-cache` headers (configured in `vercel.json`), so manual `CACHE_NAME` bumping is no longer needed. The SW uses a network-first strategy and the browser always fetches a fresh copy. This replaced the old GitHub Pages approach where we had to manually increment `CACHE_NAME` on every push.
 - **Always present a plan and wait for 'Go' — even in Cloud Agent mode** — the agent skipped the plan-and-approve step because Cloud Agent instructions say to work autonomously. Updated `.cursorrules` to explicitly override this. The founder's approval flow always takes priority over agent defaults.
 
 ## CSS Specificity (Feb 2026)

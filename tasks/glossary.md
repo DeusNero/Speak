@@ -4,7 +4,7 @@
 
 - **System navigation bar (nav bar)** — the bar at the bottom of Android phones with Back, Home, and Recent Apps buttons. The "back button on the phone itself" = the **Back button** in the nav bar. We intercept it via `popstate` to exit multi-select mode instead of leaving the app.
 
-- **Staging environment** — a separate copy of an app used to safely test changes before deploying to the real (production) app. We planned a `Speak-dev` repo on GitHub Pages for this but haven't set it up yet.
+- **Staging environment** — a separate copy of an app used to safely test changes before deploying to the real (production) app. We use the `dev` branch on Vercel — every push to `dev` generates a preview URL for testing. Only after confirming it works do we merge to `main` (production).
 
 - **Checkbox** — a selectable indicator (square or circular) on a list item. The "circles on the cards" in multi-select mode are circular checkboxes (sometimes called **selection indicators**). Styled with `.select-checkbox` in our CSS.
 
