@@ -13,6 +13,7 @@ async function sbInit(){
         if(error){console.error('Auth init error:',error);document.getElementById('auth-overlay').classList.add('visible');return;}
         if(data.session){
             _sbUser=data.session.user;
+            if(typeof encInitFromStorage==='function')await encInitFromStorage();
             document.getElementById('auth-overlay').classList.remove('visible');
             sbRestoreIfNeeded();
         }else{
@@ -39,6 +40,7 @@ async function sbInit(){
         const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
         if(error){errEl.textContent=error.message;errEl.style.display='block';btn.textContent='Sign in';btn.disabled=false;return;}
         _sbUser=data.user;
+        if(typeof encDeriveKey==='function')await encDeriveKey(pass,_sbUser.id);
         document.getElementById('auth-overlay').classList.remove('visible');
         sbRestoreIfNeeded();
     });
@@ -55,6 +57,7 @@ async function sbInit(){
         const{data,error}=await sb.auth.signUp({email,password:pass});
         if(error){errEl.textContent=error.message;errEl.style.display='block';btn.textContent='No account? Create one';btn.disabled=false;return;}
         _sbUser=data.user;
+        if(typeof encDeriveKey==='function')await encDeriveKey(pass,_sbUser.id);
         document.getElementById('auth-overlay').classList.remove('visible');
         sbFullUpload();
     });
@@ -76,18 +79,29 @@ async function sbRestoreFromCloud(){
     try{
         const{data:cloudThoughts}=await sb.from('thoughts').select('*').eq('user_id',_sbUser.id).order('created_at',{ascending:false});
         if(cloudThoughts&&cloudThoughts.length>0){
-            captures=cloudThoughts.map(r=>({id:r.id,text:r.text,mood:r.mood,eventMood:r.event_mood,tags:r.tag?[r.tag]:[],lang:r.lang,inputType:r.input_type,aiRefined:r.ai_refined,createdAt:r.created_at}));
+            var dec=typeof encDecrypt==='function'?encDecrypt:function(v){return Promise.resolve(v);};
+            captures=[];
+            for(var i=0;i<cloudThoughts.length;i++){
+                var r=cloudThoughts[i];
+                captures.push({id:r.id,text:await dec(r.text),mood:r.mood,eventMood:r.event_mood,tags:r.tag?[r.tag]:[],lang:r.lang,inputType:r.input_type,aiRefined:await dec(r.ai_refined),createdAt:r.created_at});
+            }
             saveCaptures();
         }
         const{data:cloudHabits}=await sb.from('habits').select('*').eq('user_id',_sbUser.id).order('created_at',{ascending:false});
         if(cloudHabits&&cloudHabits.length>0){
             const{data:cloudEntries}=await sb.from('habit_entries').select('*').eq('user_id',_sbUser.id).order('created_at',{ascending:true});
+            var dec=typeof encDecrypt==='function'?encDecrypt:function(v){return Promise.resolve(v);};
             var entriesByHabit={};
-            (cloudEntries||[]).forEach(e=>{
+            for(var i=0;i<(cloudEntries||[]).length;i++){
+                var e=cloudEntries[i];
                 if(!entriesByHabit[e.habit_id])entriesByHabit[e.habit_id]=[];
-                entriesByHabit[e.habit_id].push({id:e.id,text:e.text,title:e.title||undefined,inputType:e.input_type,lang:e.lang,aiRefined:e.ai_refined,createdAt:e.created_at});
-            });
-            habits=cloudHabits.map(h=>({id:h.id,name:h.name,favourite:h.favourite,createdAt:h.created_at,entries:entriesByHabit[h.id]||[]}));
+                entriesByHabit[e.habit_id].push({id:e.id,text:await dec(e.text),title:await dec(e.title)||undefined,inputType:e.input_type,lang:e.lang,aiRefined:await dec(e.ai_refined),createdAt:e.created_at});
+            }
+            habits=[];
+            for(var i=0;i<cloudHabits.length;i++){
+                var h=cloudHabits[i];
+                habits.push({id:h.id,name:await dec(h.name),favourite:h.favourite,createdAt:h.created_at,entries:entriesByHabit[h.id]||[]});
+            }
             saveHabits();
         }
         if(typeof renderCaptures==='function')renderCaptures();
@@ -114,19 +128,23 @@ async function sbSyncThoughts(){
     if(!sb||!_sbUser)return;
     var local=JSON.parse(localStorage.getItem('speak_captures')||'[]');
     if(!local.length)return;
-    var rows=local.map(c=>({
-        id:c.id,
-        user_id:_sbUser.id,
-        text:c.text,
-        input_type:c.inputType||'voice',
-        lang:c.lang||null,
-        tag:(c.tags&&c.tags[0])||null,
-        mood:c.mood||null,
-        event_mood:c.eventMood||null,
-        ai_refined:c.aiRefined||null,
-        created_at:c.createdAt,
-        updated_at:new Date().toISOString()
-    }));
+    var rows=[];
+    for(var i=0;i<local.length;i++){
+        var c=local[i];
+        rows.push({
+            id:c.id,
+            user_id:_sbUser.id,
+            text:typeof encEncrypt==='function'?await encEncrypt(c.text):c.text,
+            input_type:c.inputType||'voice',
+            lang:c.lang||null,
+            tag:(c.tags&&c.tags[0])||null,
+            mood:c.mood||null,
+            event_mood:c.eventMood||null,
+            ai_refined:typeof encEncrypt==='function'?await encEncrypt(c.aiRefined||null):c.aiRefined||null,
+            created_at:c.createdAt,
+            updated_at:new Date().toISOString()
+        });
+    }
     const{error}=await sb.from('thoughts').upsert(rows,{onConflict:'id'});
     if(error){console.error('Thoughts sync error:',error);if(typeof showToast==='function')showToast('Sync error: '+error.message);}
 }
@@ -135,33 +153,40 @@ async function sbSyncHabits(){
     if(!sb||!_sbUser)return;
     var local=JSON.parse(localStorage.getItem('speak_habits')||'[]');
     if(!local.length)return;
-    var habitRows=local.map(h=>({
-        id:h.id,
-        user_id:_sbUser.id,
-        name:h.name,
-        favourite:h.favourite||false,
-        created_at:h.createdAt,
-        updated_at:new Date().toISOString()
-    }));
+    var habitRows=[];
+    for(var i=0;i<local.length;i++){
+        var h=local[i];
+        habitRows.push({
+            id:h.id,
+            user_id:_sbUser.id,
+            name:typeof encEncrypt==='function'?await encEncrypt(h.name):h.name,
+            favourite:h.favourite||false,
+            created_at:h.createdAt,
+            updated_at:new Date().toISOString()
+        });
+    }
     const{error:hErr}=await sb.from('habits').upsert(habitRows,{onConflict:'id'});
     if(hErr){console.error('Habits sync error:',hErr);if(typeof showToast==='function')showToast('Sync error: '+hErr.message);return;}
     var entryRows=[];
-    local.forEach(h=>{
-        (h.entries||[]).forEach(e=>{
+    for(var i=0;i<local.length;i++){
+        var h=local[i];
+        var entries=h.entries||[];
+        for(var j=0;j<entries.length;j++){
+            var e=entries[j];
             entryRows.push({
                 id:e.id,
                 habit_id:h.id,
                 user_id:_sbUser.id,
-                text:e.text,
-                title:e.title||null,
+                text:typeof encEncrypt==='function'?await encEncrypt(e.text):e.text,
+                title:typeof encEncrypt==='function'?await encEncrypt(e.title||null):e.title||null,
                 input_type:e.inputType||'voice',
                 lang:e.lang||null,
-                ai_refined:e.aiRefined||null,
+                ai_refined:typeof encEncrypt==='function'?await encEncrypt(e.aiRefined||null):e.aiRefined||null,
                 created_at:e.createdAt,
                 updated_at:new Date().toISOString()
             });
-        });
-    });
+        }
+    }
     if(entryRows.length){
         const{error:eErr}=await sb.from('habit_entries').upsert(entryRows,{onConflict:'id'});
         if(eErr){console.error('Habit entries sync error:',eErr);if(typeof showToast==='function')showToast('Sync error: '+eErr.message);}
