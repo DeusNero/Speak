@@ -1,5 +1,21 @@
 let navHistory=[];
 function pushNav(screenId){navHistory.push(screenId);history.pushState({screen:screenId},'');}
+
+/* Audio focus — pause background music for the full recording duration */
+function requestAudioFocus(){
+    try{if(navigator.audioSession){navigator.audioSession.type='voice-communication';return;}}catch(e){}
+    /* Fallback: play a silent AudioContext buffer to take OS audio focus */
+    try{
+        var ctx=new(window.AudioContext||window.webkitAudioContext)();
+        var buf=ctx.createBuffer(1,1,22050);
+        var src=ctx.createBufferSource();src.buffer=buf;src.connect(ctx.destination);src.start(0);
+        window._audioFocusCtx=ctx;
+    }catch(e){}
+}
+function releaseAudioFocus(){
+    try{if(navigator.audioSession){navigator.audioSession.type='default';}}catch(e){}
+    try{if(window._audioFocusCtx){window._audioFocusCtx.close();window._audioFocusCtx=null;}}catch(e){}
+}
 const MOODS={1:'\u{1f622}',2:'\u{1f615}',3:'\u{1f610}',4:'\u{1f642}',5:'\u{1f60a}'};
 let currentCapture={text:'',mood:null,tags:[],inputType:'voice'},currentDetailId=null,currentFilter='all',currentMoodFilter=0,currentDateFilter=null,currentView='list',searchQuery='';
 const THOUGHT_TYPE_TAGS=['feel','quotes','words'];
@@ -185,22 +201,22 @@ const r=new SR();r.continuous=!isMobile;r.interimResults=true;r.lang=currentLang
 r.onstart=()=>{isRecording=true;speakBtn.classList.add('recording');speakBtn.querySelector('.speak-btn-label').textContent='Stop';timerEl.classList.add('visible');if(!recordingTimer){recordingStartTime=Date.now();updateTimer();recordingTimer=setInterval(updateTimer,250);}};
 r.onresult=e=>{iT='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fT+=e.results[i][0].transcript+' ';else iT+=e.results[i][0].transcript;}};
 r.onerror=e=>{console.warn('Speech error:',e.error);if(e.error==='no-speech'){if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){}},100);}return;}if(e.error==='not-allowed'||e.error==='service-not-allowed'){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=prompt('Microphone access denied or speech not available.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim(),currentLang);currentCapture.inputType='text';currentCapture.tags=[];showPostRecordFlow();}return;}if(e.error==='aborted')return;isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');};
-r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t,currentLang);
+r.onend=()=>{if(isRecording){restartTimeout=setTimeout(()=>{try{recognition.start();}catch(ex){releaseAudioFocus();isRecording=false;clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t,currentLang);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
-showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t,currentLang);
+showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}releaseAudioFocus();clearInterval(recordingTimer);recordingTimer=null;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');timerEl.classList.remove('visible');const t=(fT+iT).trim();fT='';iT='';if(t){currentCapture.text=cleanupTranscript(t,currentLang);
 if(currentMode==='habit'){currentCapture.tags=['habit'];showHabitPicker();document.getElementById('habit-picker-overlay').classList.add('visible');pushNav('habit-picker-overlay');}
 else{showPostRecordFlow();}}else{
 showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
 return r;}
 recognition=createRecognition();
-async function startRecording(){currentCapture.inputType='voice';currentCapture.tags=[];
+async function startRecording(){requestAudioFocus();currentCapture.inputType='voice';currentCapture.tags=[];
 if(useGeminiTranscription()){const mime=getAudioMimeType();let chunks=[];let stream;
 try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
 catch(e){console.warn('Mic error:',e);const t=prompt('Could not access microphone.\nYou can type your thought instead:');if(t&&t.trim()){currentCapture.text=cleanupTranscript(t.trim(),currentLang);currentCapture.inputType='text';currentCapture.tags=[];showPostRecordFlow();}return;}
 _gmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
 _gmr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
-_gmr.onstop=async function(){stream.getTracks().forEach(t=>t.stop());isRecording=false;_isTranscribing=true;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';lpRing.classList.add('transcribing');timerEl.classList.remove('visible');clearInterval(recordingTimer);recordingTimer=null;
+_gmr.onstop=async function(){releaseAudioFocus();stream.getTracks().forEach(t=>t.stop());isRecording=false;_isTranscribing=true;speakBtn.classList.remove('recording');speakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';lpRing.classList.add('transcribing');timerEl.classList.remove('visible');clearInterval(recordingTimer);recordingTimer=null;
 const blob=new Blob(chunks,{type:_gmr.mimeType||mime||'audio/webm'});
 const transcript=await transcribeAudio(blob,currentLang);
 _isTranscribing=false;lpRing.classList.remove('transcribing');speakBtn.querySelector('.speak-btn-label').textContent=(currentMode==='habit'?'Habit':'Speak');

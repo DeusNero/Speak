@@ -575,11 +575,12 @@ function createHabitsPgRec(){
     return r;
 }
 function habitsPgStartRec(){
+    requestAudioFocus();
     if(useGeminiTranscription()){const mime=getAudioMimeType();let chunks=[];
         navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
             _habitsPgGmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
             _habitsPgGmr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
-            _habitsPgGmr.onstop=async function(){stream.getTracks().forEach(function(t){t.stop();});habitsPgIsRec=false;_habitsPgIsTranscribing=true;habitsPgBtn.classList.remove('recording','recording-green');habitsPgBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';habitsPgLpRing.classList.add('transcribing');habitsPgStopTimer();
+            _habitsPgGmr.onstop=async function(){releaseAudioFocus();stream.getTracks().forEach(function(t){t.stop();});habitsPgIsRec=false;_habitsPgIsTranscribing=true;habitsPgBtn.classList.remove('recording','recording-green');habitsPgBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';habitsPgLpRing.classList.add('transcribing');habitsPgStopTimer();
                 const blob=new Blob(chunks,{type:_habitsPgGmr.mimeType||mime||'audio/webm'});
                 const transcript=await transcribeAudio(blob,currentLang);
                 _habitsPgIsTranscribing=false;habitsPgLpRing.classList.remove('transcribing');habitsPgBtn.querySelector('.speak-btn-label').textContent='Speak';
@@ -703,11 +704,12 @@ function createHabitRecognition(){
     return r;
 }
 function habitStartRecording(){
+    requestAudioFocus();
     if(useGeminiTranscription()){const mime=getAudioMimeType();let chunks=[];
         navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
             _habitGmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
             _habitGmr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
-            _habitGmr.onstop=async function(){stream.getTracks().forEach(function(t){t.stop();});habitIsRecording=false;_habitIsTranscribing=true;habitBtn.classList.remove('recording','recording-green');habitBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';habitLpRing.classList.add('transcribing');habitStopTimer();
+            _habitGmr.onstop=async function(){releaseAudioFocus();stream.getTracks().forEach(function(t){t.stop();});habitIsRecording=false;_habitIsTranscribing=true;habitBtn.classList.remove('recording','recording-green');habitBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';habitLpRing.classList.add('transcribing');habitStopTimer();
                 const blob=new Blob(chunks,{type:_habitGmr.mimeType||mime||'audio/webm'});
                 const transcript=await transcribeAudio(blob,currentLang);
                 _habitIsTranscribing=false;habitLpRing.classList.remove('transcribing');habitBtn.querySelector('.speak-btn-label').textContent='Habit';

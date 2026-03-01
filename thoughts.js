@@ -247,18 +247,19 @@ function createThoughtsRec(){
     r.onresult=function(e){thoughtsIT='';for(var i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)thoughtsFT+=e.results[i][0].transcript+' ';else thoughtsIT+=e.results[i][0].transcript;}};
     r.onerror=function(e){if(e.error==='no-speech'){if(thoughtsIsRec){setTimeout(function(){try{thoughtsRec.start();}catch(ex){}},100);}return;}
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();thoughtsOpenWrite();return;}};
-    r.onend=function(){if(thoughtsIsRec){setTimeout(function(){try{thoughtsRec.start();}catch(ex){thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();var t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
-    thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();
+    r.onend=function(){if(thoughtsIsRec){setTimeout(function(){try{thoughtsRec.start();}catch(ex){releaseAudioFocus();thoughtsIsRec=false;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();var t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}}},100);return;}
+    releaseAudioFocus();thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';thoughtsStopTimer();
     var t=(thoughtsFT+thoughtsIT).trim();thoughtsFT='';thoughtsIT='';
     if(t){thoughtsSaveVoice(t);}else{showToast("Couldn\u2019t hear anything. Please try again or speak a bit louder.");}};
     return r;
 }
 function thoughtsStartRec(){
+    requestAudioFocus();
     if(useGeminiTranscription()){const mime=getAudioMimeType();let chunks=[];
         navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
             _thoughtsGmr=new MediaRecorder(stream,mime?{mimeType:mime}:{});
             _thoughtsGmr.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
-            _thoughtsGmr.onstop=async function(){stream.getTracks().forEach(function(t){t.stop();});thoughtsIsRec=false;_thoughtsIsTranscribing=true;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';thoughtsLpRing.classList.add('transcribing');thoughtsStopTimer();
+            _thoughtsGmr.onstop=async function(){releaseAudioFocus();stream.getTracks().forEach(function(t){t.stop();});thoughtsIsRec=false;_thoughtsIsTranscribing=true;thoughtsSpeakBtn.classList.remove('recording');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='\u00b7\u00b7\u00b7';thoughtsLpRing.classList.add('transcribing');thoughtsStopTimer();
                 const blob=new Blob(chunks,{type:_thoughtsGmr.mimeType||mime||'audio/webm'});
                 const transcript=await transcribeAudio(blob,currentLang);
                 _thoughtsIsTranscribing=false;thoughtsLpRing.classList.remove('transcribing');thoughtsSpeakBtn.querySelector('.speak-btn-label').textContent='Speak';
